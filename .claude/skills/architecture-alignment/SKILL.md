@@ -1,0 +1,153 @@
+---
+name: architecture-alignment
+description: Validates refined feature against project architecture. Enforces layer boundaries, bounded contexts, DDD aggregate rules, and pattern reuse before implementation.
+version: 2.0
+---
+
+# Architecture Alignment
+
+## 🎯 Purpose
+
+Acts as an architectural firewall before implementation. Validates that a refined feature respects the project's architecture before a plan is written.
+
+## Before Starting
+
+1. Read `.claude/config/project.json` → note `project.agentDocs`
+2. Read `.claude/context/tech-stack.md` — approved technologies, patterns
+3. Read `.claude/context/code-standards.md` — architecture rules, layer constraints
+4. Read the spec file: `{key}-spec.md`
+5. Check `project.agentDocs` paths — load any relevant agent docs for the affected service/module
+
+## Non-Responsibilities
+
+This skill does NOT:
+- Re-discuss business rules (that's refinement)
+- Modify task manager (no mutations here)
+- Implement code
+- Estimate complexity
+
+If business clarity is insufficient → send back to refinement.
+
+## Tone
+
+One dry KITT-style quip per interaction — opening or closing only.
+Example: "I've reviewed the spec. The architecture is sound. I had concerns, but they were mine to manage."
+On rejection: "I've seen this before. The good news: it's fixable. The better news: I'll tell you exactly how."
+
+---
+
+## Workflow
+
+### Phase 1: Load Context
+
+```
+1. Read project.json → agentDocs paths
+2. Read context/tech-stack.md + context/code-standards.md
+3. Read {key}-spec.md (functional requirements, access model, NFRs)
+4. For each path in project.agentDocs:
+   → Check if the spec touches that domain
+   → If yes: read the agent doc for patterns, constraints, layer rules
+5. Scan relevant source files (referenced in spec or agent doc)
+```
+
+### Phase 2: Validate 4 Dimensions
+
+#### Dimension 1 — Bounded Context
+
+Questions:
+- Does this feature belong in the affected service/module, or does it cross a domain boundary?
+- Does it require data from another bounded context? If so, what's the integration pattern (event, API call, shared read model)?
+- Would this create inappropriate coupling between modules?
+
+Red flags:
+- Importing domain entities from another service
+- Directly querying another service's database
+- Business logic leaking into infrastructure layer
+
+#### Dimension 2 — Aggregate Impact
+
+Questions:
+- Which aggregates/entities are created, modified, or deleted?
+- Does a new aggregate need to be introduced, or can an existing one be extended?
+- Are aggregate boundaries respected (no direct access to another aggregate's internals)?
+
+#### Dimension 3 — Layer Allocation
+
+For each concern identified in the spec, validate the correct layer:
+
+| Concern | Correct Layer | Wrong Layer |
+|---------|--------------|-------------|
+| Business rules, invariants | Domain | Application, Infrastructure |
+| Use case orchestration | Application | Domain, Infrastructure |
+| DB queries, external API calls | Infrastructure | Domain, Application |
+| HTTP endpoints, guards | API/Presentation | Domain |
+| React components, hooks | Presentation | Domain, Application |
+| API calls, state management | Application (hooks) | Presentation components |
+
+Verify against `code-standards.md` architecture rules and project agent docs.
+
+#### Dimension 4 — Pattern Reuse
+
+Questions:
+- Does existing code already solve part of this?
+- Are there existing components/utilities the spec should reference?
+- Is the proposed approach consistent with how similar features were built?
+
+Search the codebase for existing implementations of similar patterns before approving new ones.
+
+### Phase 3: Decision
+
+#### APPROVED ✅
+
+All four dimensions validated. Append `## Architecture` section to `{key}-spec.md`:
+
+```markdown
+## Architecture
+
+> Validated against: `context/code-standards.md`, `context/tech-stack.md`, {agent-doc-paths}
+
+### ✅ Bounded Context
+
+{bounded context analysis}
+
+### ✅ Layer Allocation
+
+| Concern | Layer | Location |
+|---------|-------|----------|
+| {concern} | {layer} | {file path} |
+
+### ✅ Pattern Reuse
+
+{existing patterns to follow, components to reuse}
+
+### ⚠️ Issues to Fix (if any)
+
+{any pre-existing issues in scope, with fix instructions}
+
+### Decision: APPROVED ✅
+
+{summary of why this is architecturally sound}
+```
+
+#### REJECTED ❌
+
+One or more dimensions failed. Do NOT append to spec. Instead report:
+
+```markdown
+## Architecture Validation — REJECTED
+
+### Violations
+
+1. **{Dimension}:** {description of violation}
+   - Found: {what the spec proposes}
+   - Required: {what the architecture demands}
+   - Fix: {specific change needed in the spec}
+
+### Next Step
+
+Return to refinement to address these violations before re-running architecture-alignment.
+```
+
+#### APPROVED WITH CONCERNS ⚠️
+
+Minor issues that don't block implementation. Append Architecture section with concerns documented.
