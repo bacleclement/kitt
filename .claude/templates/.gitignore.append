@@ -1,0 +1,3 @@
+# Kitt — secrets only, everything else committed
+.env.local
+.env.*.local

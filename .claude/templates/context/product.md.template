@@ -1,0 +1,21 @@
+# {{PROJECT_NAME}} — Product Context
+
+## What Is {{PROJECT_NAME}}
+
+{{DESCRIPTION}}
+
+## Users
+
+| Role | Description | Key Actions |
+|------|-------------|-------------|
+| | | |
+
+## Core Domains
+
+| Domain | Bounded Context | What It Manages |
+|--------|----------------|-----------------|
+| | | |
+
+## Business Rules
+
+- {{BUSINESS_RULE_1}}

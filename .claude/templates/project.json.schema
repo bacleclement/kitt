@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Kitt Project Configuration",
+  "description": "Per-project configuration for Kitt workflow skills",
+  "type": "object",
+  "required": ["kitt", "project", "taskManager", "vcs", "build", "commitFormat"],
+  "properties": {
+    "kitt": {
+      "type": "object",
+      "required": ["version"],
+      "properties": {
+        "version": { "type": "string", "description": "Kitt version installed" },
+        "installedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "project": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "agentDocs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paths to project-specific agent documentation folders"
+        }
+      }
+    },
+    "taskManager": {
+      "type": "object",
+      "required": ["type", "config"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["jira", "linear", "github-issues", "none"]
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "instanceUrl": { "type": "string", "format": "uri" },
+            "projectKey": { "type": "string" },
+            "statuses": {
+              "type": "object",
+              "required": ["todo", "inProgress", "review", "done", "blocked"],
+              "properties": {
+                "todo":       { "type": "string" },
+                "inProgress": { "type": "string" },
+                "review":     { "type": "string" },
+                "done":       { "type": "string" },
+                "blocked":    { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "vcs": {
+      "type": "object",
+      "required": ["type", "config"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["github", "gitlab", "bitbucket"]
+        },
+        "config": {
+          "type": "object",
+          "required": ["baseBranch"],
+          "properties": {
+            "account":    { "type": "string" },
+            "org":        { "type": "string" },
+            "repo":       { "type": "string" },
+            "baseBranch": { "type": "string", "default": "main" }
+          }
+        }
+      }
+    },
+    "build": {
+      "type": "object",
+      "properties": {
+        "test":      { "type": "string", "description": "Use {project} and {pattern} as placeholders" },
+        "typecheck": { "type": "string" },
+        "lint":      { "type": "string" },
+        "build":     { "type": "string" }
+      }
+    },
+    "commitFormat": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "default": "{type}({ticket}): {description}",
+          "description": "Use {type}, {ticket}, {description} as placeholders"
+        },
+        "types": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["feat", "fix", "refactor", "test", "docs", "chore"]
+        },
+        "coAuthored": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, add Co-Authored-By to commit body"
+        }
+      }
+    }
+  }
+}

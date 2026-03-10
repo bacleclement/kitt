@@ -1,0 +1,25 @@
+# {{PROJECT_NAME}} — Code Standards
+
+## Naming Conventions
+
+| Type | Convention | Example |
+|------|-----------|---------|
+| Files | | |
+| Classes | | |
+| Functions | | |
+
+## Import Rules
+
+{{IMPORT_RULES}}
+
+## Formatting
+
+{{FORMATTING_CONFIG}}
+
+## Architecture
+
+{{ARCHITECTURE_PATTERN}}
+
+## Testing
+
+{{TESTING_APPROACH}}

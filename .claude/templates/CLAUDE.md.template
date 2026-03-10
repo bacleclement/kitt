@@ -1,0 +1,51 @@
+# Claude Code — {{PROJECT_NAME}}
+
+## Kitt
+
+This project uses [Kitt](https://github.com/{{KITT_REPO}}) for AI-assisted development.
+
+Kitt version: see `.claude/kitt/version`
+Config: `.claude/config/project.json`
+
+## Workflow
+
+```
+/setup              → configure kitt for this project (run once)
+/setup validate     → check configuration completeness
+/workflow-orchestrator → start working on a ticket
+```
+
+## Skills (via Kitt)
+
+| Skill | When to Use |
+|-------|-------------|
+| `workflow-orchestrator` | Route to the right workflow step |
+| `refinement` | Before design — discover constraints |
+| `architecture-alignment` | After refinement — validate architecture |
+| `plan-building` | After alignment — create implementation plan |
+| `implementor` | Execute the plan with TDD |
+| `branch-creator` | Create branch from ticket |
+| `pr-creator` | Create PR with task manager integration |
+
+## Context Files
+
+Skills read these before acting — keep them accurate:
+
+- `.claude/context/product.md` — domain, users, business rules
+- `.claude/context/tech-stack.md` — stack, infra, databases
+- `.claude/context/code-standards.md` — architecture, naming, testing
+
+## Hard Rules
+
+- **NEVER push without explicit confirmation**
+- **NEVER commit without user review first**
+- When uncertain about a pattern: search first, ask if unclear, never guess
+
+## Quick Reference
+
+```bash
+# Validation (fill in from project.json build commands)
+{{BUILD_TEST}}
+{{BUILD_TYPECHECK}}
+{{BUILD_LINT}}
+```

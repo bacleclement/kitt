@@ -1,0 +1,29 @@
+# {{PROJECT_NAME}} — Tech Stack
+
+## Architecture
+
+{{ARCHITECTURE_TYPE}} (e.g. Nx Monorepo, Microservices, Monolith)
+
+## Backend
+
+| Layer | Technology | Rationale |
+|-------|-----------|-----------|
+| | | |
+
+## Frontend
+
+| Layer | Technology | Rationale |
+|-------|-----------|-----------|
+| | | |
+
+## Databases
+
+| Database | Usage |
+|----------|-------|
+| | |
+
+## Infrastructure
+
+| Layer | Technology |
+|-------|-----------|
+| | |
