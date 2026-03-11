@@ -10,7 +10,7 @@ Direct ticket operations via the configured task manager adapter.
 
 ## Before Starting
 
-1. Read `.claude/config/project.json`
+1. Read `.claude/config/kitt.json`
 2. Load task-manager adapter: `.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 3. Follow adapter prerequisites (auth check)
 

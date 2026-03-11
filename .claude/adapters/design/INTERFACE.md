@@ -10,7 +10,7 @@ Skills call this interface — never design tool APIs directly.
 
 ## How Skills Use Adapters
 
-1. Read `.claude/config/project.json`
+1. Read `.claude/config/kitt.json`
 2. `type = project.design.type` → e.g. `"figma"`
 3. Load `.claude/adapters/design/{type}/ADAPTER.md`
 4. Follow the adapter's instructions for the needed operation

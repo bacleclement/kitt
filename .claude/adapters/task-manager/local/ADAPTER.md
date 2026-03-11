@@ -10,9 +10,9 @@ version: 1.0
 Implements the task-manager interface using local files only. No external CLI or API.
 Everything lives in `.claude/workspace/`. Works offline. No account required.
 
-Use this when `project.json taskManager.type` is `"local"`.
+Use this when `kitt.json taskManager.type` is `"local"`.
 
-## Configuration (from project.json)
+## Configuration (from kitt.json)
 
 ```json
 {

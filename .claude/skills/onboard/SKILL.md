@@ -42,7 +42,7 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 Read all available context in parallel:
 
 ```
-1. .claude/config/project.json           — stack, task manager, VCS, build commands
+1. .claude/config/kitt.json           — stack, task manager, VCS, build commands
 2. .claude/context/product.md            — what the product is, who uses it, business domain
 3. .claude/context/tech-stack.md         — frameworks, databases, infra, key libraries
 4. .claude/context/code-standards.md     — naming, imports, patterns, conventions
@@ -209,13 +209,13 @@ Common mistakes on this project:
 
 {Only include if Q5 answer was A or B}
 
-{Build commands from project.json}
+{Build commands from kitt.json}
 {Environment setup steps if described in context}
 {Auth setup for task manager and VCS if described}
 
 ## Daily Workflow
 
-{Commands they'll run every day, from project.json build.*}
+{Commands they'll run every day, from kitt.json build.*}
 
 ```bash
 # Run tests for your area
@@ -228,7 +228,7 @@ Common mistakes on this project:
 {build.lint}
 ```
 
-{Commit format from project.json commitFormat — show an example}
+{Commit format from kitt.json commitFormat — show an example}
 
 ## Workflow Pipeline
 

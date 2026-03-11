@@ -21,7 +21,7 @@ linear auth login
 echo $LINEAR_API_KEY | grep -q . && echo "✅ API key set" || echo "❌ set LINEAR_API_KEY in .env.local"
 ```
 
-## Configuration (from project.json)
+## Configuration (from kitt.json)
 
 ```json
 {

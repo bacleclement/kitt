@@ -10,7 +10,7 @@ Creates pull/merge requests with proper formatting and task manager integration.
 
 ## Before Starting
 
-1. Read `.claude/config/project.json`
+1. Read `.claude/config/kitt.json`
 2. Load task-manager adapter: `.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 3. Load VCS adapter: `.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
 4. Note: `vcs.config.account`, `vcs.config.baseBranch`, `taskManager.config.statuses.review`
@@ -25,8 +25,8 @@ Creates pull/merge requests with proper formatting and task manager integration.
 
 ```
 1. [ ] All plan.md tasks marked [x] (no [ ] or [~] remaining)
-2. [ ] Tests pass: {build.test from project.json}
-3. [ ] Typecheck clean: {build.typecheck from project.json}
+2. [ ] Tests pass: {build.test from kitt.json}
+3. [ ] Typecheck clean: {build.typecheck from kitt.json}
 4. [ ] On the correct feature branch (not main/master)
 ```
 
@@ -54,7 +54,7 @@ Read the plan file using the Read tool:
 
 ### Step 3: Build PR title
 
-Pattern from `project.json commitFormat.pattern`:
+Pattern from `kitt.json commitFormat.pattern`:
 `{type}({ticketKey}): {ticket summary from task manager}`
 
 Fetch summary via task-manager adapter `read(ticketKey)`.

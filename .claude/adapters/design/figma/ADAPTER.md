@@ -37,7 +37,7 @@ echo $FIGMA_TOKEN | grep -q . && echo "✅ token set" || echo "❌ set FIGMA_TOK
 
 Get token at: figma.com → Settings → Personal access tokens.
 
-## Configuration (from project.json)
+## Configuration (from kitt.json)
 
 ```json
 {

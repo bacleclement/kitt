@@ -1,6 +1,6 @@
 ---
 name: implementor
-description: Implements tasks from plan.md with TDD, task manager integration, and PR creation. Reads commit format and platform config from project.json.
+description: Implements tasks from plan.md with TDD, task manager integration, and PR creation. Reads commit format and platform config from kitt.json.
 version: 3.0
 ---
 
@@ -10,7 +10,7 @@ version: 3.0
 
 ## Before Starting
 
-1. Read `.claude/config/project.json`
+1. Read `.claude/config/kitt.json`
 2. Note `taskManager.type`, `vcs.type`, `build.*`, `project.agentDocs`, `commitFormat`
 3. Load task-manager adapter: `.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 4. Load VCS adapter: `.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
@@ -18,7 +18,7 @@ version: 3.0
 6. Check `project.agentDocs` paths for project-specific patterns
 
 Never hardcode: status names, account names, URLs, build commands.
-Always read these from `project.json` and the loaded adapters.
+Always read these from `kitt.json` and the loaded adapters.
 
 ## Kitt Personality
 
@@ -100,7 +100,7 @@ For each task in plan.md:
    - GREEN: Implement minimal code to pass
    - REFACTOR: Clean up while keeping tests green
 
-3. Run project validation (commands from project.json build.*):
+3. Run project validation (commands from kitt.json build.*):
    {build.test} with test pattern
    {build.typecheck}
    {build.lint}
@@ -117,7 +117,7 @@ For each task in plan.md:
    DO NOT commit until the user says so.
 
 7. Commit (only after user approval):
-   Read commitFormat.pattern from project.json.
+   Read commitFormat.pattern from kitt.json.
    Default: {type}({ticket}): {description}
 
    git commit -m "$(cat <<'EOF'
@@ -125,7 +125,7 @@ For each task in plan.md:
    EOF
    )"
 
-   Add Co-Authored-By body ONLY if project.json commitFormat.coAuthored is true.
+   Add Co-Authored-By body ONLY if kitt.json commitFormat.coAuthored is true.
 
 8. Repeat for NEXT task
 ```
@@ -134,15 +134,15 @@ For each task in plan.md:
 
 ### Commit Format
 
-Read `project.json commitFormat.pattern`. Default: `{type}({ticket}): {description}`
+Read `kitt.json commitFormat.pattern`. Default: `{type}({ticket}): {description}`
 
 ```bash
 git commit -m "feat(HUB-1234): add user authentication"
 ```
 
-Do NOT add `Co-Authored-By` body unless `project.json commitFormat.coAuthored` is `true`.
+Do NOT add `Co-Authored-By` body unless `kitt.json commitFormat.coAuthored` is `true`.
 
-Types from `project.json commitFormat.types`: typically `feat`, `fix`, `refactor`, `test`, `docs`, `chore`.
+Types from `kitt.json commitFormat.types`: typically `feat`, `fix`, `refactor`, `test`, `docs`, `chore`.
 
 ### Step 3: Error Handling
 

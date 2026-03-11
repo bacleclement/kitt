@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Interactive kitt configuration wizard. Scans the project repo, asks targeted questions, writes project.json, generates context file drafts, and validates completeness.
+description: Interactive kitt configuration wizard. Scans the project repo, asks targeted questions, writes kitt.json, generates context file drafts, and validates completeness.
 version: 1.0
 ---
 
@@ -38,16 +38,16 @@ Also used for: `/setup validate` to check completeness.
 
 - `/setup` — auto-detects mode: first install (full wizard) or join (dev environment init)
 - `/setup validate` — completeness check only
-- `/setup update` — re-run wizard to update project.json (keeps existing context files)
+- `/setup update` — re-run wizard to update kitt.json (keeps existing context files)
 
 ---
 
 ## /setup — Mode Detection
 
-**First action:** check if `.claude/config/project.json` already exists.
+**First action:** check if `.claude/config/kitt.json` already exists.
 
 ```
-project.json exists?
+kitt.json exists?
   NO  → First Install mode (full wizard)
   YES → Join mode (dev environment init only)
 ```
@@ -85,7 +85,7 @@ mkdir -p .claude/workspace/epics .claude/workspace/features .claude/workspace/bu
 
 ### Step 3: Verify credentials
 
-Read `.claude/config/project.json` to know which adapters are configured, then check only those:
+Read `.claude/config/kitt.json` to know which adapters are configured, then check only those:
 
 **Task manager** (if `taskManager.type` ≠ `"local"` or `"none"`):
 - Load `.claude/adapters/task-manager/{type}/ADAPTER.md`
@@ -201,18 +201,18 @@ Ask ONLY questions where the answer wasn't inferred. Skip any that were detected
 8. "Any specific architecture constraints to enforce? (e.g. no barrel files, strict DDD layers)"
    Show detected patterns, ask if there's more.
 
-### Step 4: Write project.json
+### Step 4: Write kitt.json
 
-Show full project.json preview:
-> "Here's your project.json — confirming before I write it:"
+Show full kitt.json preview:
+> "Here's your kitt.json — confirming before I write it:"
 > {show full JSON}
 
-After confirmation, write to `.claude/config/project.json`.
+After confirmation, write to `.claude/config/kitt.json`.
 
 The JSON structure:
 ```json
 {
-  "$schema": ".claude/kitt/.claude/templates/project.json.schema",
+  "$schema": ".claude/kitt/.claude/templates/kitt.json.schema",
   "kitt": {
     "version": "{kitt version from ~/.claude/kitt/version}",
     "installedAt": "{ISO timestamp}"
@@ -359,7 +359,7 @@ Generate three files from scan data:
 Check completeness and report:
 
 ```
-Checking .claude/config/project.json...
+Checking .claude/config/kitt.json...
   ✅ taskManager: {type} — adapter found at .claude/adapters/task-manager/{type}/ADAPTER.md
   ✅ vcs: {type} — adapter found at .claude/adapters/vcs/{type}/ADAPTER.md
   ✅ build commands: test, typecheck, lint, build — all present
@@ -391,6 +391,6 @@ On INCOMPLETE:
 
 ## /setup update
 
-Re-run Step 3 (questions) and Step 4 (write project.json) only.
+Re-run Step 3 (questions) and Step 4 (write kitt.json) only.
 Do NOT overwrite context files.
 Useful when: task manager changes, VCS account changes, new agentDocs paths.

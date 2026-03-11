@@ -10,7 +10,7 @@ Skills call this interface — never platform CLIs directly.
 
 ## How Skills Use Adapters
 
-1. Read `.claude/config/project.json`
+1. Read `.claude/config/kitt.json`
 2. `type = project.taskManager.type`  → e.g. `"jira"`
 3. Load `.claude/adapters/task-manager/{type}/ADAPTER.md`
 4. Follow the adapter's instructions for the needed operation

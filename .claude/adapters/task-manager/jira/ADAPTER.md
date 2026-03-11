@@ -19,7 +19,7 @@ acli jira workitem view <any-valid-key> --output-format json 2>/dev/null \
 
 If not authenticated: `acli jira auth login`
 
-## Configuration (from project.json)
+## Configuration (from kitt.json)
 
 ```json
 {

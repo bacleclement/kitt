@@ -23,7 +23,7 @@ Always source `.env.local` before Bitbucket operations:
 source .env.local
 ```
 
-## Configuration (from project.json)
+## Configuration (from kitt.json)
 
 ```json
 {

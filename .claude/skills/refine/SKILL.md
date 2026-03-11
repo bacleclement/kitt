@@ -8,7 +8,7 @@ version: 2.0
 
 ## Before Starting
 
-1. Read `.claude/config/project.json`
+1. Read `.claude/config/kitt.json`
 2. Note `taskManager.type`, `vcs.type`, `build.*`, `project.agentDocs`, `commitFormat`
 3. Load task-manager adapter: `.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 4. Load VCS adapter: `.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
@@ -16,7 +16,7 @@ version: 2.0
 6. Check `project.agentDocs` paths for project-specific patterns
 
 Never hardcode: status names, account names, URLs, build commands.
-Always read these from `project.json` and the loaded adapters.
+Always read these from `kitt.json` and the loaded adapters.
 
 ## Kitt Personality
 

@@ -12,7 +12,7 @@ Acts as an architectural firewall before implementation. Validates that a refine
 
 ## Before Starting
 
-1. Read `.claude/config/project.json` → note `project.agentDocs`
+1. Read `.claude/config/kitt.json` → note `project.agentDocs`
 2. Read `.claude/context/tech-stack.md` — approved technologies, patterns
 3. Read `.claude/context/code-standards.md` — architecture rules, layer constraints
 4. Read the spec file: `{key}-spec.md`
@@ -51,7 +51,7 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 ### Phase 1: Load Context
 
 ```
-1. Read project.json → agentDocs paths
+1. Read kitt.json → agentDocs paths
 2. Read context/tech-stack.md + context/code-standards.md
 3. Read {key}-spec.md (functional requirements, access model, NFRs)
 4. For each path in project.agentDocs:

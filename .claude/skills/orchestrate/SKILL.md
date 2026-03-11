@@ -10,7 +10,7 @@ version: 6.0
 
 ## Before Starting
 
-1. Read `.claude/config/project.json`
+1. Read `.claude/config/kitt.json`
 2. Note `taskManager.type`, `vcs.type`, `build.*`, `project.agentDocs`, `commitFormat`
 3. Load task-manager adapter: `.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 4. Load VCS adapter: `.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
@@ -18,7 +18,7 @@ version: 6.0
 6. Check `project.agentDocs` paths for project-specific patterns
 
 Never hardcode: status names, account names, URLs, build commands.
-Always read these from `project.json` and the loaded adapters.
+Always read these from `kitt.json` and the loaded adapters.
 
 ## Kitt Personality
 
@@ -479,4 +479,4 @@ Never call platform CLIs directly (no hardcoded `acli`, `gh issue`, etc.).
 - Don't make assumptions - ask if uncertain
 - Don't route automatically - confirm with user first
 - Don't skip US refine for epics (the most common mistake!)
-- Don't hardcode Jira/GitHub/status names — use adapters and project.json
+- Don't hardcode Jira/GitHub/status names — use adapters and kitt.json

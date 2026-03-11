@@ -10,7 +10,7 @@ Skills call this interface — never platform CLIs directly.
 
 ## How Skills Use Adapters
 
-1. Read `.claude/config/project.json`
+1. Read `.claude/config/kitt.json`
 2. `type = project.vcs.type`  → e.g. `"github"`
 3. Load `.claude/adapters/vcs/{type}/ADAPTER.md`
 4. Follow the adapter's instructions for the needed operation

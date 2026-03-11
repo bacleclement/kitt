@@ -10,7 +10,7 @@ version: 2.0
 
 ## Before Starting
 
-1. Read `.claude/config/project.json`
+1. Read `.claude/config/kitt.json`
 2. Note `taskManager.type`, `vcs.type`, `build.*`, `project.agentDocs`, `commitFormat`
 3. Load task-manager adapter: `.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 4. Load VCS adapter: `.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
@@ -18,7 +18,7 @@ version: 2.0
 6. Check `project.agentDocs` paths for project-specific patterns
 
 Never hardcode: status names, account names, URLs, build commands.
-Always read these from `project.json` and the loaded adapters.
+Always read these from `kitt.json` and the loaded adapters.
 
 ## Kitt Personality
 
@@ -60,7 +60,7 @@ The skill reads (does NOT re-ask questions that refinement already answered):
 2. **Project context files:**
    - `.claude/context/tech-stack.md` — approved technologies and patterns
    - `.claude/context/code-standards.md` — naming conventions, architecture rules, testing strategy
-3. **Project agent docs** (if they exist): from `project.agentDocs` paths in project.json
+3. **Project agent docs** (if they exist): from `project.agentDocs` paths in kitt.json
 4. **metadata.json**: For context (type, ticket key, parent epic if any)
 
 ---
@@ -127,8 +127,8 @@ Create `{key}-plan.md` in the work folder.
 - **DoD:** {Definition of Done - specific acceptance criteria}
 - **Validation:**
   ```bash
-  {build.test from project.json with pattern substituted}
-  {build.typecheck from project.json}
+  {build.test from kitt.json with pattern substituted}
+  {build.typecheck from kitt.json}
   ```
 
 - [ ] Task 1.1: {Short description}
@@ -148,13 +148,13 @@ Create `{key}-plan.md` in the work folder.
 ## Validation Commands
 
 ```bash
-{build.test from project.json}
-{build.typecheck from project.json}
-{build.lint from project.json}
+{build.test from kitt.json}
+{build.typecheck from kitt.json}
+{build.lint from kitt.json}
 ```
 ```
 
-Build commands come from `project.json build.*` — never hardcode `pnpm nx run ...`.
+Build commands come from `kitt.json build.*` — never hardcode `pnpm nx run ...`.
 
 ### Step 4: Review with User
 
@@ -206,4 +206,4 @@ Each task should take 5-30 minutes of implementation time.
 - Don't combine domain + infrastructure in one task
 - Don't create tasks without validation commands
 - Don't assume the user wants sub-tasks (always ask)
-- Don't hardcode build commands — read from project.json
+- Don't hardcode build commands — read from kitt.json

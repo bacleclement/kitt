@@ -13,7 +13,7 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 - **Developer onboarding:** role-aware guide generated from your actual codebase
 - **Pluggable adapters:** Jira, Linear, GitHub Issues, Local / GitHub, GitLab, Bitbucket / Figma
 - **Smart setup wizard:** scans your repo, asks only what it can't infer
-- **Zero hardcoding:** all platform config lives in `project.json`
+- **Zero hardcoding:** all platform config lives in `kitt.json`
 
 ---
 
@@ -42,7 +42,7 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 Kitt installs **globally on your machine**. Each developer installs once. Updates are a single `git pull`. No submodules, no forced commits.
 
 What lives **in the project repo** (shared by the team):
-- `.claude/config/project.json` — task manager, VCS, build commands
+- `.claude/config/kitt.json` — task manager, VCS, build commands
 - `.claude/context/` — product knowledge, tech stack, code standards
 - `.claude/workspace/` — epics, features, bugs, refactors (work items)
 
@@ -53,9 +53,9 @@ What stays **on your machine only** (gitignored):
 
 ---
 
-## Project Configuration (`project.json`)
+## Project Configuration (`kitt.json`)
 
-`.claude/config/project.json` is the single source of truth for all platform config. Every skill reads it — nothing is hardcoded.
+`.claude/config/kitt.json` is the single source of truth for all platform config. Every skill reads it — nothing is hardcoded.
 
 ```json
 {
@@ -165,7 +165,7 @@ Open Claude Code in your project root and run:
 ```
 
 Kitt scans your repo, asks a few questions, and writes:
-- `.claude/config/project.json` — task manager, VCS, build commands
+- `.claude/config/kitt.json` — task manager, VCS, build commands
 - `.claude/context/` — product knowledge, tech stack, code standards
 
 **Commit these files.** They're the shared foundation every skill reads.
@@ -230,14 +230,14 @@ Symlinks pick up the new version instantly. Nothing to commit in your project.
     │   ├── task-manager/    # Jira, Linear, GitHub Issues, Local
     │   ├── vcs/             # GitHub, GitLab, Bitbucket
     │   └── design/          # Figma
-    └── templates/           # project.json schema, context templates
+    └── templates/           # kitt.json schema, context templates
 ```
 
 ## Per-Project Structure (after adoption)
 
 ```
 my-project/.claude/
-├── config/project.json      # ✅ committed — platform config (shared)
+├── config/kitt.json      # ✅ committed — platform config (shared)
 ├── context/                 # ✅ committed — product.md, tech-stack.md, code-standards.md
 ├── workspace/               # ✅ committed — epics/, features/, bugs/, refactors/
 ├── CLAUDE.md                # ✅ committed — project AI instructions
