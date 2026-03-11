@@ -1,5 +1,5 @@
 ---
-name: plan-building
+name: build-plan
 description: Use after refinement to create detailed technical implementation plans from spec.md - breaks down user stories into tasks, dependencies, technical decisions, and optional task manager tickets
 version: 2.0
 ---

@@ -58,7 +58,7 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 6. [ ] Read project context and agent docs (already done in Before Starting)
 ```
 
-If any prerequisite is missing, tell the user and route back to `workflow-orchestrator`.
+If any prerequisite is missing, tell the user and route back to `orchestrate`.
 
 ---
 
@@ -214,8 +214,8 @@ Edit plan.md directly. Do NOT create Task tool items.
 
 | Error | Action |
 |-------|--------|
-| No plan.md | Route back to `workflow-orchestrator` |
-| No spec or missing ## Architecture section | Route back to `workflow-orchestrator` |
+| No plan.md | Route back to `orchestrate` |
+| No spec or missing ## Architecture section | Route back to `orchestrate` |
 | Dirty git repo | Stash or commit changes first |
 | Tests fail after GREEN | Invoke `superpowers:systematic-debugging` |
 | Task manager auth failed | Follow adapter prerequisites section |

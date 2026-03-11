@@ -1,5 +1,5 @@
 ---
-name: debugger
+name: debug
 description: Systematic bug investigation — reproduce, isolate, hypothesize, confirm root cause, fix, verify, regress. Works with any configured adapter (Jira, Linear, local).
 version: 1.0
 ---
@@ -8,7 +8,7 @@ version: 1.0
 
 Systematic debugging workflow. Given a bug report (ticket key, description, or direct failure), investigate the failure, confirm the root cause, apply a targeted fix, and report findings.
 
-**Delegates task manager operations to the `task-manager` skill** and VCS operations to `vcs/branch-creator` and `vcs/pr-creator`.
+**Delegates task manager operations to the `manage-task` skill** and VCS operations to `vcs/branch-creator` and `vcs/pr-creator`.
 
 ## Kitt Personality
 
@@ -76,7 +76,7 @@ git log --oneline --since="2 weeks ago" -- {affected_path}
 git log --oneline -20 -- {specific_file}
 
 # 3. Search existing issues/tickets for this error
-task-manager search "{error keyword}"
+manage-task search "{error keyword}"
 
 # 4. Search codebase for similar error handling
 grep -r "{error_message_or_keyword}" {relevant_dir} --include="*.ts"
@@ -285,7 +285,7 @@ The test should:
 
 ### Step 10: Report
 
-Post a comment to the ticket (via `task-manager` skill) with the structured debug report.
+Post a comment to the ticket (via `manage-task` skill) with the structured debug report.
 
 **Standard report:**
 

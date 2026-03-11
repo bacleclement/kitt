@@ -1,5 +1,5 @@
 ---
-name: workflow-orchestrator
+name: orchestrate
 description: Simple workflow router - asks what you want to work on, analyzes it, and routes to the right next step. Handles epic → US workflow and flat feature workflow. Auto-syncs metadata on US completion.
 version: 6.0
 ---
@@ -148,13 +148,13 @@ Please tell me what you want to work on."
 3. Check if US subfolders exist (any subfolder with a *-spec.md inside)
 4. Route based on state:
 
-   - No epic spec → refinement (create epic-level spec)
+   - No epic spec → refine (create epic-level spec)
    - Has epic spec, NO US subfolders → Ask: "Extract USs from spec or import from task manager?"
      - Extract: Create US folders from spec
      - Import: use task-manager adapter search/read operations
    - Has US subfolders → Check each US state:
-     - US spec without ## Architecture section → architecture-alignment (on US)
-     - US spec with ## Architecture, no plan → plan-building (on US)
+     - US spec without ## Architecture section → align-architecture (on US)
+     - US spec with ## Architecture, no plan → build-plan (on US)
      - US has plan → implementor:implement (on US)
 ```
 
@@ -166,9 +166,9 @@ Please tell me what you want to work on."
 3. Check if architecture section exists in spec
 4. Check if plan exists
 5. Route to next missing step:
-   - No spec → refinement skill
-   - No architecture → architecture-alignment skill
-   - No plan → plan-building skill
+   - No spec → refine skill
+   - No architecture → align-architecture skill
+   - No plan → build-plan skill
    - Has plan → implementor:implement
 ```
 
@@ -178,21 +178,21 @@ Please tell me what you want to work on."
 Ask user: "How do you want to approach this?"
 
 Options:
-  A) Investigate first (unknown root cause) → debugger skill
+  A) Investigate first (unknown root cause) → debug skill
   B) Quick fix (root cause already known) → Create minimal plan → implementor:implement
   C) Complex fix (multi-step, needs architecture) → Follow feature workflow with light architecture validation
 
 If A (investigate):
-  Invoke: Skill tool with skill="debugger"
-  The debugger will: reproduce → locate → hypothesize → confirm root cause → fix → verify → regress
-  After fix is confirmed, debugger calls vcs/branch-creator and vcs/pr-creator
+  Invoke: Skill tool with skill="debug"
+  The debug skill will: reproduce → locate → hypothesize → confirm root cause → fix → verify → regress
+  After fix is confirmed, debug calls vcs/branch-creator and vcs/pr-creator
 
 If B (quick fix):
   Ask: "Describe the fix in one sentence."
   Create minimal plan → implementor:implement
 
 If C (complex):
-  Follow feature workflow: refinement → architecture-alignment → plan-building → implementor
+  Follow feature workflow: refine → align-architecture → build-plan → implementor
 ```
 
 **For Refactors:**
@@ -329,7 +329,7 @@ function routeEpic(epicKey: string) {
   const metadata = readJson(`${epicPath}/metadata.json`);
 
   const hasSpec = fileExists(specPath);
-  if (!hasSpec) return 'refinement';
+  if (!hasSpec) return 'refine';
 
   const usSubfolders = getSubfoldersWithSpecs(epicPath);
 
@@ -365,8 +365,8 @@ function routeEpic(epicKey: string) {
     const usEntry = metadata.children.find((s) => s.key === usKey);
     if (usEntry?.status === 'completed') continue;
 
-    if (!hasArch) return `architecture-alignment (on ${usKey})`;
-    if (!hasPlan) return `plan-building (on ${usKey})`;
+    if (!hasArch) return `align-architecture (on ${usKey})`;
+    if (!hasPlan) return `build-plan (on ${usKey})`;
     return `implementor:implement (on ${usKey})`;
   }
 
@@ -395,12 +395,12 @@ function routeFeature(featureKey: string, workType: "feature" | "bug" | "refacto
   const hasArch = spec.includes('## Architecture');
   const hasPlan = fileExists(planPath);
 
-  if (!hasSpec) return 'refinement';
+  if (!hasSpec) return 'refine';
   if (!hasArch) {
     const mode = workType === 'refactor' ? 'strict' : 'standard';
-    return `architecture-alignment --mode=${mode}`;
+    return `align-architecture --mode=${mode}`;
   }
-  if (!hasPlan) return 'plan-building';
+  if (!hasPlan) return 'build-plan';
   return 'implementor:implement';
 }
 ```
@@ -422,7 +422,7 @@ Current state:
 
 Next step: Architecture validation
 
-Should I invoke the architecture-alignment skill?"
+Should I invoke the align-architecture skill?"
 ```
 
 **Good (epic with USs in progress):**
@@ -443,11 +443,11 @@ Next: Continue HUB-30002 or start HUB-30003?"
 
 | Skill | When Called | How to Invoke |
 |-------|-------------|---------------|
-| `refinement` | No spec exists OR epic spec exists but no US folders | `Skill tool with skill="refinement"` |
-| `architecture-alignment` | Spec exists, no architecture | `Skill tool with skill="architecture-alignment"` |
-| `plan-building` | Spec + arch, no plan | `Skill tool with skill="plan-building"` |
+| `refine` | No spec exists OR epic spec exists but no US folders | `Skill tool with skill="refine"` |
+| `align-architecture` | Spec exists, no architecture | `Skill tool with skill="align-architecture"` |
+| `build-plan` | Spec + arch, no plan | `Skill tool with skill="build-plan"` |
 | `implementor` | Plan exists, ready to implement | `Skill tool with skill="implementor"` |
-| `debugger` | Bug with unknown root cause — investigate first | `Skill tool with skill="debugger"` |
+| `debug` | Bug with unknown root cause — investigate first | `Skill tool with skill="debug"` |
 
 **Routing means invoking the Skill tool.** When you determine the next step, use `Skill tool with skill="{skill-name}"` to invoke it. Confirm with the user before invoking.
 
@@ -478,5 +478,5 @@ Never call platform CLIs directly (no hardcoded `acli`, `gh issue`, etc.).
 - Don't show programmatic output (`[✓] Spec: YES`)
 - Don't make assumptions - ask if uncertain
 - Don't route automatically - confirm with user first
-- Don't skip US refinement for epics (the most common mistake!)
+- Don't skip US refine for epics (the most common mistake!)
 - Don't hardcode Jira/GitHub/status names — use adapters and project.json

@@ -1,5 +1,5 @@
 ---
-name: architecture-alignment
+name: align-architecture
 description: Validates refined feature against project architecture. Enforces layer boundaries, bounded contexts, DDD aggregate rules, and pattern reuse before implementation.
 version: 2.0
 ---

@@ -1,5 +1,5 @@
 ---
-name: refinement
+name: refine
 description: Feature refinement process. Validates that a feature is ready for architecture validation and implementation. Supports GENERATE and VALIDATE modes. Does not mutate task manager without explicit confirmation.
 version: 2.0
 ---
