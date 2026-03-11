@@ -153,7 +153,7 @@ Please tell me what you want to work on."
      - Extract: Create US folders from spec
      - Import: use task-manager adapter search/read operations
    - Has US subfolders → Check each US state:
-     - US spec without ## Architecture section → align-architecture (on US)
+     - US spec without ## Architecture section → align (on US)
      - US spec with ## Architecture, no plan → build-plan (on US)
      - US has plan → implementor:implement (on US)
 ```
@@ -167,7 +167,7 @@ Please tell me what you want to work on."
 4. Check if plan exists
 5. Route to next missing step:
    - No spec → refine skill
-   - No architecture → align-architecture skill
+   - No architecture → align skill
    - No plan → build-plan skill
    - Has plan → implementor:implement
 ```
@@ -192,7 +192,7 @@ If B (quick fix):
   Create minimal plan → implementor:implement
 
 If C (complex):
-  Follow feature workflow: refine → align-architecture → build-plan → implementor
+  Follow feature workflow: refine → align → build-plan → implementor
 ```
 
 **For Refactors:**
@@ -365,7 +365,7 @@ function routeEpic(epicKey: string) {
     const usEntry = metadata.children.find((s) => s.key === usKey);
     if (usEntry?.status === 'completed') continue;
 
-    if (!hasArch) return `align-architecture (on ${usKey})`;
+    if (!hasArch) return `align (on ${usKey})`;
     if (!hasPlan) return `build-plan (on ${usKey})`;
     return `implementor:implement (on ${usKey})`;
   }
@@ -398,7 +398,7 @@ function routeFeature(featureKey: string, workType: "feature" | "bug" | "refacto
   if (!hasSpec) return 'refine';
   if (!hasArch) {
     const mode = workType === 'refactor' ? 'strict' : 'standard';
-    return `align-architecture --mode=${mode}`;
+    return `align --mode=${mode}`;
   }
   if (!hasPlan) return 'build-plan';
   return 'implementor:implement';
@@ -422,7 +422,7 @@ Current state:
 
 Next step: Architecture validation
 
-Should I invoke the align-architecture skill?"
+Should I invoke the align skill?"
 ```
 
 **Good (epic with USs in progress):**
@@ -444,7 +444,7 @@ Next: Continue HUB-30002 or start HUB-30003?"
 | Skill | When Called | How to Invoke |
 |-------|-------------|---------------|
 | `refine` | No spec exists OR epic spec exists but no US folders | `Skill tool with skill="refine"` |
-| `align-architecture` | Spec exists, no architecture | `Skill tool with skill="align-architecture"` |
+| `align` | Spec exists, no architecture | `Skill tool with skill="align"` |
 | `build-plan` | Spec + arch, no plan | `Skill tool with skill="build-plan"` |
 | `implementor` | Plan exists, ready to implement | `Skill tool with skill="implementor"` |
 | `debug` | Bug with unknown root cause — investigate first | `Skill tool with skill="debug"` |
