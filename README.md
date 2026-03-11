@@ -53,39 +53,27 @@ What stays **on your machine only** (gitignored):
 
 ## Adopting Kitt (First Person on a Project)
 
-### Step 1: Install (30 seconds)
-
-From your **project root**:
+### Step 1: Install kitt on your machine (once)
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/bacleclement/kitt/main/bin/install.sh)
+git clone https://github.com/bacleclement/kitt.git ~/.claude/kitt
 ```
 
-This installs kitt to `~/.claude/kitt/`, creates local symlinks, and scaffolds the project structure.
+### Step 2: Configure your project
 
-### Step 2: Configure (5 minutes)
-
-Open Claude Code in your project and run:
+Open Claude Code in your project root and run:
 
 ```
 /setup
 ```
 
-Kitt scans your repo and guides you through configuration. When done, it writes:
-- `.claude/config/project.json` — platform config (task manager, VCS, build commands)
-- `.claude/context/product.md` — what the product is
-- `.claude/context/tech-stack.md` — frameworks and infrastructure
-- `.claude/context/code-standards.md` — naming, imports, patterns
+Kitt scans your repo, asks a few questions, and writes:
+- `.claude/config/project.json` — task manager, VCS, build commands
+- `.claude/context/` — product knowledge, tech stack, code standards
 
 **Commit these files.** They're the shared foundation every skill reads.
 
-### Step 3: Validate
-
-```
-/setup validate
-```
-
-### Step 4: Work
+### Step 3: Work
 
 ```
 /orchestrate
@@ -95,37 +83,29 @@ Kitt scans your repo and guides you through configuration. When done, it writes:
 
 ## New Team Member? (Project Already Configured)
 
-### Step 1: Install Kitt on your machine (once)
+### Step 1: Install kitt on your machine (once)
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/bacleclement/kitt/main/bin/install.sh)
+git clone https://github.com/bacleclement/kitt.git ~/.claude/kitt
 ```
 
-Run this from the cloned project root. Kitt detects that `project.json` already exists, switches to **join mode**, and skips the wizard entirely:
-- Installs `~/.claude/kitt/` if not already present
-- Recreates local symlinks
-- Verifies your credentials (task manager, VCS)
-- Hands off to `/onboard` for your personalized guide
-
-### Step 2: Onboard
+### Step 2: Open Claude Code and run
 
 ```
-/setup   → join mode → /onboard
+/setup
 ```
 
-No wizard. No re-configuration. No commits needed. Done in under a minute.
+Kitt detects the existing config and switches to **join mode** — no wizard, no re-configuration. It recreates your local symlinks and hands off to `/onboard` for your personalized guide.
 
 ---
 
 ## Updating Kitt
 
-On any machine:
-
 ```bash
 git -C ~/.claude/kitt pull
 ```
 
-That's it. Symlinks pick up the new version instantly. Nothing to commit in your project.
+Symlinks pick up the new version instantly. Nothing to commit in your project.
 
 ---
 
