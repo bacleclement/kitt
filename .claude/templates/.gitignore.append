@@ -1,3 +1,7 @@
-# Kitt — secrets only, everything else committed
+# Kitt — machine-local symlinks (absolute paths, never commit)
+.claude/skills
+.claude/adapters
+
+# Kitt — local secrets
 .env.local
 .env.*.local

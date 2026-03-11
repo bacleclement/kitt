@@ -35,17 +35,33 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 
 ---
 
-## Adopting Kitt
+## How It Works
+
+Kitt installs **globally on your machine** (like superpowers or conductor) — not inside the project repo. Each developer installs once. Updates are a single `git pull`. No submodules, no forced commits.
+
+What lives **in the project repo** (shared by the team):
+- `.claude/config/project.json` — task manager, VCS, build commands
+- `.claude/context/` — product knowledge, tech stack, code standards
+- `.claude/conductor/` — epics, features, bugs, refactors (work items)
+
+What stays **on your machine only** (gitignored):
+- `~/.claude/kitt/` — the kitt installation
+- `.claude/skills → ~/.claude/kitt/...` — symlink
+- `.claude/adapters → ~/.claude/kitt/...` — symlink
+
+---
+
+## Adopting Kitt (First Person on a Project)
 
 ### Step 1: Install (30 seconds)
 
 From your **project root**:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/bacleclement/kitt/main/bin/kitt-setup.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/bacleclement/kitt/main/bin/install.sh)
 ```
 
-This adds kitt as a git submodule, creates symlinks, and scaffolds the conductor folders.
+This installs kitt to `~/.claude/kitt/`, creates local symlinks, and scaffolds the project structure.
 
 ### Step 2: Configure (5 minutes)
 
@@ -79,29 +95,48 @@ Kitt scans your repo and guides you through configuration. When done, it writes:
 
 ## New Team Member? (Project Already Configured)
 
-Clone the repo (kitt comes with it via submodule), then in Claude Code:
+### Step 1: Install Kitt on your machine (once)
 
-```
-/setup
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/bacleclement/kitt/main/bin/install.sh)
 ```
 
-Kitt detects that `project.json` already exists and switches to **join mode**:
-- Initializes the git submodule (`git submodule update --init --recursive`)
-- Recreates any missing symlinks
+Run this from the cloned project root. Kitt detects that `project.json` already exists, switches to **join mode**, and skips the wizard entirely:
+- Installs `~/.claude/kitt/` if not already present
+- Recreates local symlinks
 - Verifies your credentials (task manager, VCS)
 - Hands off to `/onboard` for your personalized guide
 
-No wizard. No re-configuration. Done in under a minute.
+### Step 2: Onboard
+
+```
+/setup   → join mode → /onboard
+```
+
+No wizard. No re-configuration. No commits needed. Done in under a minute.
+
+---
+
+## Updating Kitt
+
+On any machine:
+
+```bash
+git -C ~/.claude/kitt pull
+```
+
+That's it. Symlinks pick up the new version instantly. Nothing to commit in your project.
 
 ---
 
 ## Kitt Structure
 
 ```
-kitt/
-├── bin/kitt-setup.sh           # Phase 1: submodule + symlinks
+~/.claude/kitt/              # installed globally, never in your project repo
+├── bin/install.sh           # curl-able installer
+├── version
 └── .claude/
-    ├── skills/                 # Workflow skills
+    ├── skills/              # Workflow skills
     │   ├── setup/
     │   ├── onboard/
     │   ├── orchestrate/
@@ -114,34 +149,23 @@ kitt/
     │   └── vcs/
     │       ├── branch-creator/
     │       └── pr-creator/
-    ├── adapters/               # Platform adapters
-    │   ├── task-manager/       # Jira, Linear, GitHub Issues, Local
-    │   ├── vcs/                # GitHub, GitLab, Bitbucket
-    │   └── design/             # Figma
-    └── templates/              # project.json schema, context templates
+    ├── adapters/             # Platform adapters
+    │   ├── task-manager/    # Jira, Linear, GitHub Issues, Local
+    │   ├── vcs/             # GitHub, GitLab, Bitbucket
+    │   └── design/          # Figma
+    └── templates/           # project.json schema, context templates
 ```
 
 ## Per-Project Structure (after adoption)
 
 ```
 my-project/.claude/
-├── kitt/                       # git submodule (this repo)
-├── adapters -> kitt/.claude/adapters/
-├── config/project.json         # platform config (committed, shared)
-├── context/                    # product.md, tech-stack.md, code-standards.md (committed, shared)
-├── skills/                     # project-specific skills (if any) + kitt skills via symlink
-└── conductor/                  # epics/, features/, bugs/, refactors/ (work items)
-```
-
----
-
-## Update Kitt
-
-```bash
-cd my-project
-git submodule update --remote .claude/kitt
-git add .claude/kitt
-git commit -m "chore: update kitt to latest"
+├── config/project.json      # ✅ committed — platform config (shared)
+├── context/                 # ✅ committed — product.md, tech-stack.md, code-standards.md
+├── conductor/               # ✅ committed — epics/, features/, bugs/, refactors/
+├── CLAUDE.md                # ✅ committed — project AI instructions
+├── skills  →  ~/.claude/kitt/.claude/skills/    # gitignored symlink (machine-local)
+└── adapters → ~/.claude/kitt/.claude/adapters/  # gitignored symlink (machine-local)
 ```
 
 ---

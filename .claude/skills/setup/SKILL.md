@@ -59,27 +59,27 @@ project.json exists?
 For developers joining a project that already has kitt set up.
 The config is already in the repo — don't touch it.
 
-### Step 1: Init submodule
+### Step 1: Ensure kitt is installed globally
+
+Check if `~/.claude/kitt/` exists. If not, install it:
 
 ```bash
-git submodule update --init --recursive
+git clone https://github.com/bacleclement/kitt.git ~/.claude/kitt
 ```
 
-If this fails:
-> "Submodule init failed. Check your network connection and that `.gitmodules` is present."
-
-### Step 2: Verify symlinks
-
-```
-Check .claude/adapters → .claude/kitt/.claude/adapters/
-Check .claude/conductor/ has epics/, features/, bugs/, refactors/
-```
-
-If symlinks are missing (can happen on Windows or after certain git operations):
+If it exists but may be outdated:
 
 ```bash
-# Recreate missing symlinks
-ln -sf kitt/.claude/adapters .claude/adapters
+git -C ~/.claude/kitt pull
+```
+
+### Step 2: Recreate machine-local symlinks
+
+Symlinks are not committed to the repo — recreate them pointing to the local kitt install:
+
+```bash
+ln -snf ~/.claude/kitt/.claude/skills   .claude/skills
+ln -snf ~/.claude/kitt/.claude/adapters .claude/adapters
 mkdir -p .claude/conductor/epics .claude/conductor/features .claude/conductor/bugs .claude/conductor/refactors
 ```
 
@@ -112,14 +112,15 @@ Run /onboard to get your personalized onboarding guide."
 ### Step 1: Check kitt installation
 
 ```
-Verify .claude/kitt/ exists (submodule)
-Verify .claude/skills symlink points to .claude/kitt/.claude/skills/
-Verify .claude/adapters symlink points to .claude/kitt/.claude/adapters/
+Verify ~/.claude/kitt/ exists (run `git clone https://github.com/bacleclement/kitt.git ~/.claude/kitt` if missing)
+Verify .claude/skills symlink points to ~/.claude/kitt/.claude/skills/
+Verify .claude/adapters symlink points to ~/.claude/kitt/.claude/adapters/
 Verify .claude/conductor/ has all four subfolders
 ```
 
 If any missing:
-> "Kitt isn't fully installed yet. Run `bin/kitt-setup.sh` first, then come back."
+> "Kitt isn't fully installed yet. Run the installer first:
+> `bash <(curl -fsSL https://raw.githubusercontent.com/bacleclement/kitt/main/bin/install.sh)`"
 
 ### Step 2: Deep repo scan
 
@@ -213,7 +214,7 @@ The JSON structure:
 {
   "$schema": ".claude/kitt/.claude/templates/project.json.schema",
   "kitt": {
-    "version": "{kitt version from .claude/kitt/version}",
+    "version": "{kitt version from ~/.claude/kitt/version}",
     "installedAt": "{ISO timestamp}"
   },
   "project": {
