@@ -39,8 +39,10 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 
 ### Step 1: Install (30 seconds)
 
+From your **project root**:
+
 ```bash
-bash /path/to/kitt/bin/kitt-setup.sh
+bash <(curl -fsSL https://raw.githubusercontent.com/bacleclement/kitt/main/bin/kitt-setup.sh)
 ```
 
 This adds kitt as a git submodule, creates symlinks, and scaffolds the conductor folders.
@@ -77,7 +79,7 @@ Kitt scans your repo and guides you through configuration. When done, it writes:
 
 ## New Team Member? (Project Already Configured)
 
-Clone the repo, then run the same command:
+Clone the repo (kitt comes with it via submodule), then in Claude Code:
 
 ```
 /setup
