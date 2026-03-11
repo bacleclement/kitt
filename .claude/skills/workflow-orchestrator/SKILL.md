@@ -175,15 +175,24 @@ Please tell me what you want to work on."
 **For Bugs:**
 
 ```
-Ask user: "Is this a quick fix or needs analysis?"
+Ask user: "How do you want to approach this?"
 
-If quick:
-  Ask: "Skip planning and implement directly?"
-  If yes → Skip workflow, user implements manually
-  If no → Create minimal plan → implementor:implement
+Options:
+  A) Investigate first (unknown root cause) → debugger skill
+  B) Quick fix (root cause already known) → Create minimal plan → implementor:implement
+  C) Complex fix (multi-step, needs architecture) → Follow feature workflow with light architecture validation
 
-If needs analysis:
-  Follow feature workflow with light architecture validation
+If A (investigate):
+  Invoke: Skill tool with skill="debugger"
+  The debugger will: reproduce → locate → hypothesize → confirm root cause → fix → verify → regress
+  After fix is confirmed, debugger calls vcs/branch-creator and vcs/pr-creator
+
+If B (quick fix):
+  Ask: "Describe the fix in one sentence."
+  Create minimal plan → implementor:implement
+
+If C (complex):
+  Follow feature workflow: refinement → architecture-alignment → plan-building → implementor
 ```
 
 **For Refactors:**
@@ -438,6 +447,7 @@ Next: Continue HUB-30002 or start HUB-30003?"
 | `architecture-alignment` | Spec exists, no architecture | `Skill tool with skill="architecture-alignment"` |
 | `plan-building` | Spec + arch, no plan | `Skill tool with skill="plan-building"` |
 | `implementor` | Plan exists, ready to implement | `Skill tool with skill="implementor"` |
+| `debugger` | Bug with unknown root cause — investigate first | `Skill tool with skill="debugger"` |
 
 **Routing means invoking the Skill tool.** When you determine the next step, use `Skill tool with skill="{skill-name}"` to invoke it. Confirm with the user before invoking.
 
