@@ -6,12 +6,12 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 
 ---
 
-## 🏎️ What Kitt Gives You
+## What Kitt Gives You
 
-- **Full workflow pipeline:** refine → align → build-plan → implement
+- **Full workflow pipeline:** brainstorm → refine → align → build-plan → implement
 - **Systematic debugging:** reproduce → locate → root cause → fix → regress
 - **Developer onboarding:** role-aware guide generated from your actual codebase
-- **Pluggable adapters:** Jira, Linear, GitHub Issues, Local / GitHub, GitLab, Bitbucket / Figma
+- **Pluggable adapters:** Jira, Linear, GitHub Issues, Local / GitHub, GitLab, Bitbucket
 - **Smart setup wizard:** scans your repo, asks only what it can't infer
 - **Zero hardcoding:** all platform config lives in `kitt.json`
 
@@ -23,8 +23,9 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 |-------|---------|
 | `setup` | First-time config wizard — or join mode for new team members |
 | `onboard` | Personalized onboarding guide (role interview → scoped codebase tour) |
-| `orchestrate` | Routes work to the right next step |
-| `refine` | Constraint discovery (functional, access, non-functional) |
+| `brainstorm` | Explore raw ideas → design.md before any spec or ticket |
+| `orchestrate` | Routes work to the right next step based on current state |
+| `refine` | Constraint discovery: functional, access, NFRs. Epic mode generates spec with US breakdown |
 | `align` | Validates spec against DDD / Clean Architecture |
 | `build-plan` | Breaks spec into implementable TDD tasks |
 | `implementor` | Implements tasks with TDD, one commit per task |
@@ -37,16 +38,123 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 
 ---
 
+## Workflow
+
+All work starts with `/orchestrate`. It detects the current state and routes to the right skill.
+
+### Use Case 1 — Raw idea (no ticket, no spec)
+
+You have an idea but haven't decided what to build yet.
+
+```mermaid
+flowchart TD
+    A([Raw idea]) --> B[/orchestrate/]
+    B --> C{Needs exploration?}
+    C -- yes --> D[/brainstorm/\nCollaborative dialogue\nPropose 2-3 approaches\nWrite design.md]
+    C -- no, scope clear --> E{Epic or Feature?}
+    D --> E
+    E -- Epic --> F[/refine — EPIC MODE/\nSpec + User Stories breakdown]
+    E -- Feature M --> G[/build-plan/]
+    E -- Feature S --> H[/implementor/]
+    F --> I[Extract US subfolders]
+    I --> J[/refine — US MODE/\nUS spec + ACs + NFRs]
+    J --> K[/align/\nArch validation]
+    K --> G
+    G --> L[/implementor/\nTDD · one commit per task]
+    L --> M([PR · Done])
+```
+
+---
+
+### Use Case 2 — PM creates a ticket (epic with or without US)
+
+A product manager creates an epic in your task manager. You start from the ticket.
+
+```mermaid
+flowchart TD
+    A([Ticket key]) --> B[/orchestrate/\nReads ticket via adapter]
+    B --> C{Epic or Feature?}
+    C -- Epic, no US yet --> D[/refine — EPIC MODE/\nSpec + User Stories breakdown]
+    C -- Epic, US exist in TM --> E[Import US from task manager]
+    D --> F[Extract US subfolders]
+    E --> F
+    F --> G[For each US]
+    G --> H[/refine — US MODE/\nUS spec + ACs + NFRs]
+    H --> I[/align/\nArch validation]
+    I --> J[/build-plan/\nImplementation plan]
+    J --> K[/implementor/\nTDD · one commit per task]
+    K --> L{More US?}
+    L -- yes --> G
+    L -- no --> M([PR · Epic done])
+```
+
+---
+
+### Use Case 3 — Known feature or refactor
+
+You know what to build. Scope is clear enough to skip brainstorming.
+
+```mermaid
+flowchart TD
+    A([Known scope]) --> B[/orchestrate/\nAsk size]
+    B --> C{Size?}
+    C -- S: 1-3 files, obvious --> D[/implementor/\nMinimal inline plan]
+    C -- M: clear scope, 2 days --> E[/build-plan/]
+    C -- L: unclear or risky --> F[/refine/\nConstraint discovery]
+    F --> G[/align/\nArch validation]
+    G --> E
+    E --> H[/implementor/\nTDD · one commit per task]
+    H --> I([PR · Done])
+```
+
+---
+
+### Use Case 4 — Bug
+
+```mermaid
+flowchart TD
+    A([Bug reported]) --> B[/orchestrate/]
+    B --> C{Root cause known?}
+    C -- no --> D[/debug/\nReproduce → isolate\n→ root cause → fix → regress]
+    C -- yes, quick --> E[/implementor/\nMinimal plan inline]
+    C -- yes, complex --> F[/build-plan/]
+    D --> G([Fix committed · PR])
+    E --> G
+    F --> H[/implementor/]
+    H --> G
+```
+
+---
+
+### Epic Workspace Structure
+
+Epics use a two-level structure: epic spec at the top, one subfolder per user story.
+
+```
+.claude/workspace/epics/{key}/
+├── metadata.json              # status, children list
+├── {key}-design.md            # from brainstorm (optional)
+├── {key}-spec.md              # from refine — contains ## User Stories
+├── {us-key}/
+│   ├── {us-key}-spec.md       # from refine US mode (## Architecture added by align)
+│   └── {us-key}-plan.md       # from build-plan
+└── {us-key-2}/
+    ├── {us-key-2}-spec.md
+    └── {us-key-2}-plan.md
+```
+
+---
+
 ## How It Works
 
 Kitt installs **globally on your machine**. Each developer installs once. Updates are a single `git pull`. No submodules, no forced commits.
 
-What lives **in the project repo** (shared by the team):
+**Shared in the project repo:**
 - `.claude/config/kitt.json` — task manager, VCS, build commands
 - `.claude/context/` — product knowledge, tech stack, code standards
 - `.claude/workspace/` — epics, features, bugs, refactors (work items)
 
-What stays **on your machine only** (gitignored):
+**Machine-local only (gitignored):**
 - `~/.claude/kitt/` — the kitt installation
 - `.claude/skills → ~/.claude/kitt/...` — symlink
 - `.claude/adapters → ~/.claude/kitt/...` — symlink
@@ -67,13 +175,13 @@ What stays **on your machine only** (gitignored):
     "type": "jira",
     "config": {
       "instanceUrl": "https://my-team.atlassian.net",
-      "projectKey": "HUB",
+      "projectKey": "PROJ",
       "statuses": {
-        "todo":       "À faire",
-        "inProgress": "En cours",
-        "review":     "Revue en cours",
-        "done":       "Terminé(e)",
-        "blocked":    "Bloqué(e)"
+        "todo":       "To Do",
+        "inProgress": "In Progress",
+        "review":     "In Review",
+        "done":       "Done",
+        "blocked":    "Blocked"
       }
     }
   },
@@ -96,12 +204,6 @@ What stays **on your machine only** (gitignored):
     "pattern":    "{type}({ticket}): {description}",
     "types":      ["feat", "fix", "refactor", "test", "docs", "chore"],
     "coAuthored": false
-  },
-  "design": {
-    "type": "figma",
-    "config": {
-      "defaultFileKey": "abc123XYZ"
-    }
   }
 }
 ```
@@ -114,35 +216,24 @@ What stays **on your machine only** (gitignored):
 | `taskManager.type` | ✅ | `jira` · `linear` · `github-issues` · `local` · `none` |
 | `taskManager.config.statuses` | ✅ | Status names as they appear in your task manager |
 | `vcs.type` | ✅ | `github` · `gitlab` · `bitbucket` |
-| `vcs.config.account` | ✅ | GitHub/GitLab username for PR creation |
+| `vcs.config.account` | ✅ | Username for PR creation |
 | `vcs.config.baseBranch` | ✅ | Default: `main` |
 | `build.*` | ✅ | Use `{project}` and `{pattern}` as placeholders |
 | `commitFormat.pattern` | ✅ | Use `{type}`, `{ticket}`, `{description}` |
 | `commitFormat.coAuthored` | — | Add `Co-Authored-By` to commit body. Default: `false` |
-| `design.type` | — | `figma` · `none` |
-| `design.config.defaultFileKey` | — | Default Figma file key (from URL) |
 
-### Task Manager: `local` (no external tool)
-
-When `taskManager.type` is `local`, work items are stored as files in `.claude/workspace/`. No Jira, no Linear, no account required.
+### No external task manager? Use `local`
 
 ```json
 {
   "taskManager": {
     "type": "local",
-    "config": {
-      "projectKey": "FEAT",
-      "statuses": {
-        "todo":       "pending",
-        "inProgress": "in_progress",
-        "review":     "in_review",
-        "done":       "completed",
-        "blocked":    "blocked"
-      }
-    }
+    "config": {}
   }
 }
 ```
+
+Work items live in `.claude/workspace/` as files. No account, no API keys required.
 
 ---
 
@@ -214,11 +305,14 @@ Symlinks pick up the new version instantly. Nothing to commit in your project.
     ├── skills/              # Workflow skills
     │   ├── setup/
     │   ├── onboard/
+    │   ├── brainstorm/
     │   ├── orchestrate/
     │   ├── refine/
     │   ├── align/
     │   ├── build-plan/
     │   ├── implementor/
+    │   ├── tdd/
+    │   ├── verify/
     │   ├── debug/
     │   ├── manage-task/
     │   └── vcs/
@@ -248,7 +342,7 @@ my-project/.claude/
 
 ### Project-Specific Skills
 
-Kitt provides generic skills. For domain-specific workflows (e.g. a custom debugger, a data migration helper), add them to `.claude/project-skills/`:
+Kitt provides generic skills. For domain-specific workflows, add them to `.claude/project-skills/`:
 
 ```
 .claude/project-skills/
@@ -256,7 +350,7 @@ Kitt provides generic skills. For domain-specific workflows (e.g. a custom debug
     └── SKILL.md
 ```
 
-Document them in `CLAUDE.md` so Claude knows they exist and how to invoke them:
+Document them in `CLAUDE.md` so Claude knows they exist:
 
 ```markdown
 ## Project-Specific Skills
