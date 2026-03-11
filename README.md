@@ -50,7 +50,7 @@ raw idea
        ├─ needs exploration? → /brainstorm → design.md → /orchestrate
        └─ scope clear?
             ├─ Epic  → /refine (EPIC MODE) → spec + ## User Stories
-            │            └─ for each US: /refine → /align → /build-plan → /implementor → PR
+            │            └─ for each US: /align → /build-plan → /implementor → PR
             ├─ Feature M  → /build-plan → /implementor → PR
             └─ Feature S  → /implementor → PR
 ```
@@ -62,7 +62,7 @@ ticket key
   └─ /orchestrate (reads ticket via adapter)
        ├─ Epic, no US yet  → /refine (EPIC MODE) → extract US subfolders
        └─ Epic, US in TM   → import US from task manager
-            └─ for each US: /refine → /align → /build-plan → /implementor → PR
+            └─ for each US: /align → /build-plan → /implementor → PR
 ```
 
 ### Use Case 3 — Known feature or refactor
