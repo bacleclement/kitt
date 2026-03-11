@@ -8,12 +8,12 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 
 ## What Kitt Gives You
 
-- **Full workflow pipeline:** refine → align → build-plan → implement
-- **Systematic debugging:** reproduce → locate → root cause → fix → regress
-- **Developer onboarding:** role-aware guide generated from your actual codebase
-- **Pluggable adapters:** Jira, Linear, GitHub Issues, Local / GitHub, GitLab, Bitbucket / Figma
-- **Smart setup wizard:** scans your repo, asks only what it can't infer
-- **Zero hardcoding:** all platform config lives in `project.json`
+- 🚗 **Full workflow pipeline:** refine → align → build-plan → implement
+- 🚗 **Systematic debugging:** reproduce → locate → root cause → fix → regress
+- 🚗 **Developer onboarding:** role-aware guide generated from your actual codebase
+- 🚗 **Pluggable adapters:** Jira, Linear, GitHub Issues, Local / GitHub, GitLab, Bitbucket / Figma
+- 🚗 **Smart setup wizard:** scans your repo, asks only what it can't infer
+- 🚗 **Zero hardcoding:** all platform config lives in `project.json`
 
 ---
 
