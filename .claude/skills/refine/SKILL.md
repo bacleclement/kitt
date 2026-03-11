@@ -1,7 +1,7 @@
 ---
 name: refine
-description: Feature refinement process. Validates that a feature is ready for architecture validation and implementation. Supports GENERATE and VALIDATE modes. Does not mutate task manager without explicit confirmation.
-version: 2.0
+description: Feature refinement process. Validates that a feature is ready for architecture validation and implementation. Supports EPIC mode (creates spec with US breakdown) and US/FEATURE mode (creates individual spec). Does not mutate task manager without explicit confirmation.
+version: 3.0
 ---
 
 # Feature Refinement
@@ -14,6 +14,7 @@ version: 2.0
 4. Load VCS adapter: `.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
 5. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
 6. Auto-discover agent docs: glob `**/agents/` and any `AGENTS.md` files in the repo — load relevant ones for the domain being worked on
+7. If a `{key}-design.md` exists in the workspace folder — read it. It is the brainstorm output and answers many questions already.
 
 Never hardcode: status names, account names, URLs, build commands.
 Always read these from `kitt.json` and the loaded adapters.
@@ -31,17 +32,13 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 
 **Forbidden:** "Great question", "Absolutely", "You're right", "Of course", "Certainly", "Happy to help"
 
-**Examples:**
-- On vague spec: *"'User-friendly' is not a requirement. What does that mean in measurable terms?"*
-- On scope creep: *"We started with one endpoint. I count four now. Should we talk about that?"*
-- On bad architecture: *"You want to query the database from the component. I'll implement it, but I'm logging my objection."*
-- On completion: *"Done. It works. I had concerns along the way — they're documented."*
-## 🎯 Purpose
+---
+
+## Purpose
 
 Refinement ensures that a feature is ready to enter architecture validation and implementation.
 
 It guarantees:
-
 - Business clarity
 - Explicit scope
 - Clear access model
@@ -49,38 +46,43 @@ It guarantees:
 - Known risks
 - Definition of Ready
 
-It answers:
-
-> "Do we understand the problem well enough to commit engineering effort?"
+It answers: *"Do we understand the problem well enough to commit engineering effort?"*
 
 ---
 
-# 🚦 Modes
+## Modes
 
-## MODE: GENERATE
+### EPIC MODE
 
-Input:
-- Ticket (Epic or Story from task manager)
+Use when: working on an epic (multiple user stories, 2+ weeks).
 
-Output:
-- `spec.md` with all conclusions of refinement, Out-of-scope, Risks, and Definition of Ready checklist
-- `us-plan.md` (if generating user stories from epic)
+Input: Jira epic ticket and/or `{key}-design.md` from brainstorm.
 
----
+Output: `{key}-spec.md` containing:
+- High-level requirements
+- `## User Stories` section — **required, parseable by orchestrate**
+- NFRs, risks, out of scope
 
-## MODE: VALIDATE
-
-Input:
-- Ticket
-- Existing User Stories
-
-Output:
-- `spec.md` with all conclusions of refinement
-- Proposed improvements to User Stories
+The `## User Stories` section is what orchestrate uses to create individual US subfolders.
 
 ---
 
-# ⚠️ Responsibilities & Boundaries
+### US / FEATURE MODE
+
+Use when: working on a single user story or a feature (L size).
+
+Input: US ticket, or epic spec + one US from the `## User Stories` section.
+
+Output: `{us-key}-spec.md` containing:
+- User story statement
+- Functional requirements + acceptance criteria
+- Access model
+- NFRs
+- Definition of Ready
+
+---
+
+## Responsibilities & Boundaries
 
 Refinement:
 
@@ -101,22 +103,13 @@ Refinement does NOT:
 
 ---
 
-# 📖 Project Context (Read First)
-
-Before starting refinement, read `.claude/context/product.md` to understand:
-- What the product is, who the users are, what the core domains are
-- Business rules
-- This prevents asking questions the product context already answers
-
----
-
-# 📘 Phase 1 — Functional Constraints
+## Phase 1 — Functional Constraints
 
 **Goal:** Establish business clarity
 **Stakeholder:** Product / PM
 **Codebase Analysis:** ❌ Not allowed
 
-## Questions (Ask Iteratively)
+If a `design.md` exists, extract answers from it before asking. Only ask what the design doesn't already answer.
 
 | Category | Questions |
 |-----------|------------|
@@ -126,22 +119,23 @@ Before starting refinement, read `.claude/context/product.md` to understand:
 | Permissions (Business) | Who is allowed? Who is forbidden? |
 | Scope | What is explicitly OUT of scope? |
 
-## Process
+**EPIC MODE ADDITION:** After functional constraints, ask:
+- What are the distinct user stories? (one deliverable per US, independently shippable)
+- What order should they be implemented?
 
-- Ask one category at a time.
-- Follow up on ambiguity.
-- Summarize findings.
-- Confirm before moving on.
+Process:
+- Ask one category at a time
+- Follow up on ambiguity
+- Summarize findings
+- Confirm before moving on
 
 ---
 
-# 🔐 Phase 2 — Access & Responsibility Constraints
+## Phase 2 — Access & Responsibility Constraints
 
 **Goal:** Define API surface and authorization model
 **Stakeholder:** Tech Lead / Architect
 **Codebase Analysis:** ✅ Light validation allowed
-
-## Questions
 
 | Category | Questions |
 |-----------|------------|
@@ -150,84 +144,98 @@ Before starting refinement, read `.claude/context/product.md` to understand:
 | Access Level | Read-only? Write? |
 | API Surface | REST? GraphQL? Event? BFF? |
 
-## Allowed Codebase Checks (Light Validation Only)
-
+Allowed codebase checks — adapt patterns to your tech stack:
 ```bash
-grep -r "@UseGuards\|@Roles\|@Permissions" apps/
-grep -r "enum.*Role\|type.*Role" libs/
+# Find existing auth/guard patterns
+grep -r "guard\|permission\|role\|auth" apps/ --include="*.ts" -l
+
+# Find existing role/permission types
+grep -r "enum.*Role\|type.*Role\|Role\." libs/ --include="*.ts" -l
 ```
 
 Validate that the proposed access model matches existing patterns.
 
-## Process
-
-- Ask one category at a time.
-- Validate against codebase patterns.
-- Summarize findings.
-- Confirm before moving on.
-
 ---
 
-# 🔧 Phase 3 — Non-Functional Constraints
+## Phase 3 — Non-Functional Constraints
 
 **Goal:** Define performance, reliability, security, and observability expectations
 **Stakeholder:** Tech Lead
 **Codebase Analysis:** ✅ Light validation allowed
 
-## Questions
-
 | Category | Questions |
 |----------|-----------|
-| Performance | Expected volume? Latency budget? Is caching acceptable? Pagination needed? |
+| Performance | Expected volume? Latency budget? Caching acceptable? Pagination needed? |
 | Reliability | What happens on failure? Retry strategy? Idempotency required? |
 | Security | Data sensitivity level? Audit trail required? Rate limiting needed? |
 | Observability | Which metrics matter? Alerting thresholds? Log level? |
 
-## Allowed Codebase Checks
+Only ask what isn't already covered by context files or the design.md.
 
-```bash
-# Existing cache patterns
-grep -r "Redis\|cache\|TTL" apps/
+---
 
-# Existing retry logic
-grep -r "retry\|backoff\|circuit" apps/
+## Output
 
-# Existing observability
-grep -r "Datadog\|OpenTelemetry\|metrics" apps/
+### EPIC MODE — spec.md
 
-# Existing queue patterns
-grep -r "RabbitMQ\|SQS\|NATS" apps/
-```
-
-## Process
-
-- Ask one category at a time
-- Only ask what isn't already covered by project context files
-- Summarize findings
-- Confirm before moving to output
-
-## Output addition to spec.md
-
-Add a `## Non-Functional Requirements` section:
+Save to: `workspace/epics/{key}/{key}-spec.md`
 
 ```markdown
+# {Key} — {Title}
+
+## Context
+{What this epic is about and why it's being built}
+
+## Functional Requirements
+
+| ID | Requirement | Priority |
+|----|------------|---------|
+| FR1 | {requirement} | Must |
+
+## Out of Scope
+
+- {exclusion}
+
 ## Non-Functional Requirements
 
 | Constraint | Requirement | Rationale |
 |-----------|-------------|-----------|
-| Performance | {latency/volume} | {why} |
-| Reliability | {failure mode/retry} | {why} |
-| Security | {data sensitivity/audit} | {why} |
-| Observability | {metrics/alerts} | {why} |
+
+## Risks
+
+| Risk | Impact | Mitigation |
+|------|--------|-----------|
+
+## User Stories
+
+### US-1: {Title}
+As a {role}, I want to {action} so that {benefit}.
+
+**Acceptance Criteria:**
+- [ ] {criterion}
+
+### US-2: {Title}
+As a {role}, I want to {action} so that {benefit}.
+
+**Acceptance Criteria:**
+- [ ] {criterion}
+
+## Definition of Ready
+
+- [ ] Business rules are clear
+- [ ] User stories are independently shippable
+- [ ] Non-functional constraints documented
+- [ ] Out of scope defined
+- [ ] Architecture alignment pending (per US)
 ```
 
 ---
 
-# 📤 Output
+### US / FEATURE MODE — spec.md
 
-After all three phases, produce:
-
-## spec.md
+Save to:
+- US: `workspace/epics/{epic-key}/{us-key}/{us-key}-spec.md`
+- Feature: `workspace/features/{key}/{key}-spec.md`
 
 ```markdown
 # {Key} — {Title}
@@ -249,7 +257,7 @@ As a {role}, I want to {action} so that {benefit}.
 
 ## Out of Scope
 
-- {exclusion 1}
+- {exclusion}
 
 ## Non-Functional Requirements
 
@@ -270,6 +278,8 @@ As a {role}, I want to {action} so that {benefit}.
 - [ ] Architecture alignment pending
 ```
 
+---
+
 ## Task Manager Sync (Optional)
 
 After generating spec.md:
@@ -279,4 +289,4 @@ Ask: "Sync this spec to the task manager? (adds comment with spec summary)"
 If yes: use task-manager adapter → comment(ticketKey, spec summary)
 ```
 
-Then: Hand off to `align`.
+Then: hand off to `align` (US/Feature mode) or back to `orchestrate` (Epic mode — to extract US and create subfolders).

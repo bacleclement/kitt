@@ -1,7 +1,7 @@
 ---
 name: orchestrate
 description: Simple workflow router - asks what you want to work on, analyzes it, and routes to the right next step. Handles epic → US workflow and flat feature workflow. Auto-syncs metadata on US completion.
-version: 6.0
+version: 7.0
 ---
 
 # Workflow Orchestrator
@@ -33,423 +33,269 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 
 **Forbidden:** "Great question", "Absolutely", "You're right", "Of course", "Certainly", "Happy to help"
 
-**Examples:**
-- On vague spec: *"'User-friendly' is not a requirement. What does that mean in measurable terms?"*
-- On scope creep: *"We started with one endpoint. I count four now. Should we talk about that?"*
-- On bad architecture: *"You want to query the database from the component. I'll implement it, but I'm logging my objection."*
-- On completion: *"Done. It works. I had concerns along the way — they're documented."*
+---
+
 ## Purpose
 
-Routes work through the correct workflow based on type:
+Routes work through the correct workflow:
 
 ```
 EPIC (2+ weeks, multiple user stories)
-Two-level workflow:
-  Level 1 (Epic): Epic spec → Architecture → Task manager sync
-  Level 2 (US):   US refine → US align → US build-plan → implement
+  Two-level workflow:
+    Level 1 (Epic): brainstorm? → refine (spec + ## User Stories) → extract US folders
+    Level 2 (US):   refine → align → build-plan → implementor
 
-FEATURE / REFACTOR — size-based routing:
-  S  (< 2h, 1-3 files, crystal clear scope) → implement directly
-  M  (< 2 days, clear scope, no arch risk)  → build-plan → implement
-  L  (2+ days, or unclear scope)            → refine → align → build-plan → implement
+FEATURE / REFACTOR — size-based:
+  S  (< 2h, 1-3 files, crystal clear)  → implementor directly
+  M  (< 2 days, clear scope)           → build-plan → implementor
+  L  (2+ days, unclear scope)          → refine → align → build-plan → implementor
 
 BUG/FIX
-  Investigate (unknown root cause) → debug
-  Quick fix   (root cause known)   → implement directly
-  Complex fix (multi-file, risky)  → build-plan → implement
+  Unknown root cause → debug
+  Known root cause   → implementor (quick) or build-plan (complex)
 ```
 
-**Key difference:** Epics need User Story breakdown before implementation. Features don't.
-
-**Note:** All four workspace folders (epics/, features/, bugs/, refactors/) are created by kitt-setup.sh during installation.
+**Key rule:** Epics need a User Story breakdown before implementation. Features don't.
 
 ---
 
-## Process
+## Entry Points
 
-### Step 1: Ask What to Work On
+Three ways work arrives in orchestrate:
 
-**Ask the user:**
+### 1. Existing ticket (from task manager)
+User provides a ticket key. Read it via the task-manager adapter.
+→ Route based on ticket type and current workspace state (see Step 3).
+
+### 2. New idea (no ticket)
+Two sub-cases:
+
+**A) Scope is already clear** (user knows what to build):
+→ Ask work type + size → create workspace folder → route directly.
+
+**B) Idea needs exploration** (raw concept, approach unclear):
+→ Offer brainstorm: *"Do you want to explore this as a design first, or do you already know what to build?"*
+→ If brainstorm: invoke `brainstorm` skill — it creates `{slug}-design.md` in workspace.
+→ After brainstorm completes: orchestrate reads design.md and routes (see Step 3).
+
+### 3. Continue in-progress work
+→ Scan `.claude/workspace/` for incomplete folders → show status → ask which to continue.
+
+---
+
+## Step 1: Ask What to Work On
 
 ```
 "What would you like to work on?
 
-Options:
-- Existing ticket (provide ticket key, e.g. HUB-XXXXX)
+- Existing ticket (provide key — format depends on your task manager)
 - New work (describe it)
-- Continue in-progress work
-
-Please tell me what you want to work on."
+- Continue in-progress work"
 ```
 
-### Step 2: Analyze the Request
+---
 
-**If existing ticket mentioned:**
+## Step 2: Analyze the Request
 
-1. Read ticket via task-manager adapter `read(ticketKey)` operation
-2. Check folder: `.claude/workspace/{epics|features|bugs|refactors}/{key}/`
-3. Determine type from ticket or ask user if unclear
-4. Determine next step based on type (see Step 3)
+**If existing ticket:**
+1. Read ticket via task-manager adapter `read(ticketKey)`
+2. Check if workspace folder exists: `.claude/workspace/{epics|features|bugs|refactors}/{key}/`
+3. Create folder + metadata.json if missing
+4. Determine type (epic / feature / bug / refactor) from ticket or ask
+5. Route (Step 3)
 
-**If new work described:**
+**If new work — scope clear:**
+1. Ask: "What type? Epic / Feature / Bug / Refactor"
+2. Create workspace folder + metadata.json
+3. Route (Step 3)
 
-1. Ask: "What type of work is this?"
-   - Epic (large, 2+ weeks, multiple user stories)
-   - Feature (simple, 1-5 days, single deliverable)
-   - Bug (needs fixing)
-   - Refactor (technical improvement)
-2. Once type is determined, create the work folder and metadata:
-   ```bash
-   mkdir -p .claude/workspace/{type}s/{key}/
-   ```
-   Write `metadata.json`:
-   ```json
-   {
-     "key": "{key}",
-     "type": "{type}",
-     "title": "{title from ticket or user}",
-     "status": "pending",
-     "taskManager": { "synced": false },
-     "created_at": "{ISO timestamp}",
-     "updated_at": "{ISO timestamp}"
-   }
-   ```
+**If new work — needs exploration:**
+1. Invoke `brainstorm` skill
+2. Brainstorm creates workspace folder + `{slug}-design.md`
+3. After user approves design → route (Step 3)
 
-**If continuing work:**
+**If continuing:**
+- Scan workspace folders
+- Show status summary per item
+- Ask which to continue → route (Step 3)
 
-- Scan `.claude/workspace/` for folders with incomplete work
-- Show status and ask which to continue
+---
 
-**Complexity indicators:**
+## Step 3: Route to Next Step
 
-**Epic-level:**
-- Multiple user stories / functional requirements
-- Cross-cutting architectural changes
-- "2+ weeks", "large feature", "multiple components"
-- User explicitly says "epic"
+### For Epics
 
-**Feature-level S (implement directly):**
-- "Add a field", "change a label", "fix a typo", "swap a value"
-- 1-3 files max, no architectural decision involved
-- Could explain the full change in one sentence
-
-**Feature-level M (build-plan → implement):**
-- "Add an endpoint", "add a form", "add a component"
-- Clear scope, no cross-cutting concerns, no design questions
-- 1-2 days max
-
-**Feature-level L (full pipeline):**
-- Unclear scope, new domain concept, or architectural impact
-- "Refactor X", "redesign Y", "introduce Z pattern"
-- 2+ days, or you hesitated when asked the size
-
-**Bug/Fix-level:**
-- "Bug", "fix", "broken", "hotfix", "not working"
-- Configuration change
-
-### Step 3: Route to Next Step
-
-**For Epics:**
+Detect state in this order:
 
 ```
-1. Check if epic folder exists
-2. Check if epic-level spec exists ({key}-spec.md)
-3. Check if US subfolders exist (any subfolder with a *-spec.md inside)
-4. Route based on state:
+1. No design.md AND no spec.md
+   → Has task manager ticket with description? → refine (EPIC MODE)
+   → No ticket, no description                → brainstorm first
 
-   - No epic spec → refine (create epic-level spec)
-   - Has epic spec, NO US subfolders → Ask: "Extract USs from spec or import from task manager?"
-     - Extract: Create US folders from spec
-     - Import: use task-manager adapter search/read operations
-   - Has US subfolders → Check each US state:
-     - US spec without ## Architecture section → align (on US)
-     - US spec with ## Architecture, no plan → build-plan (on US)
-     - US has plan → implementor:implement (on US)
+2. design.md exists, no spec.md
+   → refine (EPIC MODE) — reads design.md as input
+
+3. spec.md exists, no ## User Stories section
+   → spec is incomplete → re-run refine to add US breakdown
+
+4. spec.md has ## User Stories, no US subfolders
+   → Extract US from spec → create US subfolders (see US Extraction below)
+   → OR import from task manager (if ticket keys exist)
+
+5. US subfolders exist → check each US:
+   - No US spec         → refine (US MODE) on that US
+   - US spec, no arch   → align on that US
+   - US spec + arch, no plan → build-plan on that US
+   - Has plan           → implementor on that US
+   - All US completed   → epic complete
 ```
 
-**For Features:**
+### US Extraction from spec.md
+
+When spec has `## User Stories` but no subfolders yet:
+
+1. Parse each `### US-N: {Title}` entry from the spec
+2. Ask: *"I found {N} user stories. Extract them into subfolders, or import keys from task manager?"*
+   - Extract: create `{epic-key}/{us-slug}/` folder for each US
+   - Import: read child ticket keys from task manager → use those as folder names
+3. Create `metadata.json` for each US folder
+4. Update epic `metadata.json.children` with the US list
+5. Route to the first incomplete US
+
+### For Features
 
 ```
 Ask: "How big is this?
-  S — Small (< 2h, 1-3 files, crystal clear)
+  S — Small (< 2h, 1-3 files, obvious change)
   M — Medium (< 2 days, clear scope)
   L — Large (2+ days, or unclear scope)"
 
-If S:
-  No spec needed. Ask: "Describe the change in one sentence."
-  Create minimal plan (1-3 tasks) → implementor:implement directly
+S: No spec needed.
+   Ask: "One sentence — what changes?"
+   Create minimal inline plan → implementor directly
 
-If M:
-  Skip refine + align.
-  Check if plan exists:
-    - No plan → build-plan skill
-    - Has plan → implementor:implement
+M: Skip refine + align.
+   design.md exists? → build-plan (design acts as spec)
+   No design.md     → build-plan (describe scope inline)
+   Has plan         → implementor
 
-If L:
-  Full pipeline. Check state:
-    - No spec → refine skill
-    - No architecture → align skill
-    - No plan → build-plan skill
-    - Has plan → implementor:implement
+L: Full pipeline.
+   No spec          → refine
+   Spec, no arch    → align
+   Spec + arch      → build-plan
+   Has plan         → implementor
 ```
 
-**For Refactors:**
+### For Refactors
 
 ```
-Ask: "How big is this?
-  S — Small (rename, move, extract — no behavior change, 1-3 files)
-  M — Medium (restructure a module, clear scope)
-  L — Large (architectural change, cross-cutting)"
-
-If S:
-  Implement directly. No spec, no plan.
-
-If M:
-  Skip refine. align (strict) → build-plan → implementor:implement
-
-If L:
-  Full pipeline with strict architecture validation:
-  refine → align (strict) → build-plan → implementor:implement
+S → implementor directly (no spec, no plan)
+M → align (strict) → build-plan → implementor
+L → refine → align (strict) → build-plan → implementor
 ```
 
-**For Bugs:**
+### For Bugs
 
 ```
-Ask user: "How do you want to approach this?"
-
-Options:
-  A) Investigate first (unknown root cause) → debug skill
-  B) Quick fix (root cause already known) → Create minimal plan → implementor:implement
-  C) Complex fix (multi-step, needs architecture) → Follow feature workflow with light architecture validation
-
-If A (investigate):
-  Invoke: Skill tool with skill="debug"
-  The debug skill will: reproduce → locate → hypothesize → confirm root cause → fix → verify → regress
-  After fix is confirmed, debug calls vcs/branch-creator and vcs/pr-creator
-
-If B (quick fix):
-  Ask: "Describe the fix in one sentence."
-  Create minimal plan → implementor:implement
-
-If C (complex):
-  Follow feature workflow: refine → align → build-plan → implementor
+A) Unknown root cause → debug skill
+B) Known, quick fix   → implementor (minimal inline plan)
+C) Complex, multi-file → refine → align → build-plan → implementor
 ```
-
-
 
 ---
 
 ## File Structure
 
-### Epic Structure (two-level)
+### Epic (two-level)
 
 ```
-.claude/workspace/epics/HUB-30000/
-├── metadata.json                  # type: "epic"
-├── HUB-30000-spec.md              # Epic-level spec (FRs, domain model, high-level)
-└── HUB-30001/                     # User Story folders (from refinement or import)
-    ├── HUB-30001-spec.md          # US-level spec (includes ## Architecture section after alignment)
-    └── HUB-30001-plan.md          # US-level plan
+.claude/workspace/epics/{key}/
+├── metadata.json             # type: "epic", children: [{key, title, status}]
+├── {key}-design.md           # from brainstorm (optional — only if brainstorm was run)
+├── {key}-spec.md             # from refine — contains ## User Stories
+├── {us-key}/
+│   ├── {us-key}-spec.md      # from refine (US MODE) — contains ## Architecture after align
+│   └── {us-key}-plan.md      # from build-plan
+└── {us-key-2}/
+    ├── {us-key-2}-spec.md
+    └── {us-key-2}-plan.md
 ```
 
-### Feature Structure (flat)
+### Feature (flat)
 
 ```
-.claude/workspace/features/HUB-30803/
-├── metadata.json                  # type: "feature"
-├── HUB-30803-spec.md              # Feature spec (includes ## Architecture section after alignment)
-└── HUB-30803-plan.md              # Feature plan
+.claude/workspace/features/{key}/
+├── metadata.json
+├── {key}-design.md           # from brainstorm (optional)
+├── {key}-spec.md             # from refine (L only)
+└── {key}-plan.md             # from build-plan
 ```
 
-### Bug Structure
+### Bug / Refactor
 
 ```
-.claude/workspace/bugs/HUB-30801/
-├── metadata.json                  # type: "bug"
-├── HUB-30801-spec.md              # Bug analysis (includes ## Architecture if complex)
-└── HUB-30801-plan.md              # Fix plan
-```
-
-### Refactor Structure
-
-```
-.claude/workspace/refactors/HUB-30802/
-├── metadata.json                  # type: "refactor"
-├── HUB-30802-spec.md              # Refactoring rationale (includes ## Architecture after alignment)
-└── HUB-30802-plan.md              # Refactor plan
+.claude/workspace/{bugs|refactors}/{key}/
+├── metadata.json
+├── {key}-spec.md             # from refine (complex/L only)
+└── {key}-plan.md             # from build-plan
 ```
 
 ---
 
 ## Metadata Sync
 
-**After checking work state, always sync metadata.json to reflect reality.**
+Always sync `metadata.json` to reflect reality when scanning workspace.
 
-When scanning US folders during routing, detect completed user stories and update `metadata.json` automatically.
+### US completion detection
 
-### How to Detect US Completion
+A US is **completed** when:
+1. `{us-key}-plan.md` exists
+2. ALL tasks are `[x]` — no `[ ]` or `[~]` remaining
 
-A user story is **completed** when:
+### Sync rules
 
-1. Its plan file exists (`{key}-plan.md`)
-2. ALL tasks in the plan are marked `[x]` (no `[ ]` or `[~]` remaining)
+- All tasks `[x]` → `"status": "completed"`
+- Some tasks `[~]` → `"status": "in_progress"`
+- Tasks `[ ]` only → `"status": "pending"`
+- No plan → keep current status
 
-### Sync Rules
-
-During state-checking (Step 2/3), for each US in `metadata.json.children`:
-
-- If the US plan exists and all tasks are `[x]` → set `"status": "completed"`
-- If the US plan exists and some tasks are `[~]` → set `"status": "in_progress"`
-- If the US plan exists but tasks are `[ ]` only → keep `"status": "pending"`
-- If no plan exists → keep current status
-
-Also update `metadata.json.updated_at` whenever a status change is made.
-
-### When an Epic is Complete
-
-If ALL user stories have `"status": "completed"`, set the epic `"status": "completed"` as well.
+Update `metadata.json.updated_at` on any change. If all US are completed → set epic status to `"completed"`.
 
 ---
 
-## Metadata.json Schema
+## Metadata.json Schemas
 
-### Epic Metadata
+### Epic
 
 ```json
 {
-  "key": "HUB-30000",
+  "key": "company-management",
   "type": "epic",
   "title": "Company Management",
   "status": "in_progress",
-  "taskManager": {
-    "synced": true,
-    "url": "https://your-instance.atlassian.net/browse/HUB-30000"
-  },
+  "taskManager": { "synced": false },
   "children": [
-    { "key": "HUB-30001", "title": "Company Creation", "status": "completed" },
-    { "key": "HUB-30002", "title": "Contact Management", "status": "in_progress" },
-    { "key": "HUB-30003", "title": "Company Settings", "status": "pending" }
+    { "key": "us-company-creation", "title": "Company Creation", "status": "completed" },
+    { "key": "us-contact-management", "title": "Contact Management", "status": "in_progress" }
   ],
   "created_at": "2026-02-14T10:00:00Z",
   "updated_at": "2026-02-16T14:30:00Z"
 }
 ```
 
-### Feature/Bug/Refactor Metadata
+When a task manager ticket exists, use the ticket key as the `key` field and set `taskManager.synced: true` with the ticket URL.
+
+### Feature / Bug / Refactor
 
 ```json
 {
-  "key": "HUB-30803",
+  "key": "email-notifications",
   "type": "feature",
   "title": "Email Notifications",
   "status": "in_progress",
-  "taskManager": {
-    "synced": true,
-    "url": "https://your-instance.atlassian.net/browse/HUB-30803"
-  },
+  "taskManager": { "synced": false },
   "created_at": "2026-02-14T10:00:00Z",
   "updated_at": "2026-02-16T14:30:00Z"
-}
-```
-
----
-
-## Routing Logic
-
-### For Epics
-
-```typescript
-function routeEpic(epicKey: string) {
-  const epicPath = `.claude/workspace/epics/${epicKey}`;
-  const specPath = `${epicPath}/${epicKey}-spec.md`;
-  const metadata = readJson(`${epicPath}/metadata.json`);
-
-  const hasSpec = fileExists(specPath);
-  if (!hasSpec) return 'refine';
-
-  const usSubfolders = getSubfoldersWithSpecs(epicPath);
-
-  if (usSubfolders.length === 0) {
-    return askUser("Epic spec exists but no user stories yet. How to proceed?", [
-      { label: "Extract from spec", value: "extract" },
-      { label: "Import from task manager", value: "import" }
-    ]);
-  }
-
-  let metadataChanged = false;
-
-  for (const usKey of usSubfolders) {
-    const usSpecPath = `${epicPath}/${usKey}/${usKey}-spec.md`;
-    const usPlanPath = `${epicPath}/${usKey}/${usKey}-plan.md`;
-
-    const usSpec = readFile(usSpecPath);
-    const hasArch = usSpec.includes('## Architecture');
-    const hasPlan = fileExists(usPlanPath);
-
-    if (hasPlan) {
-      const plan = readFile(usPlanPath);
-      const hasPending = plan.includes('[ ]') || plan.includes('[~]');
-      const newStatus = hasPending ? (plan.includes('[~]') ? 'in_progress' : 'pending') : 'completed';
-
-      const usEntry = metadata.children.find((s) => s.key === usKey);
-      if (usEntry && usEntry.status !== newStatus) {
-        usEntry.status = newStatus;
-        metadataChanged = true;
-      }
-    }
-
-    const usEntry = metadata.children.find((s) => s.key === usKey);
-    if (usEntry?.status === 'completed') continue;
-
-    if (!hasArch) return `align (on ${usKey})`;
-    if (!hasPlan) return `build-plan (on ${usKey})`;
-    return `implementor:implement (on ${usKey})`;
-  }
-
-  if (metadataChanged) {
-    metadata.updated_at = new Date().toISOString();
-    if (metadata.children.every((s) => s.status === 'completed')) {
-      metadata.status = 'completed';
-    }
-    writeJson(`${epicPath}/metadata.json`, metadata);
-  }
-
-  return 'epic-complete';
-}
-```
-
-### For Features / Bugs / Refactors
-
-```typescript
-function routeFeatureOrRefactor(key: string, workType: "feature" | "bug" | "refactor", size: "S" | "M" | "L") {
-  const basePath = `.claude/workspace/${workType}s/${key}`;
-  const specPath = `${basePath}/${key}-spec.md`;
-  const planPath = `${basePath}/${key}-plan.md`;
-
-  const hasSpec = fileExists(specPath);
-  const spec = hasSpec ? readFile(specPath) : '';
-  const hasArch = spec.includes('## Architecture');
-  const hasPlan = fileExists(planPath);
-
-  if (size === 'S') {
-    // No spec, no architecture validation — minimal plan → implement directly
-    return 'implementor:implement (no spec needed, create minimal plan inline)';
-  }
-
-  if (size === 'M') {
-    // Skip refine + align — go straight to build-plan if no plan yet
-    if (!hasPlan) return 'build-plan';
-    return 'implementor:implement';
-  }
-
-  // L: full pipeline
-  if (!hasSpec) return 'refine';
-  if (!hasArch) {
-    const mode = workType === 'refactor' ? 'strict' : 'standard';
-    return `align --mode=${mode}`;
-  }
-  if (!hasPlan) return 'build-plan';
-  return 'implementor:implement';
 }
 ```
 
@@ -459,30 +305,24 @@ function routeFeatureOrRefactor(key: string, workType: "feature" | "bug" | "refa
 
 **Be conversational, not programmatic.**
 
-**Good (feature ready for architecture):**
-
+**Good — epic with US in progress:**
 ```
-"I found HUB-30803 (Email Notifications).
+"company-management (Company Management) — 3 user stories:
 
-Current state:
-- ✅ Spec exists with acceptance criteria
-- ❌ Architecture not validated yet
+✅ us-company-creation: Company Creation (done)
+🔄 us-contact-management: Contact Management (in progress, 3/5 tasks done)
+⏳ us-company-settings: Company Settings (pending, no spec yet)
 
-Next step: Architecture validation
-
-Should I invoke the align skill?"
+Next: continue us-contact-management or start us-company-settings with refine?"
 ```
 
-**Good (epic with USs in progress):**
-
+**Good — design exists, routing to next step:**
 ```
-"HUB-30000 (Company Management) has 3 user stories:
+"Found channel-adapter design. No spec yet.
 
-✅ HUB-30001: Company Creation (completed)
-🔄 HUB-30002: Contact Management (in progress, 3/5 tasks done)
-⏳ HUB-30003: Company Settings (pending)
+Next step: refine (EPIC MODE) to create the spec with user story breakdown.
 
-Next: Continue HUB-30002 or start HUB-30003?"
+Should I invoke refine?"
 ```
 
 ---
@@ -491,32 +331,27 @@ Next: Continue HUB-30002 or start HUB-30003?"
 
 | Skill | When Called | How to Invoke |
 |-------|-------------|---------------|
-| `refine` | No spec exists OR epic spec exists but no US folders | `Skill tool with skill="refine"` |
-| `align` | Spec exists, no architecture | `Skill tool with skill="align"` |
-| `build-plan` | Spec + arch, no plan | `Skill tool with skill="build-plan"` |
+| `brainstorm` | Raw idea, needs exploration, no ticket | `Skill tool with skill="brainstorm"` |
+| `refine` | No spec — epic or L feature | `Skill tool with skill="refine"` |
+| `align` | US/feature spec exists, no ## Architecture section | `Skill tool with skill="align"` |
+| `build-plan` | Spec + arch done (or M feature), no plan | `Skill tool with skill="build-plan"` |
 | `implementor` | Plan exists, ready to implement | `Skill tool with skill="implementor"` |
-| `debug` | Bug with unknown root cause — investigate first | `Skill tool with skill="debug"` |
+| `debug` | Bug, unknown root cause | `Skill tool with skill="debug"` |
 
-**Routing means invoking the Skill tool.** When you determine the next step, use `Skill tool with skill="{skill-name}"` to invoke it. Confirm with the user before invoking.
+**Always confirm with user before invoking a skill.**
 
 ---
 
 ## Task Manager Integration
 
-All task manager operations (read ticket, transition, comment) use the loaded task-manager adapter.
+All operations use the loaded adapter — never hardcode platform CLIs.
 
-Example — transition ticket on US completion:
 ```
-Use task-manager adapter → transition(ticketKey, project.taskManager.config.statuses.done)
+Read ticket:   task-manager adapter → read(ticketKey)
+Import US:     task-manager adapter → read(epicKey) → get children
+Transition:    task-manager adapter → transition(key, statuses.done)
+Comment:       task-manager adapter → comment(key, summary)
 ```
-
-Example — import epic children:
-```
-Use task-manager adapter → read(epicKey) to get children tickets
-For each child: read(childKey) to get summary and create US folder
-```
-
-Never call platform CLIs directly (no hardcoded `acli`, `gh issue`, etc.).
 
 ---
 
@@ -524,7 +359,8 @@ Never call platform CLIs directly (no hardcoded `acli`, `gh issue`, etc.).
 
 - Don't run complex bash loops to check all work
 - Don't show programmatic output (`[✓] Spec: YES`)
-- Don't make assumptions - ask if uncertain
-- Don't route automatically - confirm with user first
-- Don't skip US refine for epics (the most common mistake!)
-- Don't hardcode Jira/GitHub/status names — use adapters and kitt.json
+- Don't make assumptions — ask if uncertain
+- Don't route automatically — confirm with user first
+- Don't skip US refine for epics
+- Don't hardcode task manager / VCS platform names or status values — use adapters and kitt.json
+- Don't invoke brainstorm when a ticket already exists — refine handles that
