@@ -37,7 +37,7 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 
 ## How It Works
 
-Kitt installs **globally on your machine** — not inside the project repo. Each developer installs once. Updates are a single `git pull`. No submodules, no forced commits.
+Kitt installs **globally on your machine**. Each developer installs once. Updates are a single `git pull`. No submodules, no forced commits.
 
 What lives **in the project repo** (shared by the team):
 - `.claude/config/project.json` — task manager, VCS, build commands
