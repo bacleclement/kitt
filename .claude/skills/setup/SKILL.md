@@ -334,19 +334,59 @@ Generate three files from scan data:
 {inferred from test framework + sample test files}
 ```
 
-### Step 6: End message
+### Step 6: Write CLAUDE.md
+
+Write `.claude/CLAUDE.md` with the minimal project guide. Do NOT overwrite if it already exists — in that case, skip silently.
+
+```markdown
+# Claude CLI - {Project Name}
+
+## .claude/ Structure
+
+```
+.claude/
+├── CLAUDE.md              # This file
+├── config/kitt.json       # Kitt configuration
+├── context/               # product.md, tech-stack.md, code-standards.md
+├── skills/                # Symlink → ~/.claude/kitt/.claude/skills/ (machine-local)
+├── adapters/              # Symlink → ~/.claude/kitt/.claude/adapters/ (machine-local)
+├── project-skills/        # Project-specific skills (add as needed)
+└── workspace/             # Work items — epics/, features/, bugs/, refactors/
+```
+
+## Kitt Workflow
+
+Entry point: `/orchestrate` — skills at `.claude/skills/`, project-specific at `.claude/project-skills/`.
+
+## Hard Rules
+
+- **NEVER `git push` without explicit user confirmation**
+- When uncertain about a pattern: **search first, ask if still unclear, never guess**
+
+## Quick Reference
+
+```bash
+{build.test}
+{build.typecheck}
+{build.lint}
+{build.build}
+```
+```
+
+Replace `{build.*}` placeholders with the actual commands from kitt.json.
+
+### Step 7: End message
 
 > "✅ Kitt configured.
 >
-> Your context files are at `.claude/context/` — they're the foundation
-> every skill reads before acting. I've done my best with the scan,
-> but you know your project better than I do.
+> Three things to review before you start:
+> - `.claude/context/` — I've drafted product.md, tech-stack.md, code-standards.md from the scan. You know your project better than I do — edit them.
+> - `.claude/CLAUDE.md` — minimal project guide, add your own hard rules if needed.
+> - `.claude/project-skills/` — drop project-specific skills here as you build them.
 >
-> Review and edit them, then run `/setup validate` to confirm
-> everything is in order. After that: `/orchestrate` to start working.
+> Run `/setup validate` to confirm everything is in order, then `/orchestrate` to start working.
 >
-> New team members joining later just run `/setup` — they'll land in
-> join mode and skip straight to `/onboard`."
+> New team members joining later just run `/setup` — join mode, straight to `/onboard`."
 
 ---
 
@@ -365,6 +405,9 @@ Checking .claude/context/...
   ✅/⚠️  product.md — {N} lines {has/missing}: {required sections}
   ✅/⚠️  tech-stack.md — {N} lines {has/missing}: {required sections}
   ✅/⚠️  code-standards.md — {N} lines {has/missing}: {required sections}
+
+Checking .claude/CLAUDE.md...
+  ✅/❌ present/missing
 
 Checking .claude/workspace/...
   ✅/❌ epics/ features/ bugs/ refactors/ — {present/missing}
