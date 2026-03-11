@@ -43,21 +43,20 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 Routes work through the correct workflow based on type:
 
 ```
-EPIC (Large Features, 2+ weeks)
+EPIC (2+ weeks, multiple user stories)
 Two-level workflow:
   Level 1 (Epic): Epic spec → Architecture → Task manager sync
-  Level 2 (US):   US refinement → US architecture → US plan → Implementation
+  Level 2 (US):   US refine → US align → US build-plan → implement
 
-FEATURE (Simple, 1-5 days)
-Flat workflow:
-  Spec → Architecture → Plan → Implementation
+FEATURE / REFACTOR — size-based routing:
+  S  (< 2h, 1-3 files, crystal clear scope) → implement directly
+  M  (< 2 days, clear scope, no arch risk)  → build-plan → implement
+  L  (2+ days, or unclear scope)            → refine → align → build-plan → implement
 
 BUG/FIX
-  Quick: Skip workflow, implement directly
-  Complex: Spec → Architecture → Plan → Implementation
-
-REFACTOR
-  Spec → Architecture (strict) → Plan → Implementation
+  Investigate (unknown root cause) → debug
+  Quick fix   (root cause known)   → implement directly
+  Complex fix (multi-file, risky)  → build-plan → implement
 ```
 
 **Key difference:** Epics need User Story breakdown before implementation. Features don't.
@@ -129,13 +128,23 @@ Please tell me what you want to work on."
 - "2+ weeks", "large feature", "multiple components"
 - User explicitly says "epic"
 
-**Feature-level:**
-- Single focused capability
-- "1-5 days", "simple", "quick", "small"
-- Clear, narrow scope
+**Feature-level S (implement directly):**
+- "Add a field", "change a label", "fix a typo", "swap a value"
+- 1-3 files max, no architectural decision involved
+- Could explain the full change in one sentence
+
+**Feature-level M (build-plan → implement):**
+- "Add an endpoint", "add a form", "add a component"
+- Clear scope, no cross-cutting concerns, no design questions
+- 1-2 days max
+
+**Feature-level L (full pipeline):**
+- Unclear scope, new domain concept, or architectural impact
+- "Refactor X", "redesign Y", "introduce Z pattern"
+- 2+ days, or you hesitated when asked the size
 
 **Bug/Fix-level:**
-- "Bug", "fix", "typo", "hotfix"
+- "Bug", "fix", "broken", "hotfix", "not working"
 - Configuration change
 
 ### Step 3: Route to Next Step
@@ -161,15 +170,46 @@ Please tell me what you want to work on."
 **For Features:**
 
 ```
-1. Check if feature folder exists
-2. Check if spec exists
-3. Check if architecture section exists in spec
-4. Check if plan exists
-5. Route to next missing step:
-   - No spec → refine skill
-   - No architecture → align skill
-   - No plan → build-plan skill
-   - Has plan → implementor:implement
+Ask: "How big is this?
+  S — Small (< 2h, 1-3 files, crystal clear)
+  M — Medium (< 2 days, clear scope)
+  L — Large (2+ days, or unclear scope)"
+
+If S:
+  No spec needed. Ask: "Describe the change in one sentence."
+  Create minimal plan (1-3 tasks) → implementor:implement directly
+
+If M:
+  Skip refine + align.
+  Check if plan exists:
+    - No plan → build-plan skill
+    - Has plan → implementor:implement
+
+If L:
+  Full pipeline. Check state:
+    - No spec → refine skill
+    - No architecture → align skill
+    - No plan → build-plan skill
+    - Has plan → implementor:implement
+```
+
+**For Refactors:**
+
+```
+Ask: "How big is this?
+  S — Small (rename, move, extract — no behavior change, 1-3 files)
+  M — Medium (restructure a module, clear scope)
+  L — Large (architectural change, cross-cutting)"
+
+If S:
+  Implement directly. No spec, no plan.
+
+If M:
+  Skip refine. align (strict) → build-plan → implementor:implement
+
+If L:
+  Full pipeline with strict architecture validation:
+  refine → align (strict) → build-plan → implementor:implement
 ```
 
 **For Bugs:**
@@ -195,11 +235,7 @@ If C (complex):
   Follow feature workflow: refine → align → build-plan → implementor
 ```
 
-**For Refactors:**
 
-```
-Follow feature workflow with strict architecture validation
-```
 
 ---
 
@@ -382,19 +418,31 @@ function routeEpic(epicKey: string) {
 }
 ```
 
-### For Features
+### For Features / Bugs / Refactors
 
 ```typescript
-function routeFeature(featureKey: string, workType: "feature" | "bug" | "refactor") {
-  const basePath = `.claude/workspace/${workType}s/${featureKey}`;
-  const specPath = `${basePath}/${featureKey}-spec.md`;
-  const planPath = `${basePath}/${featureKey}-plan.md`;
+function routeFeatureOrRefactor(key: string, workType: "feature" | "bug" | "refactor", size: "S" | "M" | "L") {
+  const basePath = `.claude/workspace/${workType}s/${key}`;
+  const specPath = `${basePath}/${key}-spec.md`;
+  const planPath = `${basePath}/${key}-plan.md`;
 
   const hasSpec = fileExists(specPath);
   const spec = hasSpec ? readFile(specPath) : '';
   const hasArch = spec.includes('## Architecture');
   const hasPlan = fileExists(planPath);
 
+  if (size === 'S') {
+    // No spec, no architecture validation — minimal plan → implement directly
+    return 'implementor:implement (no spec needed, create minimal plan inline)';
+  }
+
+  if (size === 'M') {
+    // Skip refine + align — go straight to build-plan if no plan yet
+    if (!hasPlan) return 'build-plan';
+    return 'implementor:implement';
+  }
+
+  // L: full pipeline
   if (!hasSpec) return 'refine';
   if (!hasArch) {
     const mode = workType === 'refactor' ? 'strict' : 'standard';
