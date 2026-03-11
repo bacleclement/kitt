@@ -226,7 +226,7 @@ After confirmation, write to `.claude/config/kitt.json`.
 The JSON structure:
 ```json
 {
-  "$schema": ".claude/kitt/.claude/templates/kitt.json.schema",
+  "$schema": "~/.claude/kitt/.claude/templates/kitt.json.schema",
   "kitt": {
     "version": "{kitt version from ~/.claude/kitt/version}",
     "installedAt": "{ISO timestamp}"

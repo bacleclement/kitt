@@ -97,7 +97,7 @@ Refinement does NOT:
 ✘ Create branches
 ✘ Implement code
 ✘ Generate commits
-✘ Replace architecture-alignment
+✘ Replace align
 
 ---
 
@@ -279,4 +279,4 @@ Ask: "Sync this spec to the task manager? (adds comment with spec summary)"
 If yes: use task-manager adapter → comment(ticketKey, spec summary)
 ```
 
-Then: Hand off to `architecture-alignment`.
+Then: Hand off to `align`.
