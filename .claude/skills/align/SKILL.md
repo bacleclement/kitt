@@ -12,11 +12,11 @@ Acts as an architectural firewall before implementation. Validates that a refine
 
 ## Before Starting
 
-1. Read `.claude/config/kitt.json` → note `project.agentDocs`
+1. Read `.claude/config/kitt.json`
 2. Read `.claude/context/tech-stack.md` — approved technologies, patterns
 3. Read `.claude/context/code-standards.md` — architecture rules, layer constraints
 4. Read the spec file: `{key}-spec.md`
-5. Check `project.agentDocs` paths — load any relevant agent docs for the affected service/module
+5. Auto-discover agent docs: glob `**/agents/` and any `AGENTS.md` files — load relevant ones for the affected service/module
 
 ## Non-Responsibilities
 
@@ -51,10 +51,10 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 ### Phase 1: Load Context
 
 ```
-1. Read kitt.json → agentDocs paths
+1. Read kitt.json
 2. Read context/tech-stack.md + context/code-standards.md
 3. Read {key}-spec.md (functional requirements, access model, NFRs)
-4. For each path in project.agentDocs:
+4. Auto-discover agent docs (glob `**/agents/`, any `AGENTS.md`):
    → Check if the spec touches that domain
    → If yes: read the agent doc for patterns, constraints, layer rules
 5. Scan relevant source files (referenced in spec or agent doc)

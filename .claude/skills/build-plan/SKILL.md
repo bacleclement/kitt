@@ -11,11 +11,11 @@ version: 2.0
 ## Before Starting
 
 1. Read `.claude/config/kitt.json`
-2. Note `taskManager.type`, `vcs.type`, `build.*`, `project.agentDocs`, `commitFormat`
+2. Note `taskManager.type`, `vcs.type`, `build.*`, `commitFormat`
 3. Load task-manager adapter: `.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 4. Load VCS adapter: `.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
 5. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
-6. Check `project.agentDocs` paths for project-specific patterns
+6. Auto-discover agent docs: glob `**/agents/` and any `AGENTS.md` files in the repo — load relevant ones for the domain being worked on
 
 Never hardcode: status names, account names, URLs, build commands.
 Always read these from `kitt.json` and the loaded adapters.
@@ -60,7 +60,7 @@ The skill reads (does NOT re-ask questions that refinement already answered):
 2. **Project context files:**
    - `.claude/context/tech-stack.md` — approved technologies and patterns
    - `.claude/context/code-standards.md` — naming conventions, architecture rules, testing strategy
-3. **Project agent docs** (if they exist): from `project.agentDocs` paths in kitt.json
+3. **Project agent docs** (auto-discovered): any `**/agents/` directories or `AGENTS.md` files relevant to the domain
 4. **metadata.json**: For context (type, ticket key, parent epic if any)
 
 ---

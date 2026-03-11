@@ -19,11 +19,6 @@
       "properties": {
         "name": { "type": "string" },
         "description": { "type": "string" },
-        "agentDocs": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Paths to project-specific agent documentation folders"
-        }
       }
     },
     "taskManager": {

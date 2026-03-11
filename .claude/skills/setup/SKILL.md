@@ -162,7 +162,7 @@ Scan the following (automated, no user input needed):
 
 **Agent docs:**
 - Search for: `agents/`, `AGENT.md`, `AGENTS.md`, `ARCHITECTURE.md` anywhere in tree
-- Record found paths for `project.agentDocs`
+- Note found paths for the scan summary (no config needed — skills auto-discover these at runtime)
 
 **Existing kitt config:**
 - Check if any context files already exist in `.claude/context/`
@@ -194,11 +194,8 @@ Ask ONLY questions where the answer wasn't inferred. Skip any that were detected
 **Build questions** (if not inferred):
 6. "Confirm build commands:" (show inferred commands, ask for corrections)
 
-**Agent docs:**
-7. "I found agent docs at: {paths}. Any others I missed?"
-
 **Architecture:**
-8. "Any specific architecture constraints to enforce? (e.g. no barrel files, strict DDD layers)"
+7. "Any specific architecture constraints to enforce? (e.g. no barrel files, strict DDD layers)"
    Show detected patterns, ask if there's more.
 
 ### Step 4: Write kitt.json
@@ -219,8 +216,7 @@ The JSON structure:
   },
   "project": {
     "name": "{detected project name}",
-    "description": "{detected description}",
-    "agentDocs": ["{detected agent doc paths}"]
+    "description": "{detected description}"
   },
   "taskManager": {
     "type": "{jira|linear|github-issues|none}",
@@ -393,4 +389,4 @@ On INCOMPLETE:
 
 Re-run Step 3 (questions) and Step 4 (write kitt.json) only.
 Do NOT overwrite context files.
-Useful when: task manager changes, VCS account changes, new agentDocs paths.
+Useful when: task manager changes, VCS account changes, build command updates.

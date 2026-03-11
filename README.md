@@ -61,8 +61,7 @@ What stays **on your machine only** (gitignored):
 {
   "project": {
     "name": "my-project",
-    "description": "What this project does",
-    "agentDocs": ["services/payments/agents/"]
+    "description": "What this project does"
   },
   "taskManager": {
     "type": "jira",
@@ -112,7 +111,6 @@ What stays **on your machine only** (gitignored):
 | Field | Required | Description |
 |-------|----------|-------------|
 | `project.name` | ✅ | Project name |
-| `project.agentDocs` | — | Paths to service-specific agent documentation |
 | `taskManager.type` | ✅ | `jira` · `linear` · `github-issues` · `local` · `none` |
 | `taskManager.config.statuses` | ✅ | Status names as they appear in your task manager |
 | `vcs.type` | ✅ | `github` · `gitlab` · `bitbucket` |
