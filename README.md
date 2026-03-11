@@ -62,7 +62,7 @@ What stays **on your machine only** (gitignored):
   "project": {
     "name": "my-project",
     "description": "What this project does",
-    "agentDocs": ["apps/nest/microservices/network/agents/"]
+    "agentDocs": ["services/payments/agents/"]
   },
   "taskManager": {
     "type": "jira",
