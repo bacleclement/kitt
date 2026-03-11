@@ -6,14 +6,14 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 
 ---
 
-## What Kitt Gives You
+## 🚗 What Kitt Gives You
 
-- 🚗 **Full workflow pipeline:** refine → align → build-plan → implement
-- 🚗 **Systematic debugging:** reproduce → locate → root cause → fix → regress
-- 🚗 **Developer onboarding:** role-aware guide generated from your actual codebase
-- 🚗 **Pluggable adapters:** Jira, Linear, GitHub Issues, Local / GitHub, GitLab, Bitbucket / Figma
-- 🚗 **Smart setup wizard:** scans your repo, asks only what it can't infer
-- 🚗 **Zero hardcoding:** all platform config lives in `project.json`
+- **Full workflow pipeline:** refine → align → build-plan → implement
+- **Systematic debugging:** reproduce → locate → root cause → fix → regress
+- **Developer onboarding:** role-aware guide generated from your actual codebase
+- **Pluggable adapters:** Jira, Linear, GitHub Issues, Local / GitHub, GitLab, Bitbucket / Figma
+- **Smart setup wizard:** scans your repo, asks only what it can't infer
+- **Zero hardcoding:** all platform config lives in `project.json`
 
 ---
 
@@ -37,7 +37,7 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 
 ## How It Works
 
-Kitt installs **globally on your machine** (like superpowers or conductor) — not inside the project repo. Each developer installs once. Updates are a single `git pull`. No submodules, no forced commits.
+Kitt installs **globally on your machine** — not inside the project repo. Each developer installs once. Updates are a single `git pull`. No submodules, no forced commits.
 
 What lives **in the project repo** (shared by the team):
 - `.claude/config/project.json` — task manager, VCS, build commands
