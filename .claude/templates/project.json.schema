@@ -32,7 +32,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["jira", "linear", "github-issues", "none"]
+          "enum": ["jira", "linear", "github-issues", "local", "none"]
         },
         "config": {
           "type": "object",
@@ -81,6 +81,26 @@
         "typecheck": { "type": "string" },
         "lint":      { "type": "string" },
         "build":     { "type": "string" }
+      }
+    },
+    "design": {
+      "type": "object",
+      "description": "Optional design tool integration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["figma", "zeplin", "none"],
+          "description": "Design tool adapter to use"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "defaultFileKey": {
+              "type": "string",
+              "description": "Default design file key (e.g. Figma file key from URL)"
+            }
+          }
+        }
       }
     },
     "commitFormat": {
