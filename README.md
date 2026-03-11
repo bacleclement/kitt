@@ -6,7 +6,7 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 
 ---
 
-## 🚗 What Kitt Gives You
+## 🏎️ What Kitt Gives You
 
 - **Full workflow pipeline:** refine → align → build-plan → implement
 - **Systematic debugging:** reproduce → locate → root cause → fix → regress
@@ -50,6 +50,101 @@ What stays **on your machine only** (gitignored):
 - `~/.claude/kitt/` — the kitt installation
 - `.claude/skills → ~/.claude/kitt/...` — symlink
 - `.claude/adapters → ~/.claude/kitt/...` — symlink
+
+---
+
+## Project Configuration (`project.json`)
+
+`.claude/config/project.json` is the single source of truth for all platform config. Every skill reads it — nothing is hardcoded.
+
+```json
+{
+  "project": {
+    "name": "my-project",
+    "description": "What this project does",
+    "agentDocs": ["apps/nest/microservices/network/agents/"]
+  },
+  "taskManager": {
+    "type": "jira",
+    "config": {
+      "instanceUrl": "https://my-team.atlassian.net",
+      "projectKey": "HUB",
+      "statuses": {
+        "todo":       "À faire",
+        "inProgress": "En cours",
+        "review":     "Revue en cours",
+        "done":       "Terminé(e)",
+        "blocked":    "Bloqué(e)"
+      }
+    }
+  },
+  "vcs": {
+    "type": "github",
+    "config": {
+      "account":    "my-github-username",
+      "org":        "my-org",
+      "repo":       "my-repo",
+      "baseBranch": "main"
+    }
+  },
+  "build": {
+    "test":      "pnpm nx run {project}:test --testPathPattern={pattern}",
+    "typecheck": "pnpm nx run {project}:typecheck",
+    "lint":      "pnpm nx run {project}:lint",
+    "build":     "pnpm nx run {project}:build"
+  },
+  "commitFormat": {
+    "pattern":    "{type}({ticket}): {description}",
+    "types":      ["feat", "fix", "refactor", "test", "docs", "chore"],
+    "coAuthored": false
+  },
+  "design": {
+    "type": "figma",
+    "config": {
+      "defaultFileKey": "abc123XYZ"
+    }
+  }
+}
+```
+
+### Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `project.name` | ✅ | Project name |
+| `project.agentDocs` | — | Paths to service-specific agent documentation |
+| `taskManager.type` | ✅ | `jira` · `linear` · `github-issues` · `local` · `none` |
+| `taskManager.config.statuses` | ✅ | Status names as they appear in your task manager |
+| `vcs.type` | ✅ | `github` · `gitlab` · `bitbucket` |
+| `vcs.config.account` | ✅ | GitHub/GitLab username for PR creation |
+| `vcs.config.baseBranch` | ✅ | Default: `main` |
+| `build.*` | ✅ | Use `{project}` and `{pattern}` as placeholders |
+| `commitFormat.pattern` | ✅ | Use `{type}`, `{ticket}`, `{description}` |
+| `commitFormat.coAuthored` | — | Add `Co-Authored-By` to commit body. Default: `false` |
+| `design.type` | — | `figma` · `none` |
+| `design.config.defaultFileKey` | — | Default Figma file key (from URL) |
+
+### Task Manager: `local` (no external tool)
+
+When `taskManager.type` is `local`, work items are stored as files in `.claude/workspace/`. No Jira, no Linear, no account required.
+
+```json
+{
+  "taskManager": {
+    "type": "local",
+    "config": {
+      "projectKey": "FEAT",
+      "statuses": {
+        "todo":       "pending",
+        "inProgress": "in_progress",
+        "review":     "in_review",
+        "done":       "completed",
+        "blocked":    "blocked"
+      }
+    }
+  }
+}
+```
 
 ---
 
