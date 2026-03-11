@@ -44,84 +44,45 @@ All work starts with `/orchestrate`. It detects the current state and routes to 
 
 ### Use Case 1 — Raw idea (no ticket, no spec)
 
-You have an idea but haven't decided what to build yet.
-
-```mermaid
-flowchart TD
-    A([Raw idea]) --> B[/orchestrate/]
-    B --> C{Needs exploration?}
-    C -- yes --> D[/brainstorm/\nCollaborative dialogue\nPropose 2-3 approaches\nWrite design.md]
-    C -- no, scope clear --> E{Epic or Feature?}
-    D --> E
-    E -- Epic --> F[/refine — EPIC MODE/\nSpec + User Stories breakdown]
-    E -- Feature M --> G[/build-plan/]
-    E -- Feature S --> H[/implementor/]
-    F --> I[Extract US subfolders]
-    I --> J[/refine — US MODE/\nUS spec + ACs + NFRs]
-    J --> K[/align/\nArch validation]
-    K --> G
-    G --> L[/implementor/\nTDD · one commit per task]
-    L --> M([PR · Done])
 ```
-
----
+raw idea
+  └─ /orchestrate
+       ├─ needs exploration? → /brainstorm → design.md → /orchestrate
+       └─ scope clear?
+            ├─ Epic  → /refine (EPIC MODE) → spec + ## User Stories
+            │            └─ for each US: /refine → /align → /build-plan → /implementor → PR
+            ├─ Feature M  → /build-plan → /implementor → PR
+            └─ Feature S  → /implementor → PR
+```
 
 ### Use Case 2 — PM creates a ticket (epic with or without US)
 
-A product manager creates an epic in your task manager. You start from the ticket.
-
-```mermaid
-flowchart TD
-    A([Ticket key]) --> B[/orchestrate/\nReads ticket via adapter]
-    B --> C{Epic or Feature?}
-    C -- Epic, no US yet --> D[/refine — EPIC MODE/\nSpec + User Stories breakdown]
-    C -- Epic, US exist in TM --> E[Import US from task manager]
-    D --> F[Extract US subfolders]
-    E --> F
-    F --> G[For each US]
-    G --> H[/refine — US MODE/\nUS spec + ACs + NFRs]
-    H --> I[/align/\nArch validation]
-    I --> J[/build-plan/\nImplementation plan]
-    J --> K[/implementor/\nTDD · one commit per task]
-    K --> L{More US?}
-    L -- yes --> G
-    L -- no --> M([PR · Epic done])
 ```
-
----
+ticket key
+  └─ /orchestrate (reads ticket via adapter)
+       ├─ Epic, no US yet  → /refine (EPIC MODE) → extract US subfolders
+       └─ Epic, US in TM   → import US from task manager
+            └─ for each US: /refine → /align → /build-plan → /implementor → PR
+```
 
 ### Use Case 3 — Known feature or refactor
 
-You know what to build. Scope is clear enough to skip brainstorming.
-
-```mermaid
-flowchart TD
-    A([Known scope]) --> B[/orchestrate/\nAsk size]
-    B --> C{Size?}
-    C -- S: 1-3 files, obvious --> D[/implementor/\nMinimal inline plan]
-    C -- M: clear scope, 2 days --> E[/build-plan/]
-    C -- L: unclear or risky --> F[/refine/\nConstraint discovery]
-    F --> G[/align/\nArch validation]
-    G --> E
-    E --> H[/implementor/\nTDD · one commit per task]
-    H --> I([PR · Done])
 ```
-
----
+known scope
+  └─ /orchestrate (ask size)
+       ├─ S (1-3 files, obvious)  → /implementor
+       ├─ M (clear, < 2 days)     → /build-plan → /implementor → PR
+       └─ L (unclear or risky)    → /refine → /align → /build-plan → /implementor → PR
+```
 
 ### Use Case 4 — Bug
 
-```mermaid
-flowchart TD
-    A([Bug reported]) --> B[/orchestrate/]
-    B --> C{Root cause known?}
-    C -- no --> D[/debug/\nReproduce → isolate\n→ root cause → fix → regress]
-    C -- yes, quick --> E[/implementor/\nMinimal plan inline]
-    C -- yes, complex --> F[/build-plan/]
-    D --> G([Fix committed · PR])
-    E --> G
-    F --> H[/implementor/]
-    H --> G
+```
+bug reported
+  └─ /orchestrate
+       ├─ root cause unknown  → /debug → fix → PR
+       ├─ quick fix           → /implementor → PR
+       └─ complex fix         → /build-plan → /implementor → PR
 ```
 
 ---
