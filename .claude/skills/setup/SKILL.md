@@ -177,28 +177,45 @@ Present scan summary:
 >
 > I have {N} questions."
 
-### Step 3: Targeted questions (only what scan couldn't answer)
+### Step 3: Product discovery interview
 
-Ask ONLY questions where the answer wasn't inferred. Skip any that were detected.
+First, ask the user their preference:
+> "For context files, I can ask you questions or autogenerate from the scan alone.
+> **A) Ask me** — I answer, you build richer docs
+> **B) Autogenerate** — faster, but product.md will need editing"
 
-**Task manager questions** (if not inferred):
-1. "What task manager does this project use?" → Jira / Linear / GitHub Issues / None
-2. If Jira: "Instance URL?" (pre-fill with inferred value if found in commits/README)
-3. "Project key?" (pre-fill if inferred)
-4. "Status names — I'll use these defaults, correct them if needed:"
-   Show inferred or default statuses, ask for confirmation or corrections.
+**If B (autogenerate):** skip to Step 4. Product.md will be scan-only.
 
-**VCS questions** (if not inferred):
-5. "Which account should create PRs?" (pre-fill if single account in git config)
+**If A (interactive):** ask questions in **batches of up to 4**, waiting for answers before the next batch.
 
-**Build questions** (if not inferred):
-6. "Confirm build commands:" (show inferred commands, ask for corrections)
+Pre-fill from scan where possible — ask for confirmation, not from scratch.
 
-**Architecture:**
-7. "Any specific architecture constraints to enforce? (e.g. no barrel files, strict DDD layers)"
-   Show detected patterns, ask if there's more.
+**Batch 1:**
+1. "What does this product do? One sentence." *(pre-fill from README if found)*
+2. "Who are the primary users? List the main roles." *(pre-fill from module names if obvious)*
+3. "What are the core business domains?" *(pre-fill from detected module/microservice names)*
+4. "Any domain vocabulary I should know? Terms that mean something specific here." *(e.g. 'mission = shift', 'network = institution-worker relationship')*
 
-### Step 4: Write kitt.json
+**Batch 2** (after batch 1 is answered):
+5. "Any business rules the AI should always respect? Things that are easy to get wrong." *(e.g. 'contracts belong to a network, not a worker globally')*
+6. "Any architecture constraints to enforce?" *(pre-fill from detected patterns — DDD, no barrel files, etc.)*
+
+Store all answers — they feed `product.md` in Step 6.
+
+### Step 4: Tool configuration questions
+
+Ask unanswered tool questions in **one batch** — group everything that wasn't inferred from the scan:
+
+> "A few config questions — answer what you know, skip what doesn't apply:
+> 1. Task manager: {inferred or 'Jira / Linear / GitHub Issues / None?'}
+> 2. Jira instance URL: {inferred or '?'}
+> 3. Jira project key: {inferred or '?'}
+> 4. GitHub account for PRs: {inferred or '?'}
+> 5. Build commands — confirm or correct: [show inferred commands]"
+
+Skip any question where the scan gave a confident answer. If everything was inferred, show a summary and ask for a single confirm/correct response.
+
+### Step 5: Write kitt.json
 
 Show full kitt.json preview:
 > "Here's your kitt.json — confirming before I write it:"
@@ -255,86 +272,94 @@ The JSON structure:
 }
 ```
 
-### Step 5: Generate context file drafts
+### Step 6: Generate context file drafts (draft → confirm → write per file)
 
-Generate three files from scan data:
+For each file: generate a draft, show it to the user, wait for confirmation or corrections, then write. Do not write all three at once.
 
-**`product.md`** — from README + detected project purpose:
+**`product.md`** — from scan + product discovery interview (Step 3):
+
+Draft structure:
 ```markdown
 # {Project Name} — Product Context
 
 ## What Is {Project Name}
-
-{inferred from README description + codebase purpose}
+{interview answer 1, or README inference if autogenerate}
 
 ## Users
-
 | Role | Description | Key Actions |
 |------|-------------|-------------|
-{inferred from README or codebase, or placeholder rows}
+{interview answer 2, or inferred from module names}
 
 ## Core Domains
-
-{inferred from folder structure / module names, or placeholder}
+{interview answer 3 + detected module/microservice names}
 
 ## Business Rules
+{interview answer 5 — rules the AI must respect}
 
-{inferred from README business rules section, or placeholder}
+## Vocabulary
+{interview answer 4 — domain terms, omit section if none provided}
 ```
 
+Show draft, ask: *"Does this look right? Any corrections before I write it?"*
+Apply corrections, then write to `.claude/context/product.md`.
+
+---
+
 **`tech-stack.md`** — from manifests + detected patterns:
+
+Draft structure:
 ```markdown
 # {Project Name} — Tech Stack
 
 ## Architecture
-
 {inferred: monorepo / microservices / monolith}
 
 ## Backend
-
 | Layer | Technology |
 {inferred from manifests}
 
 ## Frontend
-
 | Layer | Technology |
 {inferred from manifests}
 
 ## Databases
-
 {inferred from ORM/driver dependencies}
 
 ## Infrastructure & CI/CD
-
 {inferred from CI config + cloud SDKs}
 ```
 
+Show draft, ask: *"Anything wrong or missing?"*
+Apply corrections, then write to `.claude/context/tech-stack.md`.
+
+---
+
 **`code-standards.md`** — from lint config + code samples:
+
+Draft structure:
 ```markdown
 # {Project Name} — Code Standards
 
 ## Naming Conventions
-
 {inferred from code samples}
 
 ## Import Rules
-
 {inferred from eslint config + samples}
 
 ## Formatting
-
 {inferred from prettier config}
 
 ## Architecture
-
-{inferred from detected patterns (DDD, hexagonal, etc.)}
+{inferred from detected patterns (DDD, hexagonal, etc.) + interview answer 6}
 
 ## Testing
-
 {inferred from test framework + sample test files}
 ```
 
-### Step 6: Write CLAUDE.md
+Show draft, ask: *"Anything wrong or missing?"*
+Apply corrections, then write to `.claude/context/code-standards.md`.
+
+### Step 7: Write CLAUDE.md
 
 Write `.claude/CLAUDE.md` with the minimal project guide. Do NOT overwrite if it already exists — in that case, skip silently.
 
@@ -375,12 +400,12 @@ Entry point: `/orchestrate` — skills at `.claude/skills/`, project-specific at
 
 Replace `{build.*}` placeholders with the actual commands from kitt.json.
 
-### Step 7: End message
+### Step 8: End message
 
 > "✅ Kitt configured.
 >
 > Three things to review before you start:
-> - `.claude/context/` — I've drafted product.md, tech-stack.md, code-standards.md from the scan. You know your project better than I do — edit them.
+> - `.claude/context/` — product.md was built from your answers + the scan. tech-stack.md and code-standards.md are inferred from the codebase. Edit where I got it wrong.
 > - `.claude/CLAUDE.md` — minimal project guide, add your own hard rules if needed.
 > - `.claude/project-skills/` — drop project-specific skills here as you build them.
 >
@@ -430,6 +455,24 @@ On INCOMPLETE:
 
 ## /setup update
 
-Re-run Step 3 (questions) and Step 4 (write kitt.json) only.
+Re-run Steps 3+4 (product interview + tool questions) and Step 5 (write kitt.json) only.
 Do NOT overwrite context files.
 Useful when: task manager changes, VCS account changes, build command updates.
+
+---
+
+## /setup reset-context
+
+Regenerate context files from scratch. Runs the same scan + interview + draft→confirm flow as First Install Steps 2, 3, 6 — skips kitt.json (already exists).
+
+Use when: context files are outdated, wrong, or were never generated properly.
+
+Steps:
+1. Read `.claude/config/kitt.json` for project name and build commands
+2. Run deep scan (First Install Step 2)
+3. Run product discovery interview (First Install Step 3)
+4. Delete existing context files if present
+5. Generate drafts with confirm loop per file (First Install Step 6)
+
+End message:
+> "Context files regenerated. Run `/setup validate` to confirm."
