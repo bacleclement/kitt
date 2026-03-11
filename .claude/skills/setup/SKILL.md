@@ -31,17 +31,83 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 ## When to Use
 
 After running `kitt-setup.sh` (Phase 1). Configures kitt for this specific project.
+Also used by new team members joining an already-configured project.
 Also used for: `/setup validate` to check completeness.
 
 ## Commands
 
-- `/setup` — full wizard (scan → questions → write config → generate context)
+- `/setup` — auto-detects mode: first install (full wizard) or join (dev environment init)
 - `/setup validate` — completeness check only
 - `/setup update` — re-run wizard to update project.json (keeps existing context files)
 
 ---
 
-## /setup — Full Wizard
+## /setup — Mode Detection
+
+**First action:** check if `.claude/config/project.json` already exists.
+
+```
+project.json exists?
+  NO  → First Install mode (full wizard)
+  YES → Join mode (dev environment init only)
+```
+
+---
+
+## /setup — Join Mode (project already configured)
+
+For developers joining a project that already has kitt set up.
+The config is already in the repo — don't touch it.
+
+### Step 1: Init submodule
+
+```bash
+git submodule update --init --recursive
+```
+
+If this fails:
+> "Submodule init failed. Check your network connection and that `.gitmodules` is present."
+
+### Step 2: Verify symlinks
+
+```
+Check .claude/adapters → .claude/kitt/.claude/adapters/
+Check .claude/conductor/ has epics/, features/, bugs/, refactors/
+```
+
+If symlinks are missing (can happen on Windows or after certain git operations):
+
+```bash
+# Recreate missing symlinks
+ln -sf kitt/.claude/adapters .claude/adapters
+mkdir -p .claude/conductor/epics .claude/conductor/features .claude/conductor/bugs .claude/conductor/refactors
+```
+
+### Step 3: Verify credentials
+
+Read `.claude/config/project.json` to know which adapters are configured, then check only those:
+
+**Task manager** (if `taskManager.type` ≠ `"local"` or `"none"`):
+- Load `.claude/adapters/task-manager/{type}/ADAPTER.md`
+- Follow its prerequisites section to verify auth
+
+**VCS**:
+- Load `.claude/adapters/vcs/{type}/ADAPTER.md`
+- Follow its prerequisites section to verify auth
+
+Report what's working and what needs attention. Do not block on optional credentials.
+
+### Step 4: Hand off to onboard
+
+```
+"Kitt is ready. Config was already set up by your team.
+
+Run /onboard to get your personalized onboarding guide."
+```
+
+---
+
+## /setup — First Install Mode (full wizard)
 
 ### Step 1: Check kitt installation
 
@@ -54,10 +120,6 @@ Verify .claude/conductor/ has all four subfolders
 
 If any missing:
 > "Kitt isn't fully installed yet. Run `bin/kitt-setup.sh` first, then come back."
-
-If project.json already exists:
-> "I found an existing project.json. Run `/setup update` to modify it,
-> or continue to overwrite. What would you prefer?"
 
 ### Step 2: Deep repo scan
 
@@ -284,8 +346,10 @@ Generate three files from scan data:
 > but you know your project better than I do.
 >
 > Review and edit them, then run `/setup validate` to confirm
-> everything is in order. After that: `/workflow-orchestrator`
-> to start working."
+> everything is in order. After that: `/orchestrate` to start working.
+>
+> New team members joining later just run `/setup` — they'll land in
+> join mode and skip straight to `/onboard`."
 
 ---
 
@@ -317,7 +381,7 @@ Required sections per context file:
 - `code-standards.md`: `## Architecture`, `## Testing`
 
 On COMPLETE:
-> "All systems nominal. You're cleared for takeoff. Run `/workflow-orchestrator` to begin."
+> "All systems nominal. You're cleared for takeoff. Run `/orchestrate` to begin."
 
 On INCOMPLETE:
 > "Almost. {N} item(s) need attention. Fix them and re-run `/setup validate`."
