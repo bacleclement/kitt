@@ -40,7 +40,7 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 - On completion: *"Done. It works. I had concerns along the way — they're documented."*
 ## When to Use
 
-- Plan exists at `.claude/conductor/{type}s/{parent?}/{key}/{key}-plan.md`
+- Plan exists at `.claude/workspace/{type}s/{parent?}/{key}/{key}-plan.md`
 - Ready to implement tasks
 
 ---
@@ -95,7 +95,7 @@ For each task in plan.md:
    Edit plan.md: Change `- [ ]` to `- [~]` for current task
 
 2. TDD cycle (REQUIRED):
-   Invoke Skill tool with skill="superpowers:test-driven-development"
+   Invoke Skill tool with skill="tdd"
    - RED: Write failing test
    - GREEN: Implement minimal code to pass
    - REFACTOR: Clean up while keeping tests green
@@ -106,7 +106,7 @@ For each task in plan.md:
    {build.lint}
 
 4. Verify (REQUIRED):
-   Invoke Skill tool with skill="superpowers:verification-before-completion"
+   Invoke Skill tool with skill="verify"
 
 5. Mark complete:
    Edit plan.md: Change `- [~]` to `- [x]` for current task
@@ -149,7 +149,7 @@ Types from `project.json commitFormat.types`: typically `feat`, `fix`, `refactor
 When tests fail after the GREEN phase:
 
 ```
-1. Invoke Skill tool with skill="superpowers:systematic-debugging"
+1. Invoke Skill tool with skill="debug"
 2. Follow the debugging skill's process
 3. Fix, re-run validation
 4. Only proceed when all tests pass
@@ -203,9 +203,9 @@ Edit plan.md directly. Do NOT create Task tool items.
 | Phase | Skill | Purpose |
 |-------|-------|---------|
 | Setup | `vcs/branch-creator` | Create branch from ticket |
-| Each task | `superpowers:test-driven-development` | TDD workflow |
-| Test failure | `superpowers:systematic-debugging` | Debug unexpected failures |
-| Each task | `superpowers:verification-before-completion` | Validate before marking complete |
+| Each task | `tdd` | TDD workflow |
+| Test failure | `debug` | Debug unexpected failures |
+| Each task | `verify` | Validate before marking complete |
 | Completion | `vcs/pr-creator` | Create PR with task manager linking |
 
 ---
@@ -217,7 +217,7 @@ Edit plan.md directly. Do NOT create Task tool items.
 | No plan.md | Route back to `orchestrate` |
 | No spec or missing ## Architecture section | Route back to `orchestrate` |
 | Dirty git repo | Stash or commit changes first |
-| Tests fail after GREEN | Invoke `superpowers:systematic-debugging` |
+| Tests fail after GREEN | Invoke `debug` |
 | Task manager auth failed | Follow adapter prerequisites section |
 | VCS auth failed | Follow adapter prerequisites section |
 

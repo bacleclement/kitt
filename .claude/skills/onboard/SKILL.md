@@ -305,7 +305,7 @@ Also offer:
 - Don't summarize them — just point to the path and say read them
 
 **If the project uses a local task manager (no Jira/Linear):**
-- Point to `.claude/conductor/` for work items
+- Point to `.claude/workspace/` for work items
 - Explain the folder structure (epics/, features/, bugs/, refactors/)
 
 ---

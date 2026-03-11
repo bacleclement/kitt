@@ -28,6 +28,8 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 | `align` | Validates spec against DDD / Clean Architecture |
 | `build-plan` | Breaks spec into implementable TDD tasks |
 | `implementor` | Implements tasks with TDD, one commit per task |
+| `tdd` | Red-Green-Refactor cycle — called by implementor on every task |
+| `verify` | Evidence before completion claims — no exceptions |
 | `debug` | Systematic bug investigation: reproduce → root cause → fix → regress |
 | `manage-task` | Ticket CRUD (read, create, transition, comment) |
 | `vcs/branch-creator` | Git branch from ticket key |
@@ -42,7 +44,7 @@ Kitt installs **globally on your machine**. Each developer installs once. Update
 What lives **in the project repo** (shared by the team):
 - `.claude/config/project.json` — task manager, VCS, build commands
 - `.claude/context/` — product knowledge, tech stack, code standards
-- `.claude/conductor/` — epics, features, bugs, refactors (work items)
+- `.claude/workspace/` — epics, features, bugs, refactors (work items)
 
 What stays **on your machine only** (gitignored):
 - `~/.claude/kitt/` — the kitt installation
@@ -142,7 +144,7 @@ Symlinks pick up the new version instantly. Nothing to commit in your project.
 my-project/.claude/
 ├── config/project.json      # ✅ committed — platform config (shared)
 ├── context/                 # ✅ committed — product.md, tech-stack.md, code-standards.md
-├── conductor/               # ✅ committed — epics/, features/, bugs/, refactors/
+├── workspace/               # ✅ committed — epics/, features/, bugs/, refactors/
 ├── CLAUDE.md                # ✅ committed — project AI instructions
 ├── skills  →  ~/.claude/kitt/.claude/skills/    # gitignored symlink (machine-local)
 └── adapters → ~/.claude/kitt/.claude/adapters/  # gitignored symlink (machine-local)

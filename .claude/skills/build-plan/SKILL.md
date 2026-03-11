@@ -56,7 +56,7 @@ Bridges the gap between architecture-alignment and implementor. Reads the existi
 
 The skill reads (does NOT re-ask questions that refinement already answered):
 
-1. **Spec file:** `.claude/conductor/{type}s/{parent?}/{key}/{key}-spec.md` (includes `## Architecture` section)
+1. **Spec file:** `.claude/workspace/{type}s/{parent?}/{key}/{key}-spec.md` (includes `## Architecture` section)
 2. **Project context files:**
    - `.claude/context/tech-stack.md` — approved technologies and patterns
    - `.claude/context/code-standards.md` — naming conventions, architecture rules, testing strategy

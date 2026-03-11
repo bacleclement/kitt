@@ -62,7 +62,7 @@ REFACTOR
 
 **Key difference:** Epics need User Story breakdown before implementation. Features don't.
 
-**Note:** All four conductor folders (epics/, features/, bugs/, refactors/) are created by kitt-setup.sh during installation.
+**Note:** All four workspace folders (epics/, features/, bugs/, refactors/) are created by kitt-setup.sh during installation.
 
 ---
 
@@ -88,7 +88,7 @@ Please tell me what you want to work on."
 **If existing ticket mentioned:**
 
 1. Read ticket via task-manager adapter `read(ticketKey)` operation
-2. Check folder: `.claude/conductor/{epics|features|bugs|refactors}/{key}/`
+2. Check folder: `.claude/workspace/{epics|features|bugs|refactors}/{key}/`
 3. Determine type from ticket or ask user if unclear
 4. Determine next step based on type (see Step 3)
 
@@ -101,7 +101,7 @@ Please tell me what you want to work on."
    - Refactor (technical improvement)
 2. Once type is determined, create the work folder and metadata:
    ```bash
-   mkdir -p .claude/conductor/{type}s/{key}/
+   mkdir -p .claude/workspace/{type}s/{key}/
    ```
    Write `metadata.json`:
    ```json
@@ -118,7 +118,7 @@ Please tell me what you want to work on."
 
 **If continuing work:**
 
-- Scan `.claude/conductor/` for folders with incomplete work
+- Scan `.claude/workspace/` for folders with incomplete work
 - Show status and ask which to continue
 
 **Complexity indicators:**
@@ -208,7 +208,7 @@ Follow feature workflow with strict architecture validation
 ### Epic Structure (two-level)
 
 ```
-.claude/conductor/epics/HUB-30000/
+.claude/workspace/epics/HUB-30000/
 ├── metadata.json                  # type: "epic"
 ├── HUB-30000-spec.md              # Epic-level spec (FRs, domain model, high-level)
 └── HUB-30001/                     # User Story folders (from refinement or import)
@@ -219,7 +219,7 @@ Follow feature workflow with strict architecture validation
 ### Feature Structure (flat)
 
 ```
-.claude/conductor/features/HUB-30803/
+.claude/workspace/features/HUB-30803/
 ├── metadata.json                  # type: "feature"
 ├── HUB-30803-spec.md              # Feature spec (includes ## Architecture section after alignment)
 └── HUB-30803-plan.md              # Feature plan
@@ -228,7 +228,7 @@ Follow feature workflow with strict architecture validation
 ### Bug Structure
 
 ```
-.claude/conductor/bugs/HUB-30801/
+.claude/workspace/bugs/HUB-30801/
 ├── metadata.json                  # type: "bug"
 ├── HUB-30801-spec.md              # Bug analysis (includes ## Architecture if complex)
 └── HUB-30801-plan.md              # Fix plan
@@ -237,7 +237,7 @@ Follow feature workflow with strict architecture validation
 ### Refactor Structure
 
 ```
-.claude/conductor/refactors/HUB-30802/
+.claude/workspace/refactors/HUB-30802/
 ├── metadata.json                  # type: "refactor"
 ├── HUB-30802-spec.md              # Refactoring rationale (includes ## Architecture after alignment)
 └── HUB-30802-plan.md              # Refactor plan
@@ -324,7 +324,7 @@ If ALL user stories have `"status": "completed"`, set the epic `"status": "compl
 
 ```typescript
 function routeEpic(epicKey: string) {
-  const epicPath = `.claude/conductor/epics/${epicKey}`;
+  const epicPath = `.claude/workspace/epics/${epicKey}`;
   const specPath = `${epicPath}/${epicKey}-spec.md`;
   const metadata = readJson(`${epicPath}/metadata.json`);
 
@@ -386,7 +386,7 @@ function routeEpic(epicKey: string) {
 
 ```typescript
 function routeFeature(featureKey: string, workType: "feature" | "bug" | "refactor") {
-  const basePath = `.claude/conductor/${workType}s/${featureKey}`;
+  const basePath = `.claude/workspace/${workType}s/${featureKey}`;
   const specPath = `${basePath}/${featureKey}-spec.md`;
   const planPath = `${basePath}/${featureKey}-plan.md`;
 

@@ -37,10 +37,10 @@ If any fail: stop and tell the user what's incomplete.
 ### Step 1: Find spec and plan files
 
 Use the Read tool to locate:
-- Spec: `.claude/conductor/{type}s/{parent?}/{key}/{key}-spec.md`
-- Plan: `.claude/conductor/{type}s/{parent?}/{key}/{key}-plan.md`
+- Spec: `.claude/workspace/{type}s/{parent?}/{key}/{key}-spec.md`
+- Plan: `.claude/workspace/{type}s/{parent?}/{key}/{key}-plan.md`
 
-Use the conductor folder structure or scan `.claude/conductor/` for the ticket key.
+Use the workspace folder structure or scan `.claude/workspace/` for the ticket key.
 Do NOT use `find` with regex — use the Read tool on known paths.
 
 ### Step 2: Extract PR content

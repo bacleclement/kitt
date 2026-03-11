@@ -8,7 +8,7 @@ version: 1.0
 # Local Adapter
 
 Implements the task-manager interface using local files only. No external CLI or API.
-Everything lives in `.claude/conductor/`. Works offline. No account required.
+Everything lives in `.claude/workspace/`. Works offline. No account required.
 
 Use this when `project.json taskManager.type` is `"local"`.
 
@@ -34,10 +34,10 @@ Use this when `project.json taskManager.type` is `"local"`.
 
 ## File Structure
 
-All data lives in `.claude/conductor/`:
+All data lives in `.claude/workspace/`:
 
 ```
-.claude/conductor/
+.claude/workspace/
 ├── epics/
 │   └── FEAT-001/
 │       ├── metadata.json      ← ticket data
@@ -55,7 +55,7 @@ All data lives in `.claude/conductor/`:
 ## read(ticketKey)
 
 ```
-1. Search .claude/conductor/*/{ticketKey}/ — find the folder
+1. Search .claude/workspace/*/{ticketKey}/ — find the folder
 2. Read metadata.json from that folder
 3. Read {ticketKey}-spec.md if it exists
 ```
@@ -83,11 +83,11 @@ To find next number: list all folders in conductor/ subfolders, extract numbers 
 ```
 1. Generate key (e.g. FEAT-007)
 2. Determine folder: epics/, features/, bugs/, or refactors/
-3. Create .claude/conductor/{folder}/{key}/
+3. Create .claude/workspace/{folder}/{key}/
 4. Write metadata.json
 5. Write {key}-spec.md with description content
-6. Show user: "Creating {key} at .claude/conductor/{folder}/{key}/ — confirm?"
-7. Return { key, url: ".claude/conductor/{folder}/{key}/" }
+6. Show user: "Creating {key} at .claude/workspace/{folder}/{key}/ — confirm?"
+7. Return { key, url: ".claude/workspace/{folder}/{key}/" }
 ```
 
 metadata.json:
@@ -128,7 +128,7 @@ metadata.json:
 
 ## comment(ticketKey, body)
 
-Append to `.claude/conductor/{folder}/{ticketKey}/{ticketKey}-log.md`:
+Append to `.claude/workspace/{folder}/{ticketKey}/{ticketKey}-log.md`:
 
 ```markdown
 ---
@@ -168,7 +168,7 @@ Also append to {ticketKey}-log.md:
 ## search(query)
 
 ```
-1. List all metadata.json files in .claude/conductor/**/
+1. List all metadata.json files in .claude/workspace/**/
 2. Filter: title contains query (case-insensitive) OR status matches query
 3. Return array of { key, summary, status, assignee }
 ```
@@ -176,7 +176,7 @@ Also append to {ticketKey}-log.md:
 ## Key generation
 
 ```
-1. Scan all .claude/conductor/**/ folder names
+1. Scan all .claude/workspace/**/ folder names
 2. Extract numbers from names matching {projectKey}-{N} pattern
 3. next = max(N) + 1, formatted as {projectKey}-{N:03d}
 ```

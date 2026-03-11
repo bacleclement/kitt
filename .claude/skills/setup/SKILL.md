@@ -80,7 +80,7 @@ Symlinks are not committed to the repo — recreate them pointing to the local k
 ```bash
 ln -snf ~/.claude/kitt/.claude/skills   .claude/skills
 ln -snf ~/.claude/kitt/.claude/adapters .claude/adapters
-mkdir -p .claude/conductor/epics .claude/conductor/features .claude/conductor/bugs .claude/conductor/refactors
+mkdir -p .claude/workspace/epics .claude/workspace/features .claude/workspace/bugs .claude/workspace/refactors
 ```
 
 ### Step 3: Verify credentials
@@ -115,7 +115,7 @@ Run /onboard to get your personalized onboarding guide."
 Verify ~/.claude/kitt/ exists (run `git clone https://github.com/bacleclement/kitt.git ~/.claude/kitt` if missing)
 Verify .claude/skills symlink points to ~/.claude/kitt/.claude/skills/
 Verify .claude/adapters symlink points to ~/.claude/kitt/.claude/adapters/
-Verify .claude/conductor/ has all four subfolders
+Verify .claude/workspace/ has all four subfolders
 ```
 
 If any missing:
@@ -370,7 +370,7 @@ Checking .claude/context/...
   ✅/⚠️  tech-stack.md — {N} lines {has/missing}: {required sections}
   ✅/⚠️  code-standards.md — {N} lines {has/missing}: {required sections}
 
-Checking .claude/conductor/...
+Checking .claude/workspace/...
   ✅/❌ epics/ features/ bugs/ refactors/ — {present/missing}
 
 Overall: {COMPLETE ✅ / INCOMPLETE ⚠️}
