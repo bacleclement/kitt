@@ -117,8 +117,8 @@ Kitt installs **globally on your machine**. Each developer installs once. Update
 
 **Machine-local only (gitignored):**
 - `~/.claude/kitt/` — the kitt installation
-- `.claude/skills → ~/.claude/kitt/...` — symlink
-- `.claude/adapters → ~/.claude/kitt/...` — symlink
+- `.claude/kitt-skills → ~/.claude/kitt/...` — symlink
+- `.claude/kitt-adapters → ~/.claude/kitt/...` — symlink
 
 ---
 
@@ -297,8 +297,8 @@ my-project/.claude/
 ├── project-skills/          # ✅ committed — project-specific skills (optional)
 │   └── my-skill/
 │       └── SKILL.md
-├── skills  →  ~/.claude/kitt/.claude/skills/    # gitignored symlink (machine-local)
-└── adapters → ~/.claude/kitt/.claude/adapters/  # gitignored symlink (machine-local)
+├── kitt-skills  →  ~/.claude/kitt/.claude/skills/    # gitignored symlink (machine-local)
+└── kitt-adapters → ~/.claude/kitt/.claude/adapters/  # gitignored symlink (machine-local)
 ```
 
 ### Project-Specific Skills

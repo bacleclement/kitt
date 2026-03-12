@@ -239,7 +239,7 @@ refine → align → build-plan → implement
 ```
 
 {Brief description of each step relevant to their role}
-{Point to `.claude/skills/` for details}
+{Point to `.claude/kitt-skills/` for details}
 
 ## First Task (if provided)
 

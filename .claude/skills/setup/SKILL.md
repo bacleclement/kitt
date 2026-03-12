@@ -78,8 +78,8 @@ git -C ~/.claude/kitt pull
 Symlinks are not committed to the repo — recreate them pointing to the local kitt install:
 
 ```bash
-ln -snf ~/.claude/kitt/.claude/skills   .claude/skills
-ln -snf ~/.claude/kitt/.claude/adapters .claude/adapters
+ln -snf ~/.claude/kitt/.claude/skills   .claude/kitt-skills
+ln -snf ~/.claude/kitt/.claude/adapters .claude/kitt-adapters
 mkdir -p .claude/workspace/epics .claude/workspace/features .claude/workspace/bugs .claude/workspace/refactors
 ```
 
@@ -88,11 +88,11 @@ mkdir -p .claude/workspace/epics .claude/workspace/features .claude/workspace/bu
 Read `.claude/config/kitt.json` to know which adapters are configured, then check only those:
 
 **Task manager** (if `taskManager.type` ≠ `"local"` or `"none"`):
-- Load `.claude/adapters/task-manager/{type}/ADAPTER.md`
+- Load `.claude/kitt-adapters/task-manager/{type}/ADAPTER.md`
 - Follow its prerequisites section to verify auth
 
 **VCS**:
-- Load `.claude/adapters/vcs/{type}/ADAPTER.md`
+- Load `.claude/kitt-adapters/vcs/{type}/ADAPTER.md`
 - Follow its prerequisites section to verify auth
 
 Report what's working and what needs attention. Do not block on optional credentials.
@@ -113,8 +113,8 @@ Run /onboard to get your personalized onboarding guide."
 
 ```
 Verify ~/.claude/kitt/ exists (run `git clone https://github.com/bacleclement/kitt.git ~/.claude/kitt` if missing)
-Verify .claude/skills symlink points to ~/.claude/kitt/.claude/skills/
-Verify .claude/adapters symlink points to ~/.claude/kitt/.claude/adapters/
+Verify .claude/kitt-skills symlink points to ~/.claude/kitt/.claude/skills/
+Verify .claude/kitt-adapters symlink points to ~/.claude/kitt/.claude/adapters/
 Verify .claude/workspace/ has all four subfolders
 ```
 
@@ -373,15 +373,15 @@ Write `.claude/CLAUDE.md` with the minimal project guide. Do NOT overwrite if it
 ├── CLAUDE.md              # This file
 ├── config/kitt.json       # Kitt configuration
 ├── context/               # product.md, tech-stack.md, code-standards.md
-├── skills/                # Symlink → ~/.claude/kitt/.claude/skills/ (machine-local)
-├── adapters/              # Symlink → ~/.claude/kitt/.claude/adapters/ (machine-local)
+├── kitt-skills/           # Symlink → ~/.claude/kitt/.claude/skills/ (machine-local)
+├── kitt-adapters/         # Symlink → ~/.claude/kitt/.claude/adapters/ (machine-local)
 ├── project-skills/        # Project-specific skills (add as needed)
 └── workspace/             # Work items — epics/, features/, bugs/, refactors/
 ```
 
 ## Kitt Workflow
 
-Entry point: `/orchestrate` — skills at `.claude/skills/`, project-specific at `.claude/project-skills/`.
+Entry point: `/orchestrate` — kitt skills at `.claude/kitt-skills/`, project-specific at `.claude/project-skills/`.
 
 ## Hard Rules
 
@@ -421,8 +421,8 @@ Check completeness and report:
 
 ```
 Checking .claude/config/kitt.json...
-  ✅ taskManager: {type} — adapter found at .claude/adapters/task-manager/{type}/ADAPTER.md
-  ✅ vcs: {type} — adapter found at .claude/adapters/vcs/{type}/ADAPTER.md
+  ✅ taskManager: {type} — adapter found at .claude/kitt-adapters/task-manager/{type}/ADAPTER.md
+  ✅ vcs: {type} — adapter found at .claude/kitt-adapters/vcs/{type}/ADAPTER.md
   ✅ build commands: test, typecheck, lint, build — all present
   ✅ commitFormat: pattern defined
 

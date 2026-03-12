@@ -49,8 +49,8 @@ mkdir -p "$CLAUDE_DIR/workspace/refactors"
 
 # Step 3: Create machine-local symlinks (gitignored)
 echo "Step 3/5: Creating symlinks..."
-ln -snf "$KITT_DIR/.claude/skills"   "$CLAUDE_DIR/skills"
-ln -snf "$KITT_DIR/.claude/adapters" "$CLAUDE_DIR/adapters"
+ln -snf "$KITT_DIR/.claude/skills"   "$CLAUDE_DIR/kitt-skills"
+ln -snf "$KITT_DIR/.claude/adapters" "$CLAUDE_DIR/kitt-adapters"
 
 # Step 4: Copy CLAUDE.md template if not present
 echo "Step 4/5: Copying CLAUDE.md template..."

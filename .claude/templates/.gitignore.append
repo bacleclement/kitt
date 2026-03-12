@@ -1,6 +1,6 @@
 # Kitt — machine-local symlinks (absolute paths, never commit)
-.claude/skills
-.claude/adapters
+.claude/kitt-skills
+.claude/kitt-adapters
 
 # Kitt — local secrets
 .env.local
