@@ -106,6 +106,35 @@ Epics use a two-level structure: epic spec at the top, one subfolder per user st
 
 ---
 
+## Implementation Modes
+
+When `/implement` starts, it asks which execution mode you want:
+
+```
+A) Subagent — parallel tasks within each phase, checkpoint between phases
+B) Sequential — one task at a time, full visibility
+```
+
+**Sequential (B):** Default. Kitt implements each task in order — TDD cycle, validation, commit, then asks for your review before moving to the next. Full control, nothing happens without you seeing it.
+
+**Subagent (A):** Kitt reads the phases from `build-plan` and dispatches parallel subagents for tasks within the same phase. Between phases, it shows a summary + diff and waits for your go/stop before continuing.
+
+```
+Phase 1 — Domain (parallel)
+  subagent: aggregate        ─┐
+  subagent: repo interface   ─┴─ run in parallel → checkpoint ✅
+
+Phase 2 — Application (depends on Phase 1)
+  subagent: command handler  ─── sequential → checkpoint ✅
+
+Phase 3 — Presentation (depends on Phase 2)
+  subagent: controller       ─── sequential → checkpoint ✅
+```
+
+Tasks within a phase are independent and safe to parallelize. Tasks across phases are sequential — `build-plan` makes dependencies explicit with `### Phase N` sections.
+
+---
+
 ## Project Configuration (`kitt.json`)
 
 `.claude/config/kitt.json` is the single source of truth for all platform config. Every skill reads it — nothing is hardcoded.
