@@ -28,8 +28,8 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 | `refine` | Constraint discovery: functional, access, NFRs. Epic mode generates spec with US breakdown |
 | `align` | Validates spec against DDD / Clean Architecture |
 | `build-plan` | Breaks spec into implementable TDD tasks |
-| `implementor` | Implements tasks with TDD, one commit per task |
-| `tdd` | Red-Green-Refactor cycle — called by implementor on every task |
+| \`implement\` | Implements tasks with TDD — sequential or subagent mode (parallel within phases) |
+| `tdd` | Red-Green-Refactor cycle — called by implement on every task |
 | `verify` | Evidence before completion claims — no exceptions |
 | `debug` | Systematic bug investigation: reproduce → root cause → fix → regress |
 | `manage-task` | Ticket CRUD (read, create, transition, comment) |
@@ -50,9 +50,9 @@ raw idea
        ├─ needs exploration? → /brainstorm → design.md → /orchestrate
        └─ scope clear?
             ├─ Epic  → /refine (EPIC MODE) → spec + ## User Stories
-            │            └─ for each US: /align → /build-plan → /implementor → PR
-            ├─ Feature M  → /build-plan → /implementor → PR
-            └─ Feature S  → /implementor → PR
+            │            └─ for each US: /align → /build-plan → /implement → PR
+            ├─ Feature M  → /build-plan → /implement → PR
+            └─ Feature S  → /implement → PR
 ```
 
 ### Use Case 2 — PM creates a ticket (epic with or without US)
@@ -62,7 +62,7 @@ ticket key
   └─ /orchestrate (reads ticket via adapter)
        ├─ Epic, no US yet  → /refine (EPIC MODE) → extract US subfolders
        └─ Epic, US in TM   → import US from task manager
-            └─ for each US: /align → /build-plan → /implementor → PR
+            └─ for each US: /align → /build-plan → /implement → PR
 ```
 
 ### Use Case 3 — Known feature or refactor
@@ -70,9 +70,9 @@ ticket key
 ```
 known scope
   └─ /orchestrate (ask size)
-       ├─ S (1-3 files, obvious)  → /implementor
-       ├─ M (clear, < 2 days)     → /build-plan → /implementor → PR
-       └─ L (unclear or risky)    → /refine → /align → /build-plan → /implementor → PR
+       ├─ S (1-3 files, obvious)  → /implement
+       ├─ M (clear, < 2 days)     → /build-plan → /implement → PR
+       └─ L (unclear or risky)    → /refine → /align → /build-plan → /implement → PR
 ```
 
 ### Use Case 4 — Bug
@@ -81,8 +81,8 @@ known scope
 bug reported
   └─ /orchestrate
        ├─ root cause unknown  → /debug → fix → PR
-       ├─ quick fix           → /implementor → PR
-       └─ complex fix         → /build-plan → /implementor → PR
+       ├─ quick fix           → /implement → PR
+       └─ complex fix         → /build-plan → /implement → PR
 ```
 
 ---
@@ -255,7 +255,7 @@ Symlinks pick up the new version instantly. Nothing to commit in your project.
     │   ├── refine/
     │   ├── align/
     │   ├── build-plan/
-    │   ├── implementor/
+    │   ├── implement/
     │   ├── tdd/
     │   ├── verify/
     │   ├── debug/

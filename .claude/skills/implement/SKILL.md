@@ -1,10 +1,10 @@
 ---
-name: implementor
-description: Implements tasks from plan.md with TDD, task manager integration, and PR creation. Reads commit format and platform config from kitt.json.
-version: 3.0
+name: implement
+description: Implements tasks from plan.md with TDD, task manager integration, and PR creation. Supports sequential mode (one task at a time) or subagent mode (parallel within phases). Reads commit format and platform config from kitt.json.
+version: 4.0
 ---
 
-# Implementor
+# Implement
 
 **Implements tasks from plan.md following TDD with task manager + VCS integration.**
 
@@ -59,6 +59,34 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 ```
 
 If any prerequisite is missing, tell the user and route back to `orchestrate`.
+
+---
+
+## Execution Mode
+
+After the pre-flight checklist passes, ask:
+
+```
+"Plan has {N} phases, {M} tasks.
+
+Execution mode:
+  A) Subagent — parallel tasks within each phase, checkpoint between phases
+  B) Sequential — one task at a time, full visibility
+
+Which do you prefer?"
+```
+
+**Mode A — Subagent:**
+- Read plan phases (sections marked `### Phase N`)
+- For each phase:
+  - Dispatch one subagent per task in parallel (tasks within a phase are independent)
+  - Each subagent: TDD → validate → commit
+  - After all tasks in the phase complete: show summary + diff to user
+  - Wait for explicit go/stop before next phase
+- If a subagent reports a blocker: surface to user before continuing
+
+**Mode B — Sequential:**
+- Proceed with Step 2 below (existing one-task-at-a-time workflow)
 
 ---
 

@@ -43,16 +43,16 @@ Routes work through the correct workflow:
 EPIC (2+ weeks, multiple user stories)
   Two-level workflow:
     Level 1 (Epic): brainstorm? → refine (spec + ## User Stories) → extract US folders
-    Level 2 (US):   refine → align → build-plan → implementor
+    Level 2 (US):   refine → align → build-plan → implement
 
 FEATURE / REFACTOR — size-based:
-  S  (< 2h, 1-3 files, crystal clear)  → implementor directly
-  M  (< 2 days, clear scope)           → build-plan → implementor
-  L  (2+ days, unclear scope)          → refine → align → build-plan → implementor
+  S  (< 2h, 1-3 files, crystal clear)  → implement directly
+  M  (< 2 days, clear scope)           → build-plan → implement
+  L  (2+ days, unclear scope)          → refine → align → build-plan → implement
 
 BUG/FIX
   Unknown root cause → debug
-  Known root cause   → implementor (quick) or build-plan (complex)
+  Known root cause   → implement (quick) or build-plan (complex)
 ```
 
 **Key rule:** Epics need a User Story breakdown before implementation. Features don't.
@@ -146,7 +146,7 @@ Detect state in this order:
    - No US spec         → refine (US MODE) on that US
    - US spec, no arch   → align on that US
    - US spec + arch, no plan → build-plan on that US
-   - Has plan           → implementor on that US
+   - Has plan           → implement on that US
    - All US completed   → epic complete
 ```
 
@@ -172,34 +172,34 @@ Ask: "How big is this?
 
 S: No spec needed.
    Ask: "One sentence — what changes?"
-   Create minimal inline plan → implementor directly
+   Create minimal inline plan → implement directly
 
 M: Skip refine + align.
    design.md exists? → build-plan (design acts as spec)
    No design.md     → build-plan (describe scope inline)
-   Has plan         → implementor
+   Has plan         → implement
 
 L: Full pipeline.
    No spec          → refine
    Spec, no arch    → align
    Spec + arch      → build-plan
-   Has plan         → implementor
+   Has plan         → implement
 ```
 
 ### For Refactors
 
 ```
-S → implementor directly (no spec, no plan)
-M → align (strict) → build-plan → implementor
-L → refine → align (strict) → build-plan → implementor
+S → implement directly (no spec, no plan)
+M → align (strict) → build-plan → implement
+L → refine → align (strict) → build-plan → implement
 ```
 
 ### For Bugs
 
 ```
 A) Unknown root cause → debug skill
-B) Known, quick fix   → implementor (minimal inline plan)
-C) Complex, multi-file → refine → align → build-plan → implementor
+B) Known, quick fix   → implement (minimal inline plan)
+C) Complex, multi-file → refine → align → build-plan → implement
 ```
 
 ---
@@ -335,7 +335,7 @@ Should I invoke refine?"
 | `refine` | No spec — epic or L feature | `Skill tool with skill="refine"` |
 | `align` | US/feature spec exists, no ## Architecture section | `Skill tool with skill="align"` |
 | `build-plan` | Spec + arch done (or M feature), no plan | `Skill tool with skill="build-plan"` |
-| `implementor` | Plan exists, ready to implement | `Skill tool with skill="implementor"` |
+| `implement` | Plan exists, ready to implement | `Skill tool with skill="implement"` |
 | `debug` | Bug, unknown root cause | `Skill tool with skill="debug"` |
 
 **Always confirm with user before invoking a skill.**

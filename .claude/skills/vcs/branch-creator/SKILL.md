@@ -16,7 +16,7 @@ Creates correctly-named git branches from task manager tickets.
 
 ## When to Use
 
-- Before starting implementation (called by implementor)
+- Before starting implementation (called by implement)
 - User explicitly requests branch creation
 
 ## Process

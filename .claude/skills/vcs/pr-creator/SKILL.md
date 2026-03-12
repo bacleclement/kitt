@@ -19,7 +19,7 @@ Creates pull/merge requests with proper formatting and task manager integration.
 
 - All tasks in plan.md marked `[x]`
 - Tests passing, typecheck clean
-- Called by implementor as final step
+- Called by implement as final step
 
 ## Pre-Flight Check
 
