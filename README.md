@@ -106,22 +106,6 @@ Epics use a two-level structure: epic spec at the top, one subfolder per user st
 
 ---
 
-## How It Works
-
-Kitt installs **globally on your machine**. Each developer installs once. Updates are a single `git pull`. No submodules, no forced commits.
-
-**Shared in the project repo:**
-- `.claude/config/kitt.json` — task manager, VCS, build commands
-- `.claude/context/` — product knowledge, tech stack, code standards
-- `.claude/workspace/` — epics, features, bugs, refactors (work items)
-
-**Machine-local only (gitignored):**
-- `~/.claude/kitt/` — the kitt installation
-- `.claude/kitt-skills → ~/.claude/kitt/...` — symlink
-- `.claude/kitt-adapters → ~/.claude/kitt/...` — symlink
-
----
-
 ## Project Configuration (`kitt.json`)
 
 `.claude/config/kitt.json` is the single source of truth for all platform config. Every skill reads it — nothing is hardcoded.
