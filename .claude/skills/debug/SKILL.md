@@ -8,7 +8,7 @@ version: 1.0
 
 Systematic debugging workflow. Given a bug report (ticket key, description, or direct failure), investigate the failure, confirm the root cause, apply a targeted fix, and report findings.
 
-**Delegates task manager operations to the `manage-task` skill** and VCS operations to `vcs/branch-creator` and `vcs/pr-creator`.
+**Delegates task manager operations to the `manage-task` skill** and VCS operations to `branch-creator` and `pr-creator`.
 
 ## Kitt Personality
 
@@ -236,7 +236,7 @@ Apply a minimal, targeted fix. Only change what is necessary to address the conf
 **For simple fixes:**
 
 ```bash
-# 1. Create fix branch (use vcs/branch-creator skill)
+# 1. Create fix branch (use branch-creator skill)
 # 2. Apply the minimal change
 # 3. Validate
 {build.typecheck}

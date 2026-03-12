@@ -33,8 +33,8 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 | `verify` | Evidence before completion claims — no exceptions |
 | `debug` | Systematic bug investigation: reproduce → root cause → fix → regress |
 | `manage-task` | Ticket CRUD (read, create, transition, comment) |
-| `vcs/branch-creator` | Git branch from ticket key |
-| `vcs/pr-creator` | PR creation with task manager linking |
+| `branch-creator` | Git branch from ticket key |
+| `pr-creator` | PR creation with task manager linking |
 
 ---
 

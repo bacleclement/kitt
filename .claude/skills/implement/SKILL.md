@@ -105,7 +105,7 @@ Which do you prefer?"
 
 ```
 Ask: "Create branch for {key}?"
-When user confirms → Invoke: Skill tool with skill="vcs/branch-creator"
+When user confirms → Invoke: Skill tool with skill="branch-creator"
 ```
 
 **Do NOT create branches manually.** The branch-creator skill handles everything.
@@ -207,7 +207,7 @@ After ALL tasks are complete:
 
 ```
 Ask: "All tasks complete. Create PR for {key}?"
-When user confirms → Invoke: Skill tool with skill="vcs/pr-creator"
+When user confirms → Invoke: Skill tool with skill="pr-creator"
 ```
 
 The pr-creator skill handles everything: push, account switch, PR creation, task manager linking, status transition.
@@ -230,11 +230,11 @@ Edit plan.md directly. Do NOT create Task tool items.
 
 | Phase | Skill | Purpose |
 |-------|-------|---------|
-| Setup | `vcs/branch-creator` | Create branch from ticket |
+| Setup | `branch-creator` | Create branch from ticket |
 | Each task | `tdd` | TDD workflow |
 | Test failure | `debug` | Debug unexpected failures |
 | Each task | `verify` | Validate before marking complete |
-| Completion | `vcs/pr-creator` | Create PR with task manager linking |
+| Completion | `pr-creator` | Create PR with task manager linking |
 
 ---
 

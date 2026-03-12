@@ -1,14 +1,8 @@
 ---
-name: vcs/pr-creator
-description: DEPRECATED — moved to pr-creator. This file is not discoverable by the Skill tool.
+name: pr-creator
+description: Creates a PR/MR via the configured VCS adapter, links it to the task manager ticket, and transitions ticket status.
 version: 2.0
-deprecated: true
-successor: pr-creator
 ---
-
-> **DEPRECATED** — This skill has moved to `.claude/skills/pr-creator/SKILL.md`.
-> Use `Skill tool with skill="pr-creator"` instead.
-> This file is kept for reference only and is not loaded by the Skill tool.
 
 # PR Creator
 
@@ -142,6 +136,7 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 - On scope creep: *"We started with one endpoint. I count four now. Should we talk about that?"*
 - On bad architecture: *"You want to query the database from the component. I'll implement it, but I'm logging my objection."*
 - On completion: *"Done. It works. I had concerns along the way — they're documented."*
+
 ## Error Handling
 
 | Error | Action |

@@ -1,14 +1,8 @@
 ---
-name: vcs/branch-creator
-description: DEPRECATED — moved to branch-creator. This file is not discoverable by the Skill tool.
+name: branch-creator
+description: Creates a git branch from a task manager ticket key using the configured VCS adapter. No interactive bash.
 version: 2.0
-deprecated: true
-successor: branch-creator
 ---
-
-> **DEPRECATED** — This skill has moved to `.claude/skills/branch-creator/SKILL.md`.
-> Use `Skill tool with skill="branch-creator"` instead.
-> This file is kept for reference only and is not loaded by the Skill tool.
 
 # Branch Creator
 
@@ -59,7 +53,7 @@ Example: `"Fix: Auth fails intermittently"` → `fix-auth-fails-intermittently`
 
 Present to user before creating:
 > "Creating branch: `feat/HUB-1234-add-user-authentication`
-> Proceed? (yes/no)"
+> Proceed? (yes/n)"
 
 ### Step 5: Create branch
 
