@@ -197,8 +197,9 @@ Pre-fill from scan where possible — ask for confirmation, not from scratch.
 4. "Any domain vocabulary I should know? Terms that mean something specific here." *(e.g. 'mission = shift', 'network = institution-worker relationship')*
 
 **Batch 2** (after batch 1 is answered):
-5. "Any business rules the AI should always respect? Things that are easy to get wrong." *(e.g. 'contracts belong to a network, not a worker globally')*
-6. "Any architecture constraints to enforce?" *(pre-fill from detected patterns — DDD, no barrel files, etc.)*
+5. "Any architecture constraints to enforce?" *(pre-fill from detected patterns — DDD, no barrel files, etc.)*
+
+Note: business rules are NOT collected here. They are harvested incrementally by `/align` after each US validation and appended to `product.md` only when they are cross-cutting and non-obvious from the code.
 
 Store all answers — they feed `product.md` in Step 6.
 
@@ -294,7 +295,8 @@ Draft structure:
 {interview answer 3 + detected module/microservice names}
 
 ## Business Rules
-{interview answer 5 — rules the AI must respect}
+
+*Populated incrementally by `/align` after each US validation. Do not fill manually at setup.*
 
 ## Vocabulary
 {interview answer 4 — domain terms, omit section if none provided}

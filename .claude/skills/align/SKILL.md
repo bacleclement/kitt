@@ -161,3 +161,23 @@ Return to refinement to address these violations before re-running architecture-
 #### APPROVED WITH CONCERNS ⚠️
 
 Minor issues that don't block implementation. Append Architecture section with concerns documented.
+
+---
+
+### Phase 4: Business Rules Harvest (on APPROVED or APPROVED WITH CONCERNS only)
+
+After writing the `## Architecture` section, ask:
+
+> "Did this US reveal a cross-cutting business rule that isn't obvious from the code?"
+
+**Persist to `product.md` only if ALL of these are true:**
+- Not already enforced by code structure (aggregate throws, guard, DB constraint)
+- Affects more than one feature or domain
+- Would cause a real bug if Claude ignored it in a future session
+
+**If yes:** append to `.claude/context/product.md` under `## Business Rules`:
+```markdown
+- {one-line rule} *(source: {us-key})*
+```
+
+**If no** (local validation, already visible in code, single-feature rule): skip silently — do not add noise.
