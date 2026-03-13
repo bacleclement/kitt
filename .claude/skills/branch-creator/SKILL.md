@@ -40,7 +40,7 @@ If ticket type is "Task" and purpose is unclear, ask:
 
 ### Step 3: Generate slug
 
-From ticket summary:
+From ticket **summary/title** (NEVER from the ticket key itself):
 1. Lowercase
 2. Replace all non-alphanumeric characters with `-`
 3. Collapse consecutive hyphens to one
@@ -48,6 +48,17 @@ From ticket summary:
 5. Truncate to 50 characters
 
 Example: `"Fix: Auth fails intermittently"` → `fix-auth-fails-intermittently`
+
+### Step 3b: Deduplicate
+
+Normalize the ticket key to kebab-case (lowercase, hyphens only).
+If the slug is identical to — or already fully contained within — the normalized key, **omit the slug**.
+
+| Ticket key | Summary slug | Branch |
+|------------|-------------|--------|
+| `HUB-1234` | `add-user-auth` | `feat/HUB-1234-add-user-auth` ✅ |
+| `email-notifications` | `email-notifications` | `feat/email-notifications` ✅ (no duplicate) |
+| `email-notifications` | `send-email-on-task-assign` | `feat/email-notifications-send-email-on-task-assign` ✅ |
 
 ### Step 4: Confirm branch name
 

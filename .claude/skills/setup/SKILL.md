@@ -636,11 +636,27 @@ Checking credentials...
   [GitHub, if vcs.type == "github" or taskManager.type == "github-issues"]
   ✅/❌ gh: gh auth status
            ❌ → run: gh auth login
+  ✅/⚠️  account: gh api user --jq .login
+           compare against vcs.config.account in kitt.json
+           ⚠️  mismatch → PRs will be created from the wrong account
+                         Fix: update kitt.json vcs.config.account, or run: gh auth switch
 
   [Figma, if design.type == "figma"]
   ✅/❌ figma MCP: check if mcp__figma__get_design_context is available
      or ✅/❌ FIGMA_TOKEN: echo $FIGMA_TOKEN | grep -q .
            ❌ → configure MCP or add FIGMA_TOKEN to .env.local
+
+Checking project scaffold...
+  [if package.json exists]
+  ✅/❌ node_modules/: present/missing
+           ❌ → run: {package manager install command}
+               (detect from lockfile: npm install / yarn install / pnpm install)
+  [if requirements.txt or pyproject.toml exists]
+  ✅/❌ venv or site-packages: present/missing
+           ❌ → run: pip install -r requirements.txt (or equivalent)
+  [if go.mod exists]
+  ✅/❌ Go modules: run `go mod download` if vendor/ missing
+  Note: TDD is broken until dependencies are installed.
 
 Checking .claude/context/...
   ✅/⚠️  product.md — {N} lines, {has/missing}: {required sections}
