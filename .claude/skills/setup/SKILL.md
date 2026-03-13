@@ -179,25 +179,81 @@ Present scan summary:
 
 ### Step 3: Product discovery interview
 
+**One question at a time. Wait for the answer before asking the next. No batching.**
+
+Every question uses the options pattern:
+- Pre-fill scan inferences as option A
+- Provide other common options where applicable
+- Last option is always "Type your own" or "Skip"
+- User can reply with a letter OR type a free-form answer
+
 First, ask the user their preference:
-> "For context files, I can ask you questions or autogenerate from the scan alone.
-> **A) Ask me** — I answer, you build richer docs
-> **B) Autogenerate** — faster, but product.md will need editing"
 
-**If B (autogenerate):** skip to Step 4. Product.md will be scan-only.
+```
+How would you like to build the context files?
+  A) Ask me questions — you build richer, more accurate docs
+  B) Autogenerate from scan — faster, but product.md will need editing later
+```
 
-**If A (interactive):** ask questions in **batches of up to 4**, waiting for answers before the next batch.
+**If B:** skip to Step 4. Generate product.md from scan data alone in Step 6.
 
-Pre-fill from scan where possible — ask for confirmation, not from scratch.
+**If A:** ask each question below, one at a time, waiting for the answer before continuing.
 
-**Batch 1:**
-1. "What does this product do? One sentence." *(pre-fill from README if found)*
-2. "Who are the primary users? List the main roles." *(pre-fill from module names if obvious)*
-3. "What are the core business domains?" *(pre-fill from detected module/microservice names)*
-4. "Any domain vocabulary I should know? Terms that mean something specific here." *(e.g. 'mission = shift', 'network = institution-worker relationship')*
+---
 
-**Batch 2** (after batch 1 is answered):
-5. "Any architecture constraints to enforce?" *(pre-fill from detected patterns — DDD, no barrel files, etc.)*
+**Q3.1 — What does this product do?**
+
+```
+What does this product do? (one sentence)
+  A) {scan inference from README — show it}
+  B) Type your own
+```
+
+---
+
+**Q3.2 — Primary user roles**
+
+```
+Who are the primary users? (comma-separate to select multiple)
+  A) {inferred role 1 from module/folder names}
+  B) {inferred role 2}
+  C) {inferred role 3}
+  D) Type your own / add roles I missed
+```
+
+If scan found no clear roles: skip options A–C, show only `A) Type your own` / `B) Skip (fill later)`.
+
+---
+
+**Q3.3 — Core business domains**
+
+```
+Core business domains? (comma-separate to select multiple, or type corrections)
+  A) Confirm all: {domain1, domain2, domain3, ...} (detected from folder/module names)
+  B) Some are wrong — type the correct list
+  C) Skip (fill in later)
+```
+
+---
+
+**Q3.4 — Domain vocabulary**
+
+```
+Any domain vocabulary I should know? Terms that mean something specific here.
+  A) None — standard terminology
+  B) Type your glossary (e.g. "mission = shift, network = institution-worker relationship")
+```
+
+---
+
+**Q3.5 — Architecture constraints**
+
+```
+Architecture constraints to enforce?
+  A) {inferred — e.g. "DDD layer separation, no cross-domain imports, no barrel files"} (detected patterns)
+  B) Type your own constraints
+  C) None / skip
+```
 
 Note: business rules are NOT collected here. They are harvested incrementally by `/align` after each US validation and appended to `product.md` only when they are cross-cutting and non-obvious from the code.
 
@@ -207,70 +263,166 @@ Store all answers — they feed `product.md` in Step 6.
 
 Three sub-steps: **select tools → init credentials → confirm statuses/config**.
 
-The scan may suggest answers — always show them as suggestions, never treat them as decided. The user must confirm every tool choice explicitly.
+**One question at a time throughout. Wait for the answer before asking the next.**
+Every question: scan inference as option A, alternatives as B/C, last option always "Type your own" or "Skip".
 
 ---
 
-#### Step 4A: Tool selection (3 explicit questions, one at a time)
+#### Step 4A: Tool selection
 
-**Question 1 — VCS:**
+**Q4.1 — VCS platform**
 
-> "Which VCS platform do you use?
-> A) GitHub
-> B) GitLab
-> C) Bitbucket
->
-> *(Scan detected: {detected or 'nothing conclusive'})*"
+```
+Which VCS platform do you use?
+  A) GitHub  (scan detected: {org/repo from remote URL, or 'nothing conclusive'})
+  B) GitLab
+  C) Bitbucket
+  D) Other (type)
+```
 
-Collect: type, org/owner, repo name, base branch (default: `main`), account username for PRs.
-If the scan detected `org/repo` from the remote URL, show it and ask to confirm.
+→ then ask follow-up questions one at a time:
 
----
+**Q4.1a — Org / owner**
+```
+Org or owner name?
+  A) {detected from remote URL}
+  B) Type your own
+```
 
-**Question 2 — Task manager:**
+**Q4.1b — Repository name**
+```
+Repository name?
+  A) {detected from remote URL}
+  B) Type your own
+```
 
-> "Which task manager does your team use?
-> A) Jira
-> B) Linear
-> C) GitHub Issues
-> D) Local (file-based, no external tool)
-> E) None
->
-> *(Scan detected: {detected or 'nothing conclusive — do not guess'})*"
+**Q4.1c — Base branch**
+```
+Base branch?
+  A) main (default)
+  B) master
+  C) Type your own
+```
 
-**Do not treat commit patterns as a reliable signal.** Only suggest if the scan found an unambiguous indicator (e.g. `.jira` config file, `linear.json`). When in doubt, show "nothing conclusive".
-
-If Jira: also ask instance URL (`https://your-team.atlassian.net`) and project key (`PROJ`).
-If Linear: also ask team URL (`https://linear.app/your-team`) and team key (`ENG`).
-If GitHub Issues: org/repo already collected from VCS question — confirm it's the same repo.
-If Local: ask only for a project key prefix (e.g. `FEAT`) — used to generate ticket keys.
-If None: skip all task manager config.
-
----
-
-**Question 3 — Design tool:**
-
-> "Do you use a design tool?
-> A) Figma
-> B) None
->
-> *(No inference — always ask.)*"
-
-If Figma: ask for default file key (optional — can be left blank and provided per-spec later).
+**Q4.1d — Your username for PR creation**
+```
+Your {GitHub/GitLab/Bitbucket} username? (used when creating PRs)
+  A) {detected from gh auth status, if available}
+  B) Type your own
+```
 
 ---
 
-**Question 4 — Build commands:**
+**Q4.2 — Task manager**
 
-Show inferred commands from scan (package.json scripts, Makefile, CI config):
+```
+Which task manager does your team use?
+  A) Jira
+  B) Linear
+  C) GitHub Issues
+  D) Local (file-based, no external tool)
+  E) None
+```
 
-> "Here are the build commands I detected — confirm or correct:
-> - test: `{detected or '?'}`
-> - typecheck: `{detected or '?'}`
-> - lint: `{detected or '?'}`
-> - build: `{detected or '?'}`
->
-> Leave blank to skip a command."
+**Do not infer from commit patterns.** Only show a scan detection note if an unambiguous indicator was found (`.jira` config, `linear.json`, etc.). When in doubt: no suggestion.
+
+→ follow-up questions one at a time, depending on answer:
+
+**If Jira:**
+
+```
+Jira instance URL?
+  A) https://{detected-subdomain}.atlassian.net  (scan detected)
+  B) Type your own
+```
+
+```
+Jira project key?
+  A) {detected from commit patterns, e.g. HUB}
+  B) Type your own
+```
+
+**If Linear:**
+
+```
+Linear team URL?
+  A) https://linear.app/{detected-team}  (scan detected)
+  B) Type your own
+```
+
+```
+Linear team key?
+  A) {detected, e.g. ENG}
+  B) Type your own
+```
+
+**If GitHub Issues:** org/repo already collected — confirm it's the same repo (one question).
+
+**If Local:**
+
+```
+Project key prefix for local tickets? (e.g. FEAT, PROJ)
+  A) {project name uppercased, truncated to 4 chars}  (suggestion)
+  B) Type your own
+```
+
+**If None:** skip all further task manager questions.
+
+---
+
+**Q4.3 — Design tool**
+
+```
+Do you use a design tool?
+  A) Figma
+  B) None
+```
+
+If Figma:
+
+```
+Figma default file key? (optional — can be left blank and provided per-spec later)
+  A) Skip for now
+  B) Type file key
+```
+
+---
+
+**Q4.4 — Build commands (one command at a time)**
+
+Ask each command separately. Do NOT present as a table.
+
+**Q4.4a — Test command**
+```
+Test command?
+  A) {inferred from package.json / Makefile / CI}  (scan detected)
+  B) Skip
+  C) Type your own
+```
+
+**Q4.4b — Typecheck command**
+```
+Typecheck command?
+  A) {inferred}  (scan detected)
+  B) Skip
+  C) Type your own
+```
+
+**Q4.4c — Lint command**
+```
+Lint command?
+  A) {inferred}  (scan detected)
+  B) Skip
+  C) Type your own
+```
+
+**Q4.4d — Build command**
+```
+Build command?
+  A) {inferred}  (scan detected)
+  B) Skip
+  C) Type your own
+```
 
 ---
 
@@ -356,13 +508,18 @@ Fetch the project's actual workflow states:
 acli jira workflow list --project {projectKey} --output-format json
 ```
 
-Show the returned status names, then ask the user to map them to kitt's 5 slots:
-> "Map your Jira statuses to kitt's workflow:
-> - todo       → {user picks from list}
-> - inProgress → {user picks from list}
-> - review     → {user picks from list}
-> - done       → {user picks from list}
-> - blocked    → {user picks from list}"
+Then map each of kitt's 5 slots one at a time. For each slot, show the fetched status names as lettered options:
+
+```
+Which status maps to "todo" (not started yet)?
+  A) {fetched status 1}
+  B) {fetched status 2}
+  C) {fetched status 3}
+  ...
+  Z) Type your own
+```
+
+Repeat for: `inProgress`, `review`, `done`, `blocked` — one question each, wait for answer before next.
 
 ---
 
@@ -376,20 +533,33 @@ curl -s -X POST https://api.linear.app/graphql \
   -d '{"query": "{ workflowStates { nodes { name } } }"}'
 ```
 
-Same mapping prompt as Jira.
+Same one-at-a-time mapping as Jira — one question per slot, fetched state names as options.
 
 ---
 
 **GitHub Issues:**
 
-GitHub uses labels for statuses. Show defaults and ask to confirm or edit:
-> "GitHub Issues uses labels for workflow status. Default label names:
-> - inProgress → `in-progress`
-> - review     → `in-review`
-> - blocked    → `blocked`
-> (todo and done map to open/closed — no label needed)
->
-> Confirm, or enter your team's actual label names."
+GitHub uses labels. Ask each label one at a time:
+
+```
+Label for "in progress" tasks?
+  A) in-progress  (default)
+  B) Type your own
+```
+
+```
+Label for "in review" tasks?
+  A) in-review  (default)
+  B) Type your own
+```
+
+```
+Label for "blocked" tasks?
+  A) blocked  (default)
+  B) Type your own
+```
+
+(todo and done map to open/closed — no label needed, skip those slots.)
 
 ---
 
