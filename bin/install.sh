@@ -49,7 +49,15 @@ mkdir -p "$CLAUDE_DIR/workspace/refactors"
 
 # Step 3: Create machine-local symlinks (gitignored)
 echo "Step 3/5: Creating symlinks..."
-ln -snf "$KITT_DIR/.claude/skills"   "$CLAUDE_DIR/kitt-skills"
+mkdir -p "$CLAUDE_DIR/skills"
+for skill in "$KITT_DIR/.claude/skills"/*/; do
+  skill_name=$(basename "$skill")
+  if [ ! -e "$CLAUDE_DIR/skills/$skill_name" ]; then
+    ln -snf "$skill" "$CLAUDE_DIR/skills/$skill_name"
+  else
+    echo "  (skills/$skill_name already exists, skipping)"
+  fi
+done
 ln -snf "$KITT_DIR/.claude/adapters" "$CLAUDE_DIR/kitt-adapters"
 
 # Step 4: Copy CLAUDE.md template if not present
