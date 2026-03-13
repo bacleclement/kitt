@@ -203,18 +203,199 @@ Note: business rules are NOT collected here. They are harvested incrementally by
 
 Store all answers — they feed `product.md` in Step 6.
 
-### Step 4: Tool configuration questions
+### Step 4: Tool configuration
 
-Ask unanswered tool questions in **one batch** — group everything that wasn't inferred from the scan:
+Three sub-steps: **select tools → init credentials → confirm statuses/config**.
 
-> "A few config questions — answer what you know, skip what doesn't apply:
-> 1. Task manager: {inferred or 'Jira / Linear / GitHub Issues / None?'}
-> 2. Jira instance URL: {inferred or '?'}
-> 3. Jira project key: {inferred or '?'}
-> 4. GitHub account for PRs: {inferred or '?'}
-> 5. Build commands — confirm or correct: [show inferred commands]"
+The scan may suggest answers — always show them as suggestions, never treat them as decided. The user must confirm every tool choice explicitly.
 
-Skip any question where the scan gave a confident answer. If everything was inferred, show a summary and ask for a single confirm/correct response.
+---
+
+#### Step 4A: Tool selection (3 explicit questions, one at a time)
+
+**Question 1 — VCS:**
+
+> "Which VCS platform do you use?
+> A) GitHub
+> B) GitLab
+> C) Bitbucket
+>
+> *(Scan detected: {detected or 'nothing conclusive'})*"
+
+Collect: type, org/owner, repo name, base branch (default: `main`), account username for PRs.
+If the scan detected `org/repo` from the remote URL, show it and ask to confirm.
+
+---
+
+**Question 2 — Task manager:**
+
+> "Which task manager does your team use?
+> A) Jira
+> B) Linear
+> C) GitHub Issues
+> D) Local (file-based, no external tool)
+> E) None
+>
+> *(Scan detected: {detected or 'nothing conclusive — do not guess'})*"
+
+**Do not treat commit patterns as a reliable signal.** Only suggest if the scan found an unambiguous indicator (e.g. `.jira` config file, `linear.json`). When in doubt, show "nothing conclusive".
+
+If Jira: also ask instance URL (`https://your-team.atlassian.net`) and project key (`PROJ`).
+If Linear: also ask team URL (`https://linear.app/your-team`) and team key (`ENG`).
+If GitHub Issues: org/repo already collected from VCS question — confirm it's the same repo.
+If Local: ask only for a project key prefix (e.g. `FEAT`) — used to generate ticket keys.
+If None: skip all task manager config.
+
+---
+
+**Question 3 — Design tool:**
+
+> "Do you use a design tool?
+> A) Figma
+> B) None
+>
+> *(No inference — always ask.)*"
+
+If Figma: ask for default file key (optional — can be left blank and provided per-spec later).
+
+---
+
+**Question 4 — Build commands:**
+
+Show inferred commands from scan (package.json scripts, Makefile, CI config):
+
+> "Here are the build commands I detected — confirm or correct:
+> - test: `{detected or '?'}`
+> - typecheck: `{detected or '?'}`
+> - lint: `{detected or '?'}`
+> - build: `{detected or '?'}`
+>
+> Leave blank to skip a command."
+
+---
+
+#### Step 4B: Credential init (per selected tool, each independently skippable)
+
+For each non-None tool selected, show the setup instructions and ask:
+> "Ready to set this up now, or skip and do it later?"
+> **A) Do it now** — follow instructions, confirm when done
+> **B) Skip for now** — kitt.json will be written, but this tool won't work until credentials are set. Run `/setup validate` when ready.
+
+Skipping is always allowed. Never block kitt.json creation on credentials.
+
+---
+
+**Jira:**
+```
+Tool: acli (Atlassian CLI)
+
+Install: brew install atlassian-labs/tools/acli
+Auth:    acli jira auth login
+
+Verify:  acli jira workitem view {any-valid-key} --output-format json
+```
+
+---
+
+**Linear:**
+```
+No CLI needed — uses API key directly.
+
+1. Go to: linear.app → Settings → API → Personal API keys
+2. Create a key and copy it
+3. Add to .env.local:
+   LINEAR_API_KEY=lin_api_xxxxxxxxxxxx
+
+Verify: echo $LINEAR_API_KEY | grep -q . && echo "✅" || echo "❌"
+```
+
+---
+
+**GitHub (VCS and/or GitHub Issues):**
+```
+Tool: gh CLI
+
+Install: brew install gh
+Auth:    gh auth login
+
+Verify:  gh auth status
+```
+
+---
+
+**Figma:**
+```
+Option A — MCP (preferred, no token needed):
+Add to .claude/settings.json:
+{
+  "mcpServers": {
+    "figma": { "command": "npx", "args": ["-y", "@figma/mcp-server"] }
+  }
+}
+Verify: restart Claude Code session, confirm mcp__figma__get_design_context is available.
+
+Option B — REST API fallback:
+1. Go to: figma.com → Settings → Personal access tokens → create token
+2. Add to .env.local:
+   FIGMA_TOKEN=figd_xxxxxxxxxxxx
+```
+
+---
+
+#### Step 4C: Status / config confirmation (per task manager)
+
+**Only run this step if credentials were confirmed in 4B (not skipped).**
+If credentials were skipped: write hardcoded defaults into kitt.json and add a `// TODO` comment.
+
+---
+
+**Jira:**
+
+Fetch the project's actual workflow states:
+```bash
+acli jira workflow list --project {projectKey} --output-format json
+```
+
+Show the returned status names, then ask the user to map them to kitt's 5 slots:
+> "Map your Jira statuses to kitt's workflow:
+> - todo       → {user picks from list}
+> - inProgress → {user picks from list}
+> - review     → {user picks from list}
+> - done       → {user picks from list}
+> - blocked    → {user picks from list}"
+
+---
+
+**Linear:**
+
+Fetch workflow states via API:
+```bash
+curl -s -X POST https://api.linear.app/graphql \
+  -H "Authorization: $LINEAR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ workflowStates { nodes { name } } }"}'
+```
+
+Same mapping prompt as Jira.
+
+---
+
+**GitHub Issues:**
+
+GitHub uses labels for statuses. Show defaults and ask to confirm or edit:
+> "GitHub Issues uses labels for workflow status. Default label names:
+> - inProgress → `in-progress`
+> - review     → `in-review`
+> - blocked    → `blocked`
+> (todo and done map to open/closed — no label needed)
+>
+> Confirm, or enter your team's actual label names."
+
+---
+
+**Local / None:** skip — no status questions.
+
+---
 
 ### Step 5: Write kitt.json
 
@@ -237,33 +418,39 @@ The JSON structure:
     "description": "{detected description}"
   },
   "taskManager": {
-    "type": "{jira|linear|github-issues|none}",
+    "type": "{jira|linear|github-issues|local|none}",
     "config": {
-      "instanceUrl": "{instance url}",
+      "instanceUrl": "{instance url — omit if local or none}",
       "projectKey": "{project key}",
       "statuses": {
-        "todo":       "{todo status name}",
-        "inProgress": "{in progress status name}",
-        "review":     "{review status name}",
-        "done":       "{done status name}",
-        "blocked":    "{blocked status name}"
+        "todo":       "{confirmed or default todo status}",
+        "inProgress": "{confirmed or default inProgress status}",
+        "review":     "{confirmed or default review status}",
+        "done":       "{confirmed or default done status}",
+        "blocked":    "{confirmed or default blocked status}"
       }
     }
   },
   "vcs": {
     "type": "{github|gitlab|bitbucket}",
     "config": {
-      "account":    "{pr account username}",
+      "account":    "{github/gitlab/bitbucket username for PR creation}",
       "org":        "{org or owner}",
       "repo":       "{repo name}",
-      "baseBranch": "main"
+      "baseBranch": "{base branch, default: main}"
     }
   },
   "build": {
-    "test":      "{detected test command with {project} and {pattern} placeholders}",
-    "typecheck": "{detected typecheck command}",
-    "lint":      "{detected lint command}",
-    "build":     "{detected build command}"
+    "test":      "{confirmed test command — omit if blank}",
+    "typecheck": "{confirmed typecheck command — omit if blank}",
+    "lint":      "{confirmed lint command — omit if blank}",
+    "build":     "{confirmed build command — omit if blank}"
+  },
+  "design": {
+    "type": "{figma|none}",
+    "config": {
+      "defaultFileKey": "{figma file key — omit if none or not provided}"
+    }
   },
   "commitFormat": {
     "pattern": "{type}({ticket}): {description}",
@@ -272,6 +459,14 @@ The JSON structure:
   }
 }
 ```
+
+**Omit** the `design` block entirely if the user chose None.
+**Omit** `taskManager.config.instanceUrl` if type is `local` or `none`.
+**Omit** `taskManager.config.statuses` if type is `none`.
+
+If any credentials were **skipped in 4B**, append a comment block after the JSON preview:
+> "⚠️  Skipped credential setup for: {list of tools}
+> Run `/setup validate` after setting them up to confirm everything works."
 
 ### Step 6: Generate context file drafts (draft → confirm → write per file)
 
@@ -419,19 +614,38 @@ Replace `{build.*}` placeholders with the actual commands from kitt.json.
 
 ## /setup validate
 
-Check completeness and report:
+Check completeness and report. Read `kitt.json` first to know which tools are configured — only verify credentials for the tools that are actually selected.
 
 ```
 Checking .claude/config/kitt.json...
-  ✅ taskManager: {type} — adapter found at .claude/kitt-adapters/task-manager/{type}/ADAPTER.md
-  ✅ vcs: {type} — adapter found at .claude/kitt-adapters/vcs/{type}/ADAPTER.md
-  ✅ build commands: test, typecheck, lint, build — all present
+  ✅ taskManager: {type} — adapter found
+  ✅ vcs: {type} — adapter found
+  ✅ build commands: {N} of 4 present
   ✅ commitFormat: pattern defined
+  ✅/⚠️  design: {type|not configured}
+
+Checking credentials...
+  [Jira, if taskManager.type == "jira"]
+  ✅/❌ acli: acli jira workitem view {projectKey}-1 --output-format json
+           ❌ → run: acli jira auth login
+
+  [Linear, if taskManager.type == "linear"]
+  ✅/❌ LINEAR_API_KEY: echo $LINEAR_API_KEY | grep -q .
+           ❌ → add LINEAR_API_KEY to .env.local
+
+  [GitHub, if vcs.type == "github" or taskManager.type == "github-issues"]
+  ✅/❌ gh: gh auth status
+           ❌ → run: gh auth login
+
+  [Figma, if design.type == "figma"]
+  ✅/❌ figma MCP: check if mcp__figma__get_design_context is available
+     or ✅/❌ FIGMA_TOKEN: echo $FIGMA_TOKEN | grep -q .
+           ❌ → configure MCP or add FIGMA_TOKEN to .env.local
 
 Checking .claude/context/...
-  ✅/⚠️  product.md — {N} lines {has/missing}: {required sections}
-  ✅/⚠️  tech-stack.md — {N} lines {has/missing}: {required sections}
-  ✅/⚠️  code-standards.md — {N} lines {has/missing}: {required sections}
+  ✅/⚠️  product.md — {N} lines, {has/missing}: {required sections}
+  ✅/⚠️  tech-stack.md — {N} lines, {has/missing}: {required sections}
+  ✅/⚠️  code-standards.md — {N} lines, {has/missing}: {required sections}
 
 Checking .claude/CLAUDE.md...
   ✅/❌ present/missing
@@ -457,9 +671,9 @@ On INCOMPLETE:
 
 ## /setup update
 
-Re-run Steps 3+4 (product interview + tool questions) and Step 5 (write kitt.json) only.
-Do NOT overwrite context files.
-Useful when: task manager changes, VCS account changes, build command updates.
+Re-run Steps 4A–4C (tool selection, credential init, status confirmation) and Step 5 (write kitt.json) only.
+Do NOT overwrite context files or re-run the product interview.
+Useful when: switching task manager, changing VCS account, adding Figma, updating build commands, or fixing skipped credentials.
 
 ---
 
