@@ -298,47 +298,6 @@ Symlinks pick up the new version instantly. Nothing to commit in your project.
     └── templates/           # kitt.json schema, context templates
 ```
 
-## Per-Project Structure (after adoption)
-
-```
-my-project/.claude/
-├── config/kitt.json         # ✅ committed — platform config (shared)
-├── context/                 # ✅ committed — product.md, tech-stack.md, code-standards.md
-├── workspace/               # ✅ committed — epics/, features/, bugs/, refactors/
-├── CLAUDE.md                # ✅ committed — project AI instructions
-├── project-skills/          # ✅ committed — project-specific skills (optional)
-│   └── my-skill/
-│       └── SKILL.md
-├── skills/                  # gitignored — individual symlinks per skill (machine-local)
-│   ├── setup      →  ~/.claude/kitt/.claude/skills/setup/
-│   ├── implement  →  ~/.claude/kitt/.claude/skills/implement/
-│   └── ...        →  (one symlink per skill, created by install.sh)
-└── kitt-adapters → ~/.claude/kitt/.claude/adapters/  # gitignored symlink (machine-local)
-```
-
-### Project-Specific Skills
-
-Kitt provides generic skills. For domain-specific workflows, add them to `.claude/project-skills/`:
-
-```
-.claude/project-skills/
-└── my-skill/
-    └── SKILL.md
-```
-
-Document them in `CLAUDE.md` so Claude knows they exist:
-
-```markdown
-## Project-Specific Skills
-
-| Skill | File | Purpose |
-|-------|------|---------|
-| `my-skill` | `.claude/project-skills/my-skill/SKILL.md` | What it does |
-```
-
-**Invocation:** `Read .claude/project-skills/my-skill/SKILL.md` — there is no slash command. Claude reads the file and follows its instructions.
-
----
 
 ## Version
 
