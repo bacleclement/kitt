@@ -73,31 +73,41 @@ If it exists but may be outdated:
 git -C ~/.claude/kitt pull
 ```
 
-### Step 2: Recreate machine-local symlinks
+### Step 2: Recreate project-local skill symlinks
 
-Symlinks are not committed to the repo — recreate them pointing to the local kitt install:
+Kitt skills must be linked into `.claude/skills/` so Claude can discover them in this project.
 
 ```bash
-ln -snf ~/.claude/kitt/.claude/skills   .claude/kitt-skills
-ln -snf ~/.claude/kitt/.claude/adapters .claude/kitt-adapters
+mkdir -p .claude/skills
+for skill in ~/.claude/kitt/.claude/skills/*/; do
+  skill_name=$(basename "$skill")
+  if [ ! -e ".claude/skills/$skill_name" ]; then
+    ln -snf "$skill" ".claude/skills/$skill_name"
+  fi
+done
+```
+
+### Step 3: Ensure workspace folders exist
+
+```bash
 mkdir -p .claude/workspace/epics .claude/workspace/features .claude/workspace/bugs .claude/workspace/refactors
 ```
 
-### Step 3: Verify credentials
+### Step 4: Verify credentials
 
 Read `.claude/config/kitt.json` to know which adapters are configured, then check only those:
 
 **Task manager** (if `taskManager.type` ≠ `"local"` or `"none"`):
-- Load `.claude/kitt-adapters/task-manager/{type}/ADAPTER.md`
+- Load `~/.claude/kitt/.claude/adapters/task-manager/{type}/ADAPTER.md`
 - Follow its prerequisites section to verify auth
 
 **VCS**:
-- Load `.claude/kitt-adapters/vcs/{type}/ADAPTER.md`
+- Load `~/.claude/kitt/.claude/adapters/vcs/{type}/ADAPTER.md`
 - Follow its prerequisites section to verify auth
 
 Report what's working and what needs attention. Do not block on optional credentials.
 
-### Step 4: Hand off to onboard
+### Step 5: Hand off to onboard
 
 ```
 "Kitt is ready. Config was already set up by your team.
@@ -113,9 +123,7 @@ Run /onboard to get your personalized onboarding guide."
 
 ```
 Verify ~/.claude/kitt/ exists (run `git clone https://github.com/bacleclement/kitt.git ~/.claude/kitt` if missing)
-Verify .claude/kitt-skills symlink points to ~/.claude/kitt/.claude/skills/
-Verify .claude/kitt-adapters symlink points to ~/.claude/kitt/.claude/adapters/
-Verify .claude/workspace/ has all four subfolders
+Verify .claude/workspace/ has all four subfolders (epics, features, bugs, refactors)
 ```
 
 If any missing:
@@ -740,15 +748,13 @@ Write `.claude/CLAUDE.md` with the minimal project guide. Do NOT overwrite if it
 ├── CLAUDE.md              # This file
 ├── config/kitt.json       # Kitt configuration
 ├── context/               # product.md, tech-stack.md, code-standards.md
-├── kitt-skills/           # Symlink → ~/.claude/kitt/.claude/skills/ (machine-local)
-├── kitt-adapters/         # Symlink → ~/.claude/kitt/.claude/adapters/ (machine-local)
-├── project-skills/        # Project-specific skills (add as needed)
+├── skills/                # Project-specific skills (add as needed)
 └── workspace/             # Work items — epics/, features/, bugs/, refactors/
 ```
 
 ## Kitt Workflow
 
-Entry point: `/orchestrate` — kitt skills at `.claude/kitt-skills/`, project-specific at `.claude/project-skills/`.
+Entry point: `/orchestrate` — global kitt skills registered via ~/.claude/settings.json, project-specific at `.claude/skills/`.
 
 ## Hard Rules
 
