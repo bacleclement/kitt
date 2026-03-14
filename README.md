@@ -12,7 +12,7 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 - **Systematic debugging:** reproduce → locate → root cause → fix → regress
 - **Developer onboarding:** role-aware guide generated from your actual codebase
 - **Pluggable adapters:** Jira, Linear, GitHub Issues, Local / GitHub, GitLab, Bitbucket
-- **Smart setup wizard:** scans your repo, asks only what it can't infer
+- **Smart setup wizard:** scans your repo, asks one question at a time with lettered options
 - **Zero hardcoding:** all platform config lives in `kitt.json`
 
 ---
@@ -227,7 +227,7 @@ Open Claude Code in your project root and run:
 /setup
 ```
 
-Kitt scans your repo, asks a few questions, and writes:
+Kitt scans your repo and walks you through configuration one question at a time — each answer is a lettered option, with a "type your own" escape hatch if none fit. It writes:
 - `.claude/config/kitt.json` — task manager, VCS, build commands
 - `.claude/context/` — product knowledge, tech stack, code standards
 
@@ -289,9 +289,8 @@ Symlinks pick up the new version instantly. Nothing to commit in your project.
     │   ├── verify/
     │   ├── debug/
     │   ├── manage-task/
-    │   └── vcs/
-    │       ├── branch-creator/
-    │       └── pr-creator/
+    │   ├── branch-creator/
+    │   └── pr-creator/
     ├── adapters/             # Platform adapters
     │   ├── task-manager/    # Jira, Linear, GitHub Issues, Local
     │   ├── vcs/             # GitHub, GitLab, Bitbucket
@@ -310,7 +309,10 @@ my-project/.claude/
 ├── project-skills/          # ✅ committed — project-specific skills (optional)
 │   └── my-skill/
 │       └── SKILL.md
-├── kitt-skills  →  ~/.claude/kitt/.claude/skills/    # gitignored symlink (machine-local)
+├── skills/                  # gitignored — individual symlinks per skill (machine-local)
+│   ├── setup      →  ~/.claude/kitt/.claude/skills/setup/
+│   ├── implement  →  ~/.claude/kitt/.claude/skills/implement/
+│   └── ...        →  (one symlink per skill, created by install.sh)
 └── kitt-adapters → ~/.claude/kitt/.claude/adapters/  # gitignored symlink (machine-local)
 ```
 
