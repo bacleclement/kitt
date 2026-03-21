@@ -12,8 +12,8 @@ version: 2.0
 
 1. Read `.claude/config/kitt.json`
 2. Note `taskManager.type`, `vcs.type`, `build.*`, `commitFormat`
-3. Load task-manager adapter: `.claude/kitt-adapters/task-manager/{taskManager.type}/ADAPTER.md`
-4. Load VCS adapter: `.claude/kitt-adapters/vcs/{vcs.type}/ADAPTER.md`
+3. Load task-manager adapter: `~/.claude/kitt/.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
+4. Load VCS adapter: `~/.claude/kitt/.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
 5. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
 6. Auto-discover agent docs: glob `**/agents/` and any `AGENTS.md` files in the repo — load relevant ones for the domain being worked on
 
@@ -66,6 +66,40 @@ The skill reads (does NOT re-ask questions that refinement already answered):
 ---
 
 ## Process
+
+### Step 0: Verify Prerequisites
+
+Before doing anything else, locate the workspace folder for `{key}` and check whether `{key}-spec.md` exists in it.
+
+**If `{key}-spec.md` does not exist:**
+
+> "No spec file found for {key}. build-plan requires a spec written to disk — inline context passed as arguments doesn't count.
+>
+> Two options:
+> A) Run `refine` first — it will produce `{key}-spec.md` through a structured constraint-discovery interview.
+> B) You already have the spec content (e.g. from Jira or inline arguments) — I can write it to `{key}-spec.md` now, then proceed to plan-building.
+>
+> Which do you prefer?"
+
+- If **A**: stop here. Invoke `refine`.
+- If **B**: write the provided content to `{key}-spec.md` (using the standard spec format), then continue to Step 1.
+
+**If `{key}-spec.md` exists but has no `## Architecture` section:**
+
+> "Spec exists but has no `## Architecture` section. This means `align` hasn't run yet.
+>
+> Two options:
+> A) Run `align` first — it validates the spec against project architecture and appends the `## Architecture` section.
+> B) Skip align and proceed — I'll note this in the plan header as unvalidated.
+>
+> Which do you prefer?"
+
+- If **A**: stop here. Invoke `align`.
+- If **B**: continue with a warning in the plan header: `⚠️ Architecture not validated — align was skipped.`
+
+**If `{key}-spec.md` exists with `## Architecture`:** continue to Step 1.
+
+---
 
 ### Step 1: Read Context
 
@@ -164,7 +198,11 @@ Present the plan summary and wait for approval before proceeding.
 
 After user approves the plan:
 
-**1. Ask about task manager sub-tasks:**
+**1. Ask about task manager sub-tasks (skip if `taskManager.type === "local"`):**
+
+When `taskManager.type` is `"local"`, progress is tracked via `plan.md` checkboxes — local sub-task files duplicate that with zero value. Do NOT ask, do NOT create them.
+
+When `taskManager.type` is NOT `"local"` (e.g. `jira`, `linear`, `github`):
 
 ```
 "Would you like me to create sub-tasks for each plan task under {key}?
@@ -205,5 +243,5 @@ Each task should take 5-30 minutes of implementation time.
 - Don't skip phases (even if a phase has only 1 task)
 - Don't combine domain + infrastructure in one task
 - Don't create tasks without validation commands
-- Don't assume the user wants sub-tasks (always ask)
+- Don't create sub-tasks when `taskManager.type === "local"` — plan.md is the source of truth
 - Don't hardcode build commands — read from kitt.json
