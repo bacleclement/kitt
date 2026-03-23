@@ -62,6 +62,7 @@ raw idea
 ```
 ticket key
   └─ /orchestrate (reads ticket via adapter)
+       ├─ worktree? → /vcs/worktree → isolated workspace → back to orchestrate
        ├─ Epic, no US yet  → /refine (EPIC MODE) → extract US subfolders
        └─ Epic, US in TM   → import US from task manager
             └─ for each US: /align → /build-plan → /implement → PR
@@ -72,6 +73,7 @@ ticket key
 ```
 known scope
   └─ /orchestrate (ask size)
+       ├─ worktree? → /vcs/worktree → isolated workspace → back to orchestrate
        ├─ S (1-3 files, obvious)  → /implement
        ├─ M (clear, < 2 days)     → /build-plan → /implement → PR
        └─ L (unclear or risky)    → /refine → /align → /build-plan → /implement → PR
@@ -82,6 +84,7 @@ known scope
 ```
 bug reported
   └─ /orchestrate
+       ├─ worktree? → /vcs/worktree → isolated workspace → back to orchestrate
        ├─ root cause unknown  → /debug → fix → PR
        ├─ quick fix           → /implement → PR
        └─ complex fix         → /build-plan → /implement → PR
