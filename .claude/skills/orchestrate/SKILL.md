@@ -95,6 +95,23 @@ Two sub-cases:
 
 ---
 
+## Step 1b: Ask About Worktree Isolation
+
+After the user describes the work — before any routing — ask once:
+
+```
+"Do you want to work in an isolated worktree? (y/n)
+
+Useful if: long-running task, parallel work, or your current directory has uncommitted changes."
+```
+
+- **Yes** → invoke `worktree` skill. It creates the worktree and hands back here. Continue routing from Step 2 inside the worktree.
+- **No** → continue routing from Step 2 in the current directory.
+
+Only ask once. Never ask again mid-workflow.
+
+---
+
 ## Step 2: Analyze the Request
 
 **If existing ticket:**
@@ -331,6 +348,7 @@ Should I invoke refine?"
 
 | Skill | When Called | How to Invoke |
 |-------|-------------|---------------|
+| `worktree` | User wants isolation (Step 1b) | `Skill tool with skill="worktree"` |
 | `brainstorm` | Raw idea, needs exploration, no ticket | `Skill tool with skill="brainstorm"` |
 | `refine` | No spec — epic or L feature | `Skill tool with skill="refine"` |
 | `align` | US/feature spec exists, no ## Architecture section | `Skill tool with skill="align"` |

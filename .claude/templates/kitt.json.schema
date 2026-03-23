@@ -66,6 +66,22 @@
             "repo":       { "type": "string" },
             "baseBranch": { "type": "string", "default": "main" }
           }
+        },
+        "worktrees": {
+          "type": "object",
+          "description": "Optional worktree isolation configuration",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Base path for worktrees. Use {{project.name}} as placeholder. Default: ~/worktrees/{{project.name}}",
+              "default": "~/worktrees/{{project.name}}"
+            },
+            "setup": {
+              "type": "array",
+              "description": "Commands to run after worktree creation. If omitted, auto-detected from project files.",
+              "items": { "type": "string" }
+            }
+          }
         }
       }
     },

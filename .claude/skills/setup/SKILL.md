@@ -396,6 +396,35 @@ Figma default file key? (optional — can be left blank and provided per-spec la
 
 ---
 
+**Q4.3b — Worktree configuration**
+
+```
+Do you want to configure worktree isolation? (used by /orchestrate when starting new work)
+  A) Yes — I'll work in isolated git worktrees
+  B) No — skip this
+```
+
+**If A:**
+
+```
+Where should worktrees be stored?
+  A) ~/worktrees/{project.name}  (recommended — outside repo, always safe)
+  B) Type your own path
+```
+
+```
+Any extra setup commands to run after creating a worktree? (e.g. pnpm install)
+  A) Auto-detect from project files (recommended)
+  B) Type commands (one per line)
+  C) None
+```
+
+If B: collect commands one at a time until user says done.
+
+Write to kitt.json under `vcs.worktrees`. If auto-detect chosen, omit the `setup` array entirely.
+
+---
+
 **Q4.4 — Build commands (one command at a time)**
 
 Ask each command separately. Do NOT present as a table.

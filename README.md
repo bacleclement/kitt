@@ -35,6 +35,7 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 | `manage-task` | Ticket CRUD (read, create, transition, comment) |
 | `branch-creator` | Git branch from ticket key |
 | `pr-creator` | PR creation with task manager linking |
+| `vcs/worktree` | Creates isolated git worktree outside the repo — called by orchestrate when user wants isolation |
 
 ---
 
@@ -47,6 +48,7 @@ All work starts with `/orchestrate`. It detects the current state and routes to 
 ```
 raw idea
   └─ /orchestrate
+       ├─ worktree? → /vcs/worktree → isolated workspace → back to orchestrate
        ├─ needs exploration? → /brainstorm → design.md → /orchestrate
        └─ scope clear?
             ├─ Epic  → /refine (EPIC MODE) → spec + ## User Stories
@@ -166,6 +168,10 @@ Tasks within a phase are independent and safe to parallelize. Tasks across phase
       "org":        "my-org",
       "repo":       "my-repo",
       "baseBranch": "main"
+    },
+    "worktrees": {
+      "path": "~/worktrees/{{project.name}}",
+      "setup": ["pnpm install"]
     }
   },
   "build": {
@@ -195,6 +201,8 @@ Tasks within a phase are independent and safe to parallelize. Tasks across phase
 | `build.*` | ✅ | Use `{project}` and `{pattern}` as placeholders |
 | `commitFormat.pattern` | ✅ | Use `{type}`, `{ticket}`, `{description}` |
 | `commitFormat.coAuthored` | — | Add `Co-Authored-By` to commit body. Default: `false` |
+| `vcs.worktrees.path` | — | Base path for worktrees. Use `{{project.name}}` as placeholder. Default: `~/worktrees/{{project.name}}` |
+| `vcs.worktrees.setup` | — | Commands to run after worktree creation. If omitted, auto-detected from project files |
 
 ### No external task manager? Use `local`
 
@@ -290,7 +298,9 @@ Symlinks pick up the new version instantly. Nothing to commit in your project.
     │   ├── debug/
     │   ├── manage-task/
     │   ├── branch-creator/
-    │   └── pr-creator/
+    │   ├── pr-creator/
+    │   └── vcs/
+    │       └── worktree/
     ├── adapters/             # Platform adapters
     │   ├── task-manager/    # Jira, Linear, GitHub Issues, Local
     │   ├── vcs/             # GitHub, GitLab, Bitbucket
