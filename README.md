@@ -36,6 +36,8 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 | `branch-creator` | Git branch from ticket key |
 | `pr-creator` | PR creation with task manager linking |
 | `vcs/worktree` | Creates isolated git worktree outside the repo — called by orchestrate when user wants isolation |
+| `finish-development` | End-of-work sequence: verify → push → PR → ticket transition → worktree cleanup |
+| `vcs/worktree-finish` | Removes a worktree properly after PR is merged — called by finish-development |
 
 ---
 
@@ -52,9 +54,9 @@ raw idea
        ├─ needs exploration? → /brainstorm → design.md → /orchestrate
        └─ scope clear?
             ├─ Epic  → /refine (EPIC MODE) → spec + ## User Stories
-            │            └─ for each US: /align → /build-plan → /implement → PR
-            ├─ Feature M  → /build-plan → /implement → PR
-            └─ Feature S  → /implement → PR
+            │            └─ for each US: /align → /build-plan → /implement → /finish-development → PR + cleanup
+            ├─ Feature M  → /build-plan → /implement → /finish-development → PR + cleanup
+            └─ Feature S  → /implement → /finish-development → PR + cleanup
 ```
 
 ### Use Case 2 — PM creates a ticket (epic with or without US)
@@ -65,7 +67,7 @@ ticket key
        ├─ worktree? → /vcs/worktree → isolated workspace → back to orchestrate
        ├─ Epic, no US yet  → /refine (EPIC MODE) → extract US subfolders
        └─ Epic, US in TM   → import US from task manager
-            └─ for each US: /align → /build-plan → /implement → PR
+            └─ for each US: /align → /build-plan → /implement → /finish-development → PR + cleanup
 ```
 
 ### Use Case 3 — Known feature or refactor
@@ -74,9 +76,9 @@ ticket key
 known scope
   └─ /orchestrate (ask size)
        ├─ worktree? → /vcs/worktree → isolated workspace → back to orchestrate
-       ├─ S (1-3 files, obvious)  → /implement
-       ├─ M (clear, < 2 days)     → /build-plan → /implement → PR
-       └─ L (unclear or risky)    → /refine → /align → /build-plan → /implement → PR
+       ├─ S (1-3 files, obvious)  → /implement → /finish-development → PR + cleanup
+       ├─ M (clear, < 2 days)     → /build-plan → /implement → /finish-development → PR + cleanup
+       └─ L (unclear or risky)    → /refine → /align → /build-plan → /implement → /finish-development → PR + cleanup
 ```
 
 ### Use Case 4 — Bug
@@ -85,9 +87,9 @@ known scope
 bug reported
   └─ /orchestrate
        ├─ worktree? → /vcs/worktree → isolated workspace → back to orchestrate
-       ├─ root cause unknown  → /debug → fix → PR
-       ├─ quick fix           → /implement → PR
-       └─ complex fix         → /build-plan → /implement → PR
+       ├─ root cause unknown  → /debug → /finish-development → PR + cleanup
+       ├─ quick fix           → /implement → /finish-development → PR + cleanup
+       └─ complex fix         → /build-plan → /implement → /finish-development → PR + cleanup
 ```
 
 ---
@@ -302,8 +304,10 @@ Symlinks pick up the new version instantly. Nothing to commit in your project.
     │   ├── manage-task/
     │   ├── branch-creator/
     │   ├── pr-creator/
+    │   ├── finish-development/
     │   └── vcs/
-    │       └── worktree/
+    │       ├── worktree/
+    │       └── worktree-finish/
     ├── adapters/             # Platform adapters
     │   ├── task-manager/    # Jira, Linear, GitHub Issues, Local
     │   ├── vcs/             # GitHub, GitLab, Bitbucket

@@ -355,6 +355,7 @@ Should I invoke refine?"
 | `build-plan` | Spec + arch done (or M feature), no plan | `Skill tool with skill="build-plan"` |
 | `implement` | Plan exists, ready to implement | `Skill tool with skill="implement"` |
 | `debug` | Bug, unknown root cause | `Skill tool with skill="debug"` |
+| `finish-development` | User signals work is done ("I'm done", "ship it", "ready for review") | `Skill tool with skill="finish-development"` |
 
 **Always confirm with user before invoking a skill.**
 
@@ -370,6 +371,12 @@ Import US:     task-manager adapter → read(epicKey) → get children
 Transition:    task-manager adapter → transition(key, statuses.done)
 Comment:       task-manager adapter → comment(key, summary)
 ```
+
+---
+
+## Finish Signal Detection
+
+When the user says work is complete — "I'm done", "ship it", "ready for review", "feature complete", "can you create the PR" — invoke `finish-development` immediately. Do not re-route through the normal workflow.
 
 ---
 

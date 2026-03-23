@@ -116,6 +116,15 @@ Orchestrate continues its routing from where it left off — routing to implemen
 
 ---
 
+## Exit Point
+
+When development is complete, the worktree must be cleaned up properly.
+`finish-development` handles this — it calls `vcs/worktree-finish` after the PR is created.
+
+Never delete a worktree with `rm -rf` — always go through `finish-development`.
+
+---
+
 ## What NOT to Do
 
 - Never create the worktree inside the repository directory — always outside
