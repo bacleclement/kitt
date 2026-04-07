@@ -17,8 +17,8 @@ Creates correctly-named git branches from task manager tickets.
 ## Before Starting
 
 1. Read `.claude/config/kitt.json`
-2. Load task-manager adapter: `.claude/kitt-adapters/task-manager/{taskManager.type}/ADAPTER.md`
-3. Load VCS adapter: `.claude/kitt-adapters/vcs/{vcs.type}/ADAPTER.md`
+2. Load task-manager adapter: `~/.claude/kitt/.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
+3. Load VCS adapter: `~/.claude/kitt/.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
 
 ## When to Use
 

@@ -239,7 +239,7 @@ refine → align → build-plan → implement
 ```
 
 {Brief description of each step relevant to their role}
-{Point to `.claude/kitt-skills/` for details}
+{Point to `/orchestrate` as the entry point — all skills are accessible from there}
 
 ## First Task (if provided)
 

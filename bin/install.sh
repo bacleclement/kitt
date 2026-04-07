@@ -58,7 +58,6 @@ for skill in "$KITT_DIR/.claude/skills"/*/; do
     echo "  (skills/$skill_name already exists, skipping)"
   fi
 done
-ln -snf "$KITT_DIR/.claude/adapters" "$CLAUDE_DIR/kitt-adapters"
 
 # Step 4: Copy CLAUDE.md template if not present
 echo "Step 4/5: Copying CLAUDE.md template..."
