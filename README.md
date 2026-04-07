@@ -10,8 +10,9 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 
 - **Full workflow pipeline:** brainstorm → refine → align → build-plan → implement
 - **Systematic debugging:** reproduce → locate → root cause → fix → regress
+- **Frontend & backend QA:** browser scenarios + HTTP scenarios, live run file, multi-stakeholder review columns
 - **Developer onboarding:** role-aware guide generated from your actual codebase
-- **Pluggable adapters:** Jira, Linear, GitHub Issues, Local / GitHub, GitLab, Bitbucket
+- **Pluggable adapters:** Jira, Linear, GitHub Issues, Local / GitHub, GitLab, Bitbucket / report to Local or Notion
 - **Smart setup wizard:** scans your repo, asks one question at a time with lettered options
 - **Zero hardcoding:** all platform config lives in `kitt.json`
 
@@ -32,6 +33,8 @@ Kitt is a reusable AI workflow engine for Claude Code. It provides a complete sp
 | `tdd` | Red-Green-Refactor cycle — called by implement on every task |
 | `verify` | Evidence before completion claims — no exceptions |
 | `debug` | Systematic bug investigation: reproduce → root cause → fix → regress |
+| `qa-frontend` | Browser-based QA: scenario generation from spec/Jira, live `qa-run.md` with AI/Dev/PM/Design columns, publishes to Local or Notion |
+| `qa-backend` | HTTP scenario runner: API credentials, request/response assertions, live run file, same report adapter |
 | `manage-task` | Ticket CRUD (read, create, transition, comment) |
 | `branch-creator` | Git branch from ticket key |
 | `pr-creator` | PR creation with task manager linking |
@@ -80,6 +83,17 @@ known scope
        ├─ M (clear, < 2 days)     → /build-plan → /implement → /finish-development → PR + cleanup
        └─ L (unclear or risky)    → /refine → /align → /build-plan → /implement → /finish-development → PR + cleanup
 ```
+
+### Use Case 5 — QA
+
+```
+feature ready for QA
+  └─ /orchestrate
+       ├─ frontend feature  → /qa-frontend → qa-run.md → publish (Local or Notion)
+       └─ backend feature   → /qa-backend  → qa-run.md → publish (Local or Notion)
+```
+
+---
 
 ### Use Case 4 — Bug
 
@@ -305,13 +319,16 @@ Symlinks pick up the new version instantly. Nothing to commit in your project.
     │   ├── branch-creator/
     │   ├── pr-creator/
     │   ├── finish-development/
+    │   ├── qa-frontend/
+    │   ├── qa-backend/
     │   └── vcs/
     │       ├── worktree/
     │       └── worktree-finish/
     ├── adapters/             # Platform adapters
     │   ├── task-manager/    # Jira, Linear, GitHub Issues, Local
     │   ├── vcs/             # GitHub, GitLab, Bitbucket
-    │   └── design/          # Figma
+    │   ├── design/          # Figma
+    │   └── report/          # Local, Notion
     └── templates/           # kitt.json schema, context templates
 ```
 
