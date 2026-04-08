@@ -1,7 +1,7 @@
 ---
 name: implement
 description: Implements tasks from plan.md with TDD, task manager integration, and PR creation. Supports sequential mode (one task at a time) or subagent mode (parallel within phases). Reads commit format and platform config from kitt.json.
-version: 4.0
+version: 5.0
 ---
 
 # Implement
@@ -99,6 +99,18 @@ Which do you prefer?"
 - If any task is marked `[~]` → **Resume mode**: skip branch creation, resume from that task
 - If all tasks are `[ ]` → **Fresh start**: proceed to Step 1
 
+### Step 0b: Initialize Session Log
+
+**Resolve the session log path and append the start event:**
+
+```
+Session log: .claude/workspace/{type}s/{path}/{key}/session-log.jsonl
+
+Append: {"ts":"...","skill":"implement","event":"started","data":{"key":"{key}","tasks_total":{N},"mode":"{sequential|subagent}"}}
+```
+
+Append events to this file at each significant step below. One JSON line per event. Do not log file reads, bash commands, or LLM reasoning — only significant actions.
+
 ### Step 1: Branch Creation (Fresh Start Only)
 
 **Invoke the branch-creator skill before starting implementation.**
@@ -121,6 +133,7 @@ For each task in plan.md:
 ```
 1. Mark in-progress:
    Edit plan.md: Change `- [ ]` to `- [~]` for current task
+   Log: {"ts":"...","skill":"implement","event":"task_started","data":{"task":"{ref}","title":"{title}"}}
 
 1b. Context confirmation (REQUIRED before writing any code):
    Re-read code-standards.md + relevant agent docs for this task.
@@ -149,6 +162,7 @@ For each task in plan.md:
 
 5. Mark complete:
    Edit plan.md: Change `- [~]` to `- [x]` for current task
+   Log: {"ts":"...","skill":"implement","event":"task_completed","data":{"task":"{ref}","title":"{title}"}}
 
 6. ⛔ STOP — Ask user to review before committing:
    "Task {N} done. Please review the code before I commit."
@@ -161,6 +175,14 @@ For each task in plan.md:
    → If yes: Invoke Skill tool with skill="capture-rule" with the correction as context
    → If no: proceed silently
 
+   **Feedback propagation (REQUIRED after any correction):**
+   → Append the constraint to `{key}-spec.md` under a `## Implementation Notes` section (create if missing)
+     Format: `- [{task ref}] {constraint description} (added during implementation)`
+   → If the correction changes the approach for a plan task, add an inline note in `{key}-plan.md`
+     Format: `  > ⚠️ Updated: {what changed and why}`
+   → This ensures spec and plan stay synchronized with implementation decisions
+   → Log: {"ts":"...","skill":"implement","event":"feedback","data":{"from":"user","content":"{brief description}","action":"{captured_rule|applied|ignored}","propagated_to":["spec","plan"]}}
+
 7. Commit (only after user approval):
    Read commitFormat.pattern from kitt.json.
    Default: {type}({ticket}): {description}
@@ -171,6 +193,7 @@ For each task in plan.md:
    )"
 
    Add Co-Authored-By body ONLY if kitt.json commitFormat.coAuthored is true.
+   Log: {"ts":"...","skill":"implement","event":"commit","data":{"task":"{ref}","hash":"{short_hash}"}}
 
 8. Repeat for NEXT task
 ```
@@ -194,10 +217,11 @@ Types from `kitt.json commitFormat.types`: typically `feat`, `fix`, `refactor`, 
 When tests fail after the GREEN phase:
 
 ```
-1. Invoke Skill tool with skill="debug"
-2. Follow the debugging skill's process
-3. Fix, re-run validation
-4. Only proceed when all tests pass
+1. Log: {"ts":"...","skill":"implement","event":"debug_triggered","data":{"task":"{ref}","error_type":"{test_failure|type_error|lint_error}"}}
+2. Invoke Skill tool with skill="debug"
+3. Follow the debugging skill's process
+4. Fix, re-run validation
+5. Only proceed when all tests pass
 ```
 
 ### Step 4: Task Manager Updates (Optional, Per Phase)

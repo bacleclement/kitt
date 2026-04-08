@@ -1,7 +1,7 @@
 ---
 name: orchestrate
 description: Simple workflow router - asks what you want to work on, analyzes it, and routes to the right next step. Handles epic → US workflow and flat feature workflow. Auto-syncs metadata on US completion.
-version: 7.0
+version: 8.0
 ---
 
 # Workflow Orchestrator
@@ -95,18 +95,19 @@ Two sub-cases:
 
 ---
 
-## Step 1b: Ask About Worktree Isolation
+## Step 1b: Ask About Work Environment
 
 After the user describes the work — before any routing — ask once:
 
 ```
-"Do you want to work in an isolated worktree? (y/n)
+"How do you want to work?
 
-Useful if: long-running task, parallel work, or your current directory has uncommitted changes."
+ 1. Current repo + new branch (default — fast, simple)
+ 2. Isolated worktree (parallel work, clean state, long-running task)"
 ```
 
-- **Yes** → invoke `worktree` skill. It creates the worktree and hands back here. Continue routing from Step 2 inside the worktree.
-- **No** → continue routing from Step 2 in the current directory.
+- **Option 1 (branch)** → continue routing from Step 2 in the current directory. Branch creation happens later via `branch-creator` skill in implement Step 1.
+- **Option 2 (worktree)** → invoke `worktree` skill. It creates the worktree and hands back here. Continue routing from Step 2 inside the worktree.
 
 Only ask once. Never ask again mid-workflow.
 
@@ -116,10 +117,19 @@ Only ask once. Never ask again mid-workflow.
 
 **If existing ticket:**
 1. Read ticket via task-manager adapter `read(ticketKey)`
-2. Check if workspace folder exists: `.claude/workspace/{epics|features|bugs|refactors}/{key}/`
-3. Create folder + metadata.json if missing
-4. Determine type (epic / feature / bug / refactor) from ticket or ask
-5. Route (Step 3)
+2. Check ticket response for `parent`, `epic`, or `epicKey` field
+3. **If ticket has a parent epic:**
+   a. Check if `.claude/workspace/epics/{epic-key}/` already exists
+   b. If epic folder exists → create US subfolder there: `.claude/workspace/epics/{epic-key}/{key}/`
+   c. If epic folder missing → ask: *"This ticket belongs to epic {epic-key} ({epic-title}). Create the epic folder? (y/n)"*
+      - Yes → create epic folder + metadata.json (type: epic), then create US subfolder
+      - No → create as standalone feature in `.claude/workspace/features/{key}/`
+   d. Update epic `metadata.json.children` array with the new US entry
+4. **If ticket has no parent:**
+   a. Check if workspace folder exists: `.claude/workspace/{epics|features|bugs|refactors}/{key}/`
+   b. Create folder + metadata.json if missing
+5. Determine type (epic / feature / bug / refactor) from ticket or ask
+6. Route (Step 3)
 
 **If new work — scope clear:**
 1. Ask: "What type? Epic / Feature / Bug / Refactor"
@@ -355,7 +365,9 @@ Should I invoke refine?"
 | `build-plan` | Spec + arch done (or M feature), no plan | `Skill tool with skill="build-plan"` |
 | `implement` | Plan exists, ready to implement | `Skill tool with skill="implement"` |
 | `debug` | Bug, unknown root cause | `Skill tool with skill="debug"` |
+| `code-review` | All tasks `[x]`, before finish-development | `Skill tool with skill="code-review"` |
 | `finish-development` | User signals work is done ("I'm done", "ship it", "ready for review") | `Skill tool with skill="finish-development"` |
+| `session-review` | Epic/feature completed, or manual `/session-review` | `Skill tool with skill="session-review"` |
 
 **Always confirm with user before invoking a skill.**
 
@@ -376,7 +388,24 @@ Comment:       task-manager adapter → comment(key, summary)
 
 ## Finish Signal Detection
 
-When the user says work is complete — "I'm done", "ship it", "ready for review", "feature complete", "can you create the PR" — invoke `finish-development` immediately. Do not re-route through the normal workflow.
+When the user says work is complete — "I'm done", "ship it", "ready for review", "feature complete", "can you create the PR":
+
+1. Invoke `code-review` first — review the diff against spec, plan, and standards
+2. If code-review passes → invoke `finish-development`
+3. If code-review has blockers → fix them, re-review, then finish-development
+
+User can skip code-review explicitly: "skip review and ship it".
+
+---
+
+## Completion Signal Detection
+
+When an epic or feature reaches `status: "completed"` (all tasks done, PR merged or created):
+
+Ask: *"Work complete. Run a session review to analyze the development process? (y/n)"*
+
+- Yes → invoke `session-review`
+- No → done
 
 ---
 
