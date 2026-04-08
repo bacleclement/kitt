@@ -847,9 +847,16 @@ Checking credentials...
                          Fix: update kitt.json vcs.config.account, or run: gh auth switch
 
   [Figma, if design.type == "figma"]
-  ✅/❌ figma MCP: check if mcp__figma__get_design_context is available
-     or ✅/❌ FIGMA_TOKEN: echo $FIGMA_TOKEN | grep -q .
-           ❌ → configure MCP or add FIGMA_TOKEN to .env.local
+  ✅/❌ figma MCP: check if mcp__figma__get_design_context tool is available in session
+           ✅ → MCP mode active
+     or ✅/❌ FIGMA_TOKEN: source .env.local 2>/dev/null; echo $FIGMA_TOKEN | grep -q .
+           ✅ → REST API fallback active
+           ❌ → BOTH unavailable. Show:
+               "❌ Figma configured in kitt.json but not accessible.
+                Configure MCP server in .claude/settings.json:
+                  { \"mcpServers\": { \"figma\": { \"command\": \"npx\", \"args\": [\"-y\", \"@figma/mcp-server\"] } } }
+                Or set FIGMA_TOKEN in .env.local.
+                See: ~/.claude/kitt/.claude/adapters/design/figma/ADAPTER.md"
 
 Checking project scaffold...
   [if package.json exists]

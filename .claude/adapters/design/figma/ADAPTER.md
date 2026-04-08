@@ -12,6 +12,44 @@ Two modes: MCP tool (preferred, no token needed) or REST API (fallback).
 
 ## Prerequisites
 
+**Before using any Figma operation, run the connectivity check below.**
+
+### Connectivity Check (REQUIRED before first use)
+
+```
+1. Check MCP tool availability:
+   → Is mcp__figma__get_design_context available in this session?
+   → YES: use MCP mode ✅
+   → NO: fall through to step 2
+
+2. Check FIGMA_TOKEN env var:
+   → source .env.local 2>/dev/null; echo $FIGMA_TOKEN | grep -q . && echo "✅" || echo "❌"
+   → SET: use REST API mode ✅
+   → NOT SET: fall through to step 3
+
+3. Neither available — show clear error:
+   "❌ Figma is not accessible. Configure one of:
+
+    Option A — Figma MCP (preferred, no token needed):
+    Add to .claude/settings.json or ~/.claude/settings.json:
+    {
+      \"mcpServers\": {
+        \"figma\": {
+          \"command\": \"npx\",
+          \"args\": [\"-y\", \"@figma/mcp-server\"]
+        }
+      }
+    }
+    Then restart Claude Code session.
+
+    Option B — REST API fallback:
+    1. Go to figma.com → Settings → Personal access tokens
+    2. Create a token, add to .env.local:
+       FIGMA_TOKEN=figd_xxxxxxxxxxxx"
+
+   Do NOT proceed silently — stop and inform the user.
+```
+
 **Option A: Figma MCP (preferred)**
 
 Configure in Claude Code settings (`~/.claude/settings.json` or project `.claude/settings.json`):

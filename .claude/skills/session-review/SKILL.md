@@ -1,12 +1,12 @@
 ---
 name: session-review
 description: Post-completion review of a work item's development session — analyzes session log events, skill usage patterns, feedback frequency, spec drift, and time distribution. Outputs a review.md with metrics and improvement suggestions. Includes skill effectiveness evaluation.
-version: 1.0
+version: 2.0
 ---
 
 # Session Review
 
-**Post-completion analysis of how a work item was built — decisions, feedback, skill effectiveness, and process improvements.**
+**Post-completion analysis of how a work item was built — decisions, feedback, token costs, skill effectiveness, and process improvements.**
 
 ## Before Starting
 
@@ -76,6 +76,7 @@ Each skill appends events to `.claude/workspace/{type}s/{path}/{key}/session-log
 | `capture-rule` | `rule_captured` | destination (code-standards/agent-doc/domain), content |
 | `finish-development` | `pr_created` | url, branch |
 | `finish-development` | `ticket_transitioned` | from_status, to_status |
+| *any skill* | `tokens` | input_tokens, output_tokens, model (e.g. "sonnet", "opus") |
 
 ---
 
@@ -126,7 +127,32 @@ For each skill used:
 - code-review blockers: 0 = clean implementation, >0 = gaps in spec/plan
 ```
 
-#### 2.4 Spec Accuracy
+#### 2.4 Token Usage & Cost
+
+```
+- Total tokens: sum input_tokens + output_tokens from all tokens events
+- Tokens per skill: group by skill name
+- Tokens per task: group by surrounding task_started → task_completed window
+- Most expensive task: highest token count
+- Cost estimate per skill/task:
+    Sonnet: input $3/MTok, output $15/MTok
+    Opus:   input $15/MTok, output $75/MTok
+    Haiku:  input $0.25/MTok, output $1.25/MTok
+  (Use model field from tokens event, default to Sonnet if missing)
+```
+
+#### 2.5 Feedback Content Log
+
+```
+- Extract ALL feedback events with their content field
+- Group by task ref
+- For each feedback: show content, action taken, whether propagated to spec/plan
+- Detect recurring patterns: feedback with similar content across tasks
+  → "Pattern detected: {N} corrections about {theme}" (e.g., "3 corrections about import style")
+- Surface the actual user words — not just counts
+```
+
+#### 2.6 Spec Accuracy
 
 ```
 - Original acceptance criteria count (from spec)
@@ -187,6 +213,29 @@ Output to `{key}-review.md` in the workspace folder:
 | verify | {N} runs | {pass_rate}% first-pass | {note} |
 | debug | {N} triggers | — | {what caused debugging} |
 | code-review | 1 | {verdict} | {blockers} blockers, {suggestions} suggestions |
+
+### Token Usage & Cost
+
+| Skill | Input Tokens | Output Tokens | Est. Cost |
+|-------|-------------|---------------|-----------|
+| implement | 125,000 | 32,000 | $0.52 |
+| refine | 45,000 | 12,000 | $0.18 |
+| ... | ... | ... | ... |
+| **Total** | **210,000** | **58,000** | **$0.85** |
+
+**Most expensive task:** {task ref} — {title} ({token_count} tokens, ${cost})
+**Cost per task (avg):** ${avg_cost}
+
+### Feedback Log
+
+| Task | Feedback | Action | Propagated? |
+|------|----------|--------|-------------|
+| 1.1 | "Use React Query not fetch" | captured_rule | spec, plan |
+| 2.3 | "Missing error boundary" | applied | spec |
+| ... | ... | ... | ... |
+
+**Recurring patterns:**
+- "{theme}" — appeared {N} times across tasks {refs}
 
 ### Spec Accuracy Score: {score}/10
 

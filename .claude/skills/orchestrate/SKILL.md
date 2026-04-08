@@ -117,24 +117,29 @@ Only ask once. Never ask again mid-workflow.
 
 **If existing ticket:**
 1. Read ticket via task-manager adapter `read(ticketKey)`
-2. Check ticket response for `parent`, `epic`, or `epicKey` field
-3. **If ticket has a parent epic:**
-   a. Check if `.claude/workspace/epics/{epic-key}/` already exists
-   b. If epic folder exists → create US subfolder there: `.claude/workspace/epics/{epic-key}/{key}/`
+2. **Generate human-readable slug** from ticket title:
+   - Take title, lowercase, replace spaces/special chars with hyphens, truncate to 50 chars
+   - Folder name format: `{ticketKey}-{slug}` (e.g., `HUB-31234-user-profile-settings`)
+   - If no ticket title available, ask user for a short description to use as slug
+3. Check ticket response for `parent`, `epic`, or `epicKey` field
+4. **If ticket has a parent epic:**
+   a. Check if `.claude/workspace/epics/{epic-folder}/` already exists (match by ticket key prefix in folder name)
+   b. If epic folder exists → create US subfolder there: `.claude/workspace/epics/{epic-folder}/{ticketKey}-{slug}/`
    c. If epic folder missing → ask: *"This ticket belongs to epic {epic-key} ({epic-title}). Create the epic folder? (y/n)"*
-      - Yes → create epic folder + metadata.json (type: epic), then create US subfolder
-      - No → create as standalone feature in `.claude/workspace/features/{key}/`
+      - Yes → create epic folder as `{epicKey}-{epic-slug}/` + metadata.json (type: epic), then create US subfolder
+      - No → create as standalone feature in `.claude/workspace/features/{ticketKey}-{slug}/`
    d. Update epic `metadata.json.children` array with the new US entry
-4. **If ticket has no parent:**
-   a. Check if workspace folder exists: `.claude/workspace/{epics|features|bugs|refactors}/{key}/`
-   b. Create folder + metadata.json if missing
-5. Determine type (epic / feature / bug / refactor) from ticket or ask
-6. Route (Step 3)
+5. **If ticket has no parent:**
+   a. Check if workspace folder exists (match by ticket key prefix in folder name): `.claude/workspace/{epics|features|bugs|refactors}/{ticketKey}-*/`
+   b. Create folder as `{ticketKey}-{slug}/` + metadata.json if missing
+6. Determine type (epic / feature / bug / refactor) from ticket or ask
+7. Route (Step 3)
 
 **If new work — scope clear:**
 1. Ask: "What type? Epic / Feature / Bug / Refactor"
-2. Create workspace folder + metadata.json
-3. Route (Step 3)
+2. Ask: "Short name for this work?" → generate slug (lowercase, kebab-case, max 50 chars)
+3. Create workspace folder as `{slug}/` + metadata.json
+4. Route (Step 3)
 
 **If new work — needs exploration:**
 1. Invoke `brainstorm` skill
@@ -233,38 +238,47 @@ C) Complex, multi-file → refine → align → build-plan → implement
 
 ## File Structure
 
+### Folder Naming Convention
+
+**Always use human-readable folder names:**
+- With ticket: `{ticketKey}-{slug}` → e.g., `HUB-31234-user-profile-settings`
+- Without ticket: `{slug}` → e.g., `email-notification-system`
+- Slug: lowercase, kebab-case, max 50 chars, derived from title
+
+**When scanning workspace:** match folders by ticket key prefix (e.g., `HUB-31234-*`), not exact folder name.
+
 ### Epic (two-level)
 
 ```
-.claude/workspace/epics/{key}/
+.claude/workspace/epics/{ticketKey}-{slug}/
 ├── metadata.json             # type: "epic", children: [{key, title, status}]
-├── {key}-design.md           # from brainstorm (optional — only if brainstorm was run)
-├── {key}-spec.md             # from refine — contains ## User Stories
-├── {us-key}/
-│   ├── {us-key}-spec.md      # from refine (US MODE) — contains ## Architecture after align
-│   └── {us-key}-plan.md      # from build-plan
-└── {us-key-2}/
-    ├── {us-key-2}-spec.md
-    └── {us-key-2}-plan.md
+├── {slug}-design.md          # from brainstorm (optional — only if brainstorm was run)
+├── {slug}-spec.md            # from refine — contains ## User Stories
+├── {us-ticketKey}-{us-slug}/
+│   ├── {us-slug}-spec.md     # from refine (US MODE) — contains ## Architecture after align
+│   └── {us-slug}-plan.md     # from build-plan
+└── {us-ticketKey-2}-{us-slug-2}/
+    ├── {us-slug-2}-spec.md
+    └── {us-slug-2}-plan.md
 ```
 
 ### Feature (flat)
 
 ```
-.claude/workspace/features/{key}/
+.claude/workspace/features/{ticketKey}-{slug}/
 ├── metadata.json
-├── {key}-design.md           # from brainstorm (optional)
-├── {key}-spec.md             # from refine (L only)
-└── {key}-plan.md             # from build-plan
+├── {slug}-design.md          # from brainstorm (optional)
+├── {slug}-spec.md            # from refine (L only)
+└── {slug}-plan.md            # from build-plan
 ```
 
 ### Bug / Refactor
 
 ```
-.claude/workspace/{bugs|refactors}/{key}/
+.claude/workspace/{bugs|refactors}/{ticketKey}-{slug}/
 ├── metadata.json
-├── {key}-spec.md             # from refine (complex/L only)
-└── {key}-plan.md             # from build-plan
+├── {slug}-spec.md            # from refine (complex/L only)
+└── {slug}-plan.md            # from build-plan
 ```
 
 ---
@@ -296,21 +310,26 @@ Update `metadata.json.updated_at` on any change. If all US are completed → set
 
 ```json
 {
-  "key": "company-management",
+  "key": "PROJ-42",
+  "slug": "company-management",
+  "folder": "PROJ-42-company-management",
   "type": "epic",
   "title": "Company Management",
   "status": "in_progress",
-  "taskManager": { "synced": false },
+  "taskManager": { "synced": true, "url": "https://..." },
   "children": [
-    { "key": "us-company-creation", "title": "Company Creation", "status": "completed" },
-    { "key": "us-contact-management", "title": "Contact Management", "status": "in_progress" }
+    { "key": "PROJ-43", "slug": "company-creation", "title": "Company Creation", "status": "completed" },
+    { "key": "PROJ-44", "slug": "contact-management", "title": "Contact Management", "status": "in_progress" }
   ],
   "created_at": "2026-02-14T10:00:00Z",
   "updated_at": "2026-02-16T14:30:00Z"
 }
 ```
 
-When a task manager ticket exists, use the ticket key as the `key` field and set `taskManager.synced: true` with the ticket URL.
+- `key`: ticket key from task manager (or slug if no ticket)
+- `slug`: human-readable name derived from title (kebab-case, max 50 chars)
+- `folder`: actual folder name = `{key}-{slug}` (or just `{slug}` if no ticket)
+- When a task manager ticket exists, set `taskManager.synced: true` with the ticket URL.
 
 ### Feature / Bug / Refactor
 
