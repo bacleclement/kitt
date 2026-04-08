@@ -94,6 +94,25 @@
         "build":     { "type": "string" }
       }
     },
+    "scopes": {
+      "type": "object",
+      "description": "Optional app-scoped context for monorepos. Each key is a scope name, value defines the app path and agent globs. Omit entirely for single-app projects (backward compatible).",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Relative path to the app/service folder in the codebase (e.g. apps/api/services/network)"
+          },
+          "agents": {
+            "type": "array",
+            "description": "Glob patterns for agent docs to load when this scope is active. Agents not listed in any scope are always loaded (repo-wide).",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
     "design": {
       "type": "object",
       "description": "Optional design tool integration",

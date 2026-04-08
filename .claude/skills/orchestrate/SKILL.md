@@ -1,7 +1,7 @@
 ---
 name: orchestrate
 description: Simple workflow router - asks what you want to work on, analyzes it, and routes to the right next step. Handles epic → US workflow and flat feature workflow. Auto-syncs metadata on US completion.
-version: 8.0
+version: 9.0
 ---
 
 # Workflow Orchestrator
@@ -11,11 +11,11 @@ version: 8.0
 ## Before Starting
 
 1. Read `.claude/config/kitt.json`
-2. Note `taskManager.type`, `vcs.type`, `build.*`, `commitFormat`
+2. Note `taskManager.type`, `vcs.type`, `build.*`, `commitFormat`, `scopes` (if present)
 3. Load task-manager adapter: `~/.claude/kitt/.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 4. Load VCS adapter: `~/.claude/kitt/.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
 5. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
-6. Auto-discover agent docs: glob `**/agents/` and any `AGENTS.md` files in the repo — load relevant ones for the domain being worked on
+6. **Context loading depends on scope** (see Scoped Context Loading below)
 
 Never hardcode: status names, account names, URLs, build commands.
 Always read these from `kitt.json` and the loaded adapters.
@@ -149,7 +149,62 @@ Only ask once. Never ask again mid-workflow.
 **If continuing:**
 - Scan workspace folders
 - Show status summary per item
-- Ask which to continue → route (Step 3)
+- Ask which to continue → route (Step 2b then Step 3)
+
+---
+
+## Step 2b: Scope Detection (multi-app projects only)
+
+**Skip if `kitt.json` has no `scopes` section** (single-app project — load all agents as before).
+
+**If `kitt.json.scopes` exists:**
+
+1. Try to detect scope automatically:
+   - From ticket data: Jira component, labels, or linked epic scope
+   - From ticket description: file paths mentioning an app folder
+   - From continuing work: read `metadata.json.scope` of the selected item
+2. If auto-detected → confirm: *"This looks like it touches {scope-name}. Correct? [y/n]"*
+3. If ambiguous or new work → ask:
+   ```
+   "Which app does this touch?
+     A) {scope-1}  ({path-1})
+     B) {scope-2}  ({path-2})
+     ...
+     Z) Repo-wide (no specific app)"
+   ```
+4. Store in `metadata.json`: `"scope": "{scope-name}"` (or `"scope": null` for repo-wide)
+
+**Scope is set once per work item. Never asked again mid-workflow.**
+
+---
+
+## Scoped Context Loading
+
+**Used by all skills** (orchestrate, refine, align, build-plan, implement, code-review).
+
+```
+Read metadata.json.scope for the current work item.
+
+If scope is set AND kitt.json.scopes.{scope} exists:
+  1. Load repo-wide context:
+     - .claude/context/product.md
+     - .claude/context/tech-stack.md
+     - .claude/context/code-standards.md
+  2. Load app-scoped context (if exists):
+     - .claude/context/apps/{scope}/standards.md
+     - .claude/context/apps/{scope}/tech-stack.md
+  3. Load scoped agents:
+     - Glob patterns from kitt.json.scopes.{scope}.agents
+  4. Load repo-wide agents (agents NOT listed in any scope):
+     - Auto-discover via glob **/agents/
+     - Exclude agents that match ANY scope's agent patterns
+  5. Load feature-scoped context:
+     - workspace/{key}/spec ## Implementation Notes (if exists)
+
+If scope is null OR no scopes in kitt.json:
+  → Load all agents (current behavior — backward compatible)
+  → Load all context files
+```
 
 ---
 

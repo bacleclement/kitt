@@ -1,12 +1,12 @@
 ---
 name: capture-rule
 description: "Captures a coding correction or design fix as a permanent rule in the right context file. Invokable manually (/capture-rule) or auto-invoked from implement after a mid-task correction. Flexible destination: code-standards, domain agent, or tech-stack."
-version: 1.0
+version: 2.0
 ---
 
 # Capture Rule
 
-**Turns a correction or fix into a permanent rule written to the right context file.**
+**Turns a correction or fix into a permanent rule written to the right context file. Scope-aware: pre-selects app-level destination in monorepos.**
 
 ## When to Use
 
@@ -35,7 +35,35 @@ Keep it actionable. Rules should state what to do (✅) or not do (❌), not why
 
 ### Step 2: Classify the destination
 
-Ask (or infer from context if obvious):
+Read `metadata.json.scope` for the current work item and `kitt.json.scopes` (if present).
+
+**If scopes exist and a scope is active** — show scope-aware options:
+
+```
+Where does this rule belong?
+
+  A) This feature only → workspace/{key}/spec ## Implementation Notes
+     (applies to this work item only — already handled by feedback propagation)
+
+  B) App standards     → .claude/context/apps/{scope}/standards.md      ← PRE-SELECTED DEFAULT
+     (patterns specific to {scope} — only loaded when working on this app)
+
+  C) Scoped agent      → agent doc matched to {scope} (from kitt.json.scopes.{scope}.agents)
+     (domain-specific patterns for this service/module)
+
+  D) Repo-wide standard → .claude/context/code-standards.md
+     (naming, imports, architecture, formatting — applies everywhere)
+
+  E) Tech constraint    → .claude/context/tech-stack.md
+     (library-specific patterns, approved/banned packages, runtime constraints)
+
+  F) Company-wide       → ~/.claude/context/company-standards.md
+     (rules shared across all repos — naming, security, compliance)
+```
+
+Default = **B (app standards)** when a scope is active. This is the most common destination in monorepos.
+
+**If no scopes or no active scope** — show flat options (current behavior):
 
 ```
 Where does this rule belong?
@@ -43,15 +71,14 @@ Where does this rule belong?
   A) Global standard  → .claude/context/code-standards.md
      (naming, imports, architecture, formatting — applies everywhere)
 
-  B) Domain agent     → relevant agent doc (e.g. hr-code-agent.md)
+  B) Domain agent     → relevant agent doc (e.g. code-agent.md)
      (patterns specific to one module, service, or bounded context)
 
   C) Tech constraint  → .claude/context/tech-stack.md
      (library-specific patterns, approved/banned packages, runtime constraints)
 ```
 
-**If domain agent:** auto-discover agent docs with `glob **/agents/` and list them.
-Let the user pick the right one, or infer from the correction context.
+**If domain agent / scoped agent:** discover agents using scoped context loading rules (scoped agents for active scope + repo-wide agents). List them for user selection, or infer from the correction context.
 
 ---
 

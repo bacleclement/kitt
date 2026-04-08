@@ -15,8 +15,8 @@ Acts as an architectural firewall before implementation. Validates that a refine
 1. Read `.claude/config/kitt.json`
 2. Read `.claude/context/tech-stack.md` — approved technologies, patterns
 3. Read `.claude/context/code-standards.md` — architecture rules, layer constraints
-4. Read the spec file: `{key}-spec.md`
-5. Auto-discover agent docs: glob `**/agents/` and any `AGENTS.md` files — load relevant ones for the affected service/module
+4. **Scoped context loading:** read `metadata.json.scope` for the current work item. If scope is set and `kitt.json.scopes.{scope}` exists: also load `.claude/context/apps/{scope}/standards.md` and `.claude/context/apps/{scope}/tech-stack.md` (if they exist). Load only scoped agents (glob patterns from `kitt.json.scopes.{scope}.agents`) + repo-wide agents (not in any scope). If no scope: auto-discover all agent docs via glob `**/agents/` (current behavior).
+5. Read the spec file: `{key}-spec.md`
 
 ## Non-Responsibilities
 

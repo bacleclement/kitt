@@ -11,9 +11,9 @@ version: 1.0
 ## Before Starting
 
 1. Read `.claude/config/kitt.json`
-2. Note `build.*`, `commitFormat`
+2. Note `build.*`, `commitFormat`, `scopes` (if present)
 3. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
-4. Auto-discover agent docs: glob `**/agents/` and any `AGENTS.md` files in the repo — load relevant ones for the domain being worked on
+4. **Scoped context loading:** read `metadata.json.scope` for the current work item. If scope is set and `kitt.json.scopes.{scope}` exists: also load `.claude/context/apps/{scope}/standards.md` and `.claude/context/apps/{scope}/tech-stack.md` (if they exist). Load only scoped agents (glob patterns from `kitt.json.scopes.{scope}.agents`) + repo-wide agents (not in any scope). If no scope: auto-discover all agent docs via glob `**/agents/` (current behavior).
 
 ## Kitt Personality
 

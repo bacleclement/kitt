@@ -15,7 +15,7 @@ version: 5.0
 3. Load task-manager adapter: `.claude/kitt-adapters/task-manager/{taskManager.type}/ADAPTER.md`
 4. Load VCS adapter: `.claude/kitt-adapters/vcs/{vcs.type}/ADAPTER.md`
 5. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
-6. Auto-discover agent docs: glob `**/agents/` and any `AGENTS.md` files in the repo — load relevant ones for the domain being worked on
+6. **Scoped context loading:** read `metadata.json.scope` for the current work item. If scope is set and `kitt.json.scopes.{scope}` exists: also load `.claude/context/apps/{scope}/standards.md` and `.claude/context/apps/{scope}/tech-stack.md` (if they exist). Load only scoped agents (glob patterns from `kitt.json.scopes.{scope}.agents`) + repo-wide agents (not in any scope). If no scope: auto-discover all agent docs via glob `**/agents/` (current behavior).
 
 Never hardcode: status names, account names, URLs, build commands.
 Always read these from `kitt.json` and the loaded adapters.

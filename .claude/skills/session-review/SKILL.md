@@ -152,7 +152,24 @@ For each skill used:
 - Surface the actual user words — not just counts
 ```
 
-#### 2.6 Spec Accuracy
+#### 2.6 Agent & Scope Usage
+
+```
+If metadata.json.scope is set:
+- Active scope: {scope-name}
+- Scoped agents loaded: list from kitt.json.scopes.{scope}.agents (resolved globs)
+- Repo-wide agents loaded: agents not in any scope
+- Agents referenced in context confirmation: which were actually cited?
+- Unused agents: loaded but never referenced → candidates for cleanup or re-scoping
+- Agent freshness: check last modified date for each loaded agent
+  → Flag agents not modified in 30+ days as potentially stale
+
+If no scope:
+- All agents loaded (auto-discover mode)
+- Track which were referenced vs. ignored
+```
+
+#### 2.7 Spec Accuracy
 
 ```
 - Original acceptance criteria count (from spec)
@@ -236,6 +253,18 @@ Output to `{key}-review.md` in the workspace folder:
 
 **Recurring patterns:**
 - "{theme}" — appeared {N} times across tasks {refs}
+
+### Agent & Scope Usage
+
+**Scope:** {scope-name} (or "repo-wide" if no scope)
+
+| Agent | Scoped? | Referenced? | Last Modified | Status |
+|-------|---------|-------------|---------------|--------|
+| network-code-agent.md | Yes (api-network) | 6/8 tasks | 2 days ago | ✅ Active |
+| network-migration.md | Yes (api-network) | 0/8 tasks | 45 days ago | ⚠️ Stale & unused |
+| integration-test-agent.md | Repo-wide | 2/8 tasks | 12 days ago | ✅ Active |
+
+**Recommendation:** {e.g., "network-migration.md was loaded but never referenced and is 45 days stale. Consider refreshing or removing from scope."}
 
 ### Spec Accuracy Score: {score}/10
 

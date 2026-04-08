@@ -13,7 +13,7 @@ version: 3.0
 3. Load task-manager adapter: `~/.claude/kitt/.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 4. Load VCS adapter: `~/.claude/kitt/.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
 5. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
-6. Auto-discover agent docs: glob `**/agents/` and any `AGENTS.md` files in the repo — load relevant ones for the domain being worked on
+6. **Scoped context loading:** read `metadata.json.scope` for the current work item. If scope is set and `kitt.json.scopes.{scope}` exists: load app-scoped context files (`.claude/context/apps/{scope}/`) and only scoped agents (glob patterns from `kitt.json.scopes.{scope}.agents`) + repo-wide agents (not listed in any scope). If no scope or no `scopes` in kitt.json: auto-discover all agent docs via glob `**/agents/` and any `AGENTS.md` files (current behavior).
 7. If a `{key}-design.md` exists in the workspace folder — read it. It is the brainstorm output and answers many questions already.
 
 Never hardcode: status names, account names, URLs, build commands.

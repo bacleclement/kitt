@@ -175,6 +175,14 @@ Scan the following (automated, no user input needed):
 **Existing kitt config:**
 - Check if any context files already exist in `.claude/context/`
 
+**Monorepo / multi-app detection:**
+- Check for monorepo indicators: `nx.json`, `pnpm-workspace.yaml`, `turbo.json`, `lerna.json`
+- If Nx: run `pnpm nx show projects --json 2>/dev/null` or `npx nx show projects --json 2>/dev/null` → list all projects with paths
+- If pnpm workspace: read `pnpm-workspace.yaml` → glob workspace patterns to find apps
+- If Turbo: read `turbo.json` → scan `packages/`, `apps/`
+- Generic: scan `apps/`, `packages/`, `services/` directories (2 levels deep)
+- Classify: `single-app` (1 app or no monorepo tool) | `multi-app` (2+ apps detected)
+
 Present scan summary:
 > "Scan complete. I detected:
 > - {framework} project with {N} {components}
@@ -182,8 +190,53 @@ Present scan summary:
 > - {VCS} remote: {org}/{repo}
 > - Build system: {detected}
 > - Agent docs: {paths found}
+> - Apps: {N} apps/services detected {(list top 5)} — {monorepo tool}
 >
 > I have {N} questions."
+
+### Step 2b: Scope Configuration (multi-app projects only)
+
+**Skip this step entirely if `single-app` was detected.** No `scopes` section will be written to kitt.json.
+
+**For multi-app projects:**
+
+```
+"I found {N} apps/services. Which ones do you actively work on?
+ (These become your scopes — kitt loads only relevant agents and context per work item)
+
+  A) {app-1}  ({path-1})
+  B) {app-2}  ({path-2})
+  C) {app-3}  ({path-3})
+  ...
+
+ Select all that apply (comma-separate), or 'all':"
+```
+
+After selection, **auto-match agents to scopes:**
+
+1. **Name prefix match:** agent file `network-code-agent.md` → scope `api-network` (if name contains scope name)
+2. **Location match:** agent inside `apps/api/services/network/agents/` → scope `api-network` (agent path starts with scope path)
+3. **Unmatched agents:** ask one at a time:
+   ```
+   "Which scope for '{agent-name}.md'?
+     A) {scope-1}
+     B) {scope-2}
+     C) Repo-wide (always loaded)
+     D) Skip"
+   ```
+
+Store the result for kitt.json Step 5. Each selected scope produces:
+
+```json
+{
+  "scopes": {
+    "{scope-name}": {
+      "path": "{detected-path}",
+      "agents": ["{matched-glob-1}", "{matched-glob-2}"]
+    }
+  }
+}
+```
 
 ### Step 3: Product discovery interview
 
