@@ -505,7 +505,14 @@ Show detected command(s) and confirm:
 
 If B: collect additional commands one at a time until user says done. Append to the detected list.
 
-Write to kitt.json under `vcs.worktrees` with the confirmed setup commands array.
+**IMPORTANT:** Write the confirmed commands to `vcs.worktrees.setup` array in kitt.json. Example:
+```json
+"worktrees": {
+  "path": "~/worktrees/hublo",
+  "setup": ["pnpm install"]
+}
+```
+Do NOT omit the `setup` array — if a command was detected and confirmed, it MUST be written. Only omit if user chose D (none).
 
 ---
 
