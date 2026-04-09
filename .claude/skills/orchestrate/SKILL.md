@@ -132,8 +132,47 @@ Only ask once. Never ask again mid-workflow.
 5. **If ticket has no parent:**
    a. Check if workspace folder exists (match by ticket key prefix in folder name): `.claude/workspace/{epics|features|bugs|refactors}/{ticketKey}-*/`
    b. Create folder as `{ticketKey}-{slug}/` + metadata.json if missing
-6. Determine type (epic / feature / bug / refactor) from ticket or ask
+6. Determine type from ticket or ask:
+   - Map task manager ticket type → kitt type:
+     - `Epic` → epic
+     - `Story`, `Task`, `Sub-task`, `Improvement` → feature
+     - `Bug`, `Defect` → bug
+     - Unknown type → ask: "What type? Epic / Feature / Bug / Refactor"
+   - If type is `feature` or `refactor` → **ask size** (see Step 2c below)
+   - If type is `epic` → skip size (epics always use full pipeline)
+   - If type is `bug` → skip size (bugs route by root cause knowledge)
 7. Route (Step 3)
+
+---
+
+## Step 2c: Size Assessment (features and refactors only)
+
+**Suggest a size based on ticket signals, then let the user confirm or override.**
+
+```
+1. Analyze ticket data for size signals:
+   - Acceptance criteria count: 1-2 → S, 3-5 → M, 6+ → L
+   - Description length: < 100 chars → S, 100-500 → M, 500+ → L
+   - Subtask count: 0 → S, 1-3 → M, 4+ → L
+   - Story points (if set): 1-2 → S, 3-5 → M, 8+ → L
+   - Cross-service indicators: mentions multiple services/apps → bump to M or L
+
+2. Aggregate signals → propose a size (use the most common signal, or the highest if mixed):
+
+   "Based on the ticket ({N} acceptance criteria, {description assessment}):
+     → I'd suggest {suggested size}
+
+     S — Small (< 2h, 1-3 files, obvious change)
+     M — Medium (< 2 days, clear scope) {← suggested if M}
+     L — Large (2+ days, or unclear scope) {← suggested if L}
+
+   Your call?"
+
+3. If no ticket data available (new work, no description):
+   → Ask size without suggestion (current behavior)
+```
+
+**This step applies to features AND to user stories (US under epics).** A small US doesn't need refine + align — same size routing as standalone features.
 
 **If new work — scope clear:**
 1. Ask: "What type? Epic / Feature / Bug / Refactor"
@@ -238,10 +277,14 @@ Detect state in this order:
    → OR import from task manager (if ticket keys exist)
 
 5. US subfolders exist → check each US:
-   - No US spec         → refine (US MODE) on that US
-   - US spec, no arch   → align on that US
-   - US spec + arch, no plan → build-plan on that US
-   - Has plan           → implement on that US
+   - First: ask size via Step 2c (same S/M/L as features)
+   - S: → implement directly (no spec, no plan needed)
+   - M: → build-plan → implement (skip refine + align)
+   - L (default for US): full pipeline below:
+     - No US spec         → refine (US MODE) on that US
+     - US spec, no arch   → align on that US
+     - US spec + arch, no plan → build-plan on that US
+     - Has plan           → implement on that US
    - All US completed   → epic complete
 ```
 
