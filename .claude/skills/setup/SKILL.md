@@ -1,5 +1,5 @@
 ---
-name: setup
+name: "⚙️ setup"
 description: Interactive kitt configuration wizard. Scans the project repo, asks targeted questions, writes kitt.json, generates context file drafts, and validates completeness.
 version: 1.0
 ---

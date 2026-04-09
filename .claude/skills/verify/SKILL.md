@@ -1,5 +1,5 @@
 ---
-name: verify
+name: "✅ verify"
 description: Use before claiming any work is complete, fixed, or passing. Run the verification command, read the output, then make the claim. Evidence before assertions.
 version: 1.0
 ---

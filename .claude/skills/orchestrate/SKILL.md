@@ -1,5 +1,5 @@
 ---
-name: orchestrate
+name: "🎯 orchestrate"
 description: Simple workflow router - asks what you want to work on, analyzes it, and routes to the right next step. Handles epic → US workflow and flat feature workflow. Auto-syncs metadata on US completion.
 version: 9.0
 ---

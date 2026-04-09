@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: "🔎 code-review"
 description: Automated code review skill — runs between implement and finish-development. Reviews diff against spec, plan, code-standards, and agent docs. Produces structured review with actionable findings.
 version: 1.0
 ---

@@ -1,5 +1,5 @@
 ---
-name: refine
+name: "🔍 refine"
 description: Feature refinement process. Validates that a feature is ready for architecture validation and implementation. Supports EPIC mode (creates spec with US breakdown) and US/FEATURE mode (creates individual spec). Does not mutate task manager without explicit confirmation.
 version: 3.0
 ---

@@ -1,5 +1,5 @@
 ---
-name: qa-backend
+name: "📡 qa-backend"
 description: Backend QA — loads spec context, gathers API credentials and payloads, runs HTTP scenarios, writes a local qa-run file updated live, then publishes to the configured report adapter.
 version: 2.0
 ---

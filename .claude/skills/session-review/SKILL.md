@@ -1,5 +1,5 @@
 ---
-name: session-review
+name: "📊 session-review"
 description: Post-completion review of a work item's development session — analyzes session log events, skill usage patterns, feedback frequency, spec drift, and time distribution. Outputs a review.md with metrics and improvement suggestions. Includes skill effectiveness evaluation.
 version: 2.0
 ---

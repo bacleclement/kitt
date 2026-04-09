@@ -1,5 +1,5 @@
 ---
-name: manage-task
+name: "🎫 manage-task"
 description: Standalone task manager operations — create, read, update, transition, comment on tickets. Works with any configured adapter (Jira, Linear, GitHub Issues, Local).
 version: 1.0
 ---

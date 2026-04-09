@@ -1,5 +1,5 @@
 ---
-name: tdd
+name: "🧪 tdd"
 description: Use when implementing any feature or bugfix. Write the test first, watch it fail, write minimal code to pass. No exceptions.
 version: 1.0
 ---

@@ -1,5 +1,5 @@
 ---
-name: qa-frontend
+name: "🌐 qa-frontend"
 description: Frontend QA — loads spec context, gathers test data, runs browser scenarios, writes a local qa-run file updated live, then publishes to the configured report adapter (Notion, local, etc.).
 version: 2.0
 ---

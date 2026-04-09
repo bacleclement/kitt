@@ -1,5 +1,5 @@
 ---
-name: onboard
+name: "👋 onboard"
 description: Onboards a new developer — reads project context, scans codebase, asks about their role and focus area, and generates a personalized onboarding guide.
 version: 1.0
 ---

@@ -1,5 +1,5 @@
 ---
-name: implement
+name: "🛠️ implement"
 description: Implements tasks from plan.md with TDD, task manager integration, and PR creation. Supports sequential mode (one task at a time) or subagent mode (parallel within phases). Reads commit format and platform config from kitt.json.
 version: 5.0
 ---

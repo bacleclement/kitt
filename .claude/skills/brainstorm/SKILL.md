@@ -1,5 +1,5 @@
 ---
-name: brainstorm
+name: "💡 brainstorm"
 description: Turn a raw idea into a validated design through collaborative dialogue. Use BEFORE orchestrate when you don't yet know what to build. Outputs a design.md in workspace/ then hands off to orchestrate.
 version: 1.0
 ---

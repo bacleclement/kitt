@@ -1,5 +1,5 @@
 ---
-name: capture-rule
+name: "📏 capture-rule"
 description: "Captures a coding correction or design fix as a permanent rule in the right context file. Invokable manually (/capture-rule) or auto-invoked from implement after a mid-task correction. Flexible destination: code-standards, domain agent, or tech-stack."
 version: 2.0
 ---

@@ -1,5 +1,5 @@
 ---
-name: finish-development
+name: "🚀 finish-development"
 description: Finalizes development work — verifies build, pushes branch, creates PR, transitions ticket to review, and optionally cleans up worktree. Called by orchestrate when the user signals work is done.
 version: 1.0
 ---

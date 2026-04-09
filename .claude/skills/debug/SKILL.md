@@ -1,5 +1,5 @@
 ---
-name: debug
+name: "🐛 debug"
 description: Systematic bug investigation — reproduce, isolate, hypothesize, confirm root cause, fix, verify, regress. Works with any configured adapter (Jira, Linear, local).
 version: 1.0
 ---
