@@ -182,8 +182,12 @@ Only ask once. Never ask again mid-workflow.
 
    Your call?"
 
+   ⛔ STOP — WAIT for the user to confirm or override the size.
+   DO NOT proceed to the next step until the user explicitly responds with S, M, or L.
+   The dev ALWAYS has the last word on size. Never auto-accept the suggestion.
+
 4. If no ticket data AND no codebase matches (new work, abstract concept):
-   → Ask size without suggestion (current behavior)
+   → Ask size without suggestion, still ⛔ STOP and wait for answer
 ```
 
 **Keep the scan fast:** limit grep to top-level source directories, cap at 100 results, don't read file contents — just count matches. The goal is a 5-second signal, not a full analysis.
