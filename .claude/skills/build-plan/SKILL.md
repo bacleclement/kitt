@@ -46,9 +46,10 @@ Bridges the gap between architecture-alignment and implement. Reads the existing
 
 ## When to Use
 
-- Spec exists (`{key}-spec.md`) with `## Architecture` section (added by architecture-alignment)
+- **L features / US:** spec exists (`{key}-spec.md`) with `## Architecture` section (added by align)
+- **M features:** no spec yet — build-plan creates a lightweight spec from ticket data first (see Step 0)
 - No plan exists yet (`{key}-plan.md`)
-- Called by `workflow-orchestrator` when routing detects this state
+- Called by orchestrate when routing detects this state
 
 ---
 
@@ -73,16 +74,23 @@ Before doing anything else, locate the workspace folder for `{key}` and check wh
 
 **If `{key}-spec.md` does not exist:**
 
-> "No spec file found for {key}. build-plan requires a spec written to disk — inline context passed as arguments doesn't count.
->
-> Two options:
-> A) Run `refine` first — it will produce `{key}-spec.md` through a structured constraint-discovery interview.
-> B) You already have the spec content (e.g. from Jira or inline arguments) — I can write it to `{key}-spec.md` now, then proceed to plan-building.
->
-> Which do you prefer?"
+This is expected for **M features** (routed directly to build-plan, skipping refine).
 
-- If **A**: stop here. Invoke `refine`.
-- If **B**: write the provided content to `{key}-spec.md` (using the standard spec format), then continue to Step 1.
+1. Read the ticket description from task manager (already fetched by orchestrate)
+2. Generate a **lightweight spec** from ticket data:
+   - Objective (from ticket title + description)
+   - Acceptance criteria (extract from ticket, or ask user)
+   - Out of scope (infer or ask)
+   - Architecture (quick codebase scan: which files/aggregates/modules are involved)
+3. Write to `{key}-spec.md`
+4. Show to user: *"I wrote a lightweight spec from the ticket. Review before I plan?"*
+
+   ⛔ STOP — WAIT for user to confirm the spec is correct before proceeding to plan.
+
+5. After confirmation → continue to Step 1.
+
+**If user says the spec is wrong or incomplete:**
+→ Apply corrections, or invoke `refine` for a full constraint-discovery interview.
 
 **If `{key}-spec.md` exists but has no `## Architecture` section:**
 
