@@ -329,14 +329,7 @@ Any domain vocabulary I should know? Terms that mean something specific here.
 
 ---
 
-**Q3.5 — Architecture constraints**
-
-```
-Architecture constraints to enforce?
-  A) {inferred — e.g. "DDD layer separation, no cross-domain imports, no barrel files"} (detected patterns)
-  B) Type your own constraints
-  C) None / skip
-```
+Note: architecture constraints are NOT collected here — they are a tech concern, not a product concern. Architecture patterns (DDD, hexagonal, etc.) belong in `code-standards.md` (shared) or in per-scope agents (app-specific). They are inferred from the codebase scan and written during code-standards generation in Step 6.
 
 Note: business rules are NOT collected here. They are harvested incrementally by `/align` after each US validation and appended to `product.md` only when they are cross-cutting and non-obvious from the code.
 
@@ -858,7 +851,7 @@ Write `.claude/CLAUDE.md` with the minimal project guide. Do NOT overwrite if it
 .claude/
 ├── CLAUDE.md              # This file
 ├── config/kitt.json       # Kitt configuration
-├── context/               # product.md, tech-stack.md, code-standards.md
+├── context/               # product.md, code-standards.md
 ├── skills/                # Project-specific skills (add as needed)
 └── workspace/             # Work items — epics/, features/, bugs/, refactors/
 ```
