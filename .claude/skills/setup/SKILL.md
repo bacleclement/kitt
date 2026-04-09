@@ -464,12 +464,12 @@ Figma default file key? (optional — can be left blank and provided per-spec la
 
 ---
 
-**Q4.3b — Worktree configuration**
+**Q4.3b — Worktree settings**
 
 ```
-Do you want to configure worktree isolation? (used by /orchestrate when starting new work)
-  A) Yes — I'll work in isolated git worktrees
-  B) No — skip this
+Configure worktree settings? (path and setup commands — orchestrate will still ask before each use)
+  A) Yes — configure path and setup commands
+  B) No — skip (can be added later via /setup update)
 ```
 
 **If A:**
@@ -480,16 +480,31 @@ Where should worktrees be stored?
   B) Type your own path
 ```
 
+Then **auto-detect setup commands from project files:**
+
 ```
-Any extra setup commands to run after creating a worktree? (e.g. pnpm install)
-  A) Auto-detect from project files (recommended)
-  B) Type commands (one per line)
-  C) None
+Detect install command:
+  - pnpm-lock.yaml exists → "pnpm install"
+  - yarn.lock exists      → "yarn install"
+  - package-lock.json     → "npm install"
+  - requirements.txt      → "pip install -r requirements.txt"
+  - go.mod                → "go mod download"
+  - Gemfile               → "bundle install"
+  - None found            → no install command
+
+Show detected command(s) and confirm:
+"Worktree setup commands (run after creation):
+  1. {detected install command}
+
+  A) Confirm
+  B) Add more commands
+  C) Type your own (replace all)
+  D) None — no setup commands"
 ```
 
-If B: collect commands one at a time until user says done.
+If B: collect additional commands one at a time until user says done. Append to the detected list.
 
-Write to kitt.json under `vcs.worktrees`. If auto-detect chosen, omit the `setup` array entirely.
+Write to kitt.json under `vcs.worktrees` with the confirmed setup commands array.
 
 ---
 
