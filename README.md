@@ -142,43 +142,65 @@ Workspaces use **human-readable folder names**: `{ticketKey}-{slug}` (e.g., `PRO
 
 ---
 
-## App-Scoped Context (Monorepo Support)
+## Context Architecture
 
-For monorepos with multiple apps (frontend, backend, E2E), kitt loads **only relevant agents and standards** per work item.
+Kitt organizes knowledge in two dimensions:
 
-### How It Works
+- **Domain context** (`product.md`) — business rules, users, vocabulary. Always loaded, never scoped.
+- **Tech context** — shared conventions (`code-standards.md`) + per-scope deep expertise (agents colocated in the codebase).
 
-1. **Setup** detects apps (Nx, pnpm workspaces, Turbo) and auto-matches agents to scopes
+```
+.claude/
+├── CLAUDE.md                       # Entry point, hard rules
+├── context/
+│   ├── product.md                  # Domain: business rules, users, vocabulary (always loaded)
+│   └── code-standards.md           # Shared tech: baseline stack, naming, formatting (always loaded)
+└── config/kitt.json                # scopes = the ONLY agent mapping
+
+# Agents live in the codebase, colocated with the code they describe:
+apps/api/services/network/agents/   # NestJS + hexagonal + DDD + network domain
+apps/front/admin/AGENT.md           # React + MUI + admin UI patterns
+```
+
+### App-Scoped Context (Monorepo Support)
+
+For monorepos with multiple apps, kitt loads **only relevant agents** per work item.
+
+1. **Setup** detects apps (Nx, pnpm workspaces, Turbo), scans for colocated agents, auto-creates them if missing
 2. **Orchestrate** detects or asks which app a work item touches, stores scope in `metadata.json`
-3. **All skills** load only: repo-wide context + app-scoped context + scoped agents
+3. **All skills** load: repo-wide context + repo-wide agents (`"*"` scope) + scoped agents only
 
 ### Configuration in kitt.json
 
 ```json
 {
   "scopes": {
+    "*": {
+      "agents": ["docs/testing/integration-patterns.md"]
+    },
     "api-network": {
       "path": "apps/api/services/network",
-      "agents": [".claude/agents/network-*.md", "apps/api/services/network/agents/**"]
+      "agents": ["apps/api/services/network/agents/**"]
     },
     "front-admin": {
       "path": "apps/front/admin",
-      "agents": [".claude/agents/admin-*.md"]
+      "agents": ["apps/front/admin/AGENT.md"]
     }
   }
 }
 ```
 
-No `scopes` section = no scoping (single-app projects, backward compatible).
+- `"*"` scope = repo-wide agents, always loaded
+- Named scopes = loaded only when that scope is active
+- No `scopes` section = fallback to `glob **/agents/` (backward compatible, single-app projects)
 
 ### Context Loading Order
 
 ```
-1. Repo-wide:    .claude/context/product.md, tech-stack.md, code-standards.md
-2. App-scoped:   .claude/context/apps/{scope}/standards.md (if exists)
-3. Scoped agents: globs from kitt.json.scopes.{scope}.agents
-4. Repo-wide agents: agents not listed in any scope
-5. Feature-scoped: workspace/{key}/spec ## Implementation Notes
+1. Repo-wide context:  .claude/context/product.md, code-standards.md (always)
+2. Repo-wide agents:   kitt.json.scopes["*"].agents (always, if defined)
+3. Scoped agents:      kitt.json.scopes.{scope}.agents (when scope is active)
+4. Feature context:    workspace/{key}/spec ## Implementation Notes (if exists)
 ```
 
 ---

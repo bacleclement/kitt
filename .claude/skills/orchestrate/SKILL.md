@@ -182,29 +182,28 @@ Only ask once. Never ask again mid-workflow.
 
 **Used by all skills** (orchestrate, refine, align, build-plan, implement, code-review).
 
+**kitt.json.scopes is the sole agent mapping.** Agents live in the codebase (colocated with the code they describe), not in a centralized folder. kitt.json tells skills where to find them.
+
 ```
 Read metadata.json.scope for the current work item.
 
-If scope is set AND kitt.json.scopes.{scope} exists:
-  1. Load repo-wide context:
-     - .claude/context/product.md
-     - .claude/context/tech-stack.md
-     - .claude/context/code-standards.md
-  2. Load app-scoped context (if exists):
-     - .claude/context/apps/{scope}/standards.md
-     - .claude/context/apps/{scope}/tech-stack.md
-  3. Load scoped agents:
+If scopes exist in kitt.json:
+  1. Load repo-wide context (always):
+     - .claude/context/product.md        (domain: business rules, users, vocabulary)
+     - .claude/context/code-standards.md  (shared tech: baseline stack, naming, formatting)
+  2. Load repo-wide agents (always):
+     - Glob patterns from kitt.json.scopes["*"].agents (if "*" scope defined)
+  3. Load scoped agents (if scope is set):
      - Glob patterns from kitt.json.scopes.{scope}.agents
-  4. Load repo-wide agents (agents NOT listed in any scope):
-     - Auto-discover via glob **/agents/
-     - Exclude agents that match ANY scope's agent patterns
-  5. Load feature-scoped context:
+  4. Load feature-scoped context:
      - workspace/{key}/spec ## Implementation Notes (if exists)
 
-If scope is null OR no scopes in kitt.json:
-  → Load all agents (current behavior — backward compatible)
-  → Load all context files
+If NO scopes in kitt.json (single-app project, backward compatible):
+  → Load .claude/context/product.md, code-standards.md, tech-stack.md (if exists)
+  → Auto-discover all agents via glob **/agents/ and **/AGENT.md
 ```
+
+**Note:** `tech-stack.md` is deprecated for multi-app projects. Its content is absorbed into `code-standards.md ## Tech Baseline` section + per-scope agents. Still loaded as fallback for projects without scopes.
 
 ---
 

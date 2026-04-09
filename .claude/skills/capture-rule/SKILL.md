@@ -45,23 +45,19 @@ Where does this rule belong?
   A) This feature only → workspace/{key}/spec ## Implementation Notes
      (applies to this work item only — already handled by feedback propagation)
 
-  B) App standards     → .claude/context/apps/{scope}/standards.md      ← PRE-SELECTED DEFAULT
-     (patterns specific to {scope} — only loaded when working on this app)
+  B) Scoped agent      → agent doc for {scope} (from kitt.json.scopes.{scope}.agents)  ← PRE-SELECTED DEFAULT
+     (tech patterns + domain rules specific to this app/service)
 
-  C) Scoped agent      → agent doc matched to {scope} (from kitt.json.scopes.{scope}.agents)
-     (domain-specific patterns for this service/module)
+  C) Repo-wide standard → .claude/context/code-standards.md
+     (shared conventions, naming, formatting — applies everywhere)
 
-  D) Repo-wide standard → .claude/context/code-standards.md
-     (naming, imports, architecture, formatting — applies everywhere)
-
-  E) Tech constraint    → .claude/context/tech-stack.md
-     (library-specific patterns, approved/banned packages, runtime constraints)
-
-  F) Company-wide       → ~/.claude/context/company-standards.md
+  D) Company-wide       → ~/.claude/context/company-standards.md
      (rules shared across all repos — naming, security, compliance)
 ```
 
-Default = **B (app standards)** when a scope is active. This is the most common destination in monorepos.
+Default = **B (scoped agent)** when a scope is active. The agent is the single source of per-scope tech + domain context.
+
+**If scoped agent selected:** list agents matched to the active scope from `kitt.json.scopes.{scope}.agents`, let user pick which file to append to (or infer from correction context).
 
 **If no scopes or no active scope** — show flat options (current behavior):
 

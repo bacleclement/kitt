@@ -96,18 +96,17 @@
     },
     "scopes": {
       "type": "object",
-      "description": "Optional app-scoped context for monorepos. Each key is a scope name, value defines the app path and agent globs. Omit entirely for single-app projects (backward compatible).",
+      "description": "Optional app-scoped context for monorepos. Each key is a scope name (or '*' for repo-wide agents). Value defines the app path and agent globs. Agents live colocated in the codebase — kitt.json is the sole mapping. Omit entirely for single-app projects (backward compatible: falls back to glob **/agents/).",
       "additionalProperties": {
         "type": "object",
-        "required": ["path"],
         "properties": {
           "path": {
             "type": "string",
-            "description": "Relative path to the app/service folder in the codebase (e.g. apps/api/services/network)"
+            "description": "Relative path to the app/service folder in the codebase. Omit for the '*' (repo-wide) scope."
           },
           "agents": {
             "type": "array",
-            "description": "Glob patterns for agent docs to load when this scope is active. Agents not listed in any scope are always loaded (repo-wide).",
+            "description": "Glob patterns for agent docs to load. Agents are colocated in the codebase (e.g. apps/api/network/agents/**, apps/front/AGENT.md). The '*' scope agents are always loaded.",
             "items": { "type": "string" }
           }
         }

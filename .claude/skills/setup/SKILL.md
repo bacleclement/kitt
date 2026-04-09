@@ -212,27 +212,49 @@ Present scan summary:
  Select all that apply (comma-separate), or 'all':"
 ```
 
-After selection, **auto-match agents to scopes:**
+After selection, **scan for colocated agents in each scope's folder:**
 
-1. **Name prefix match:** agent file `network-code-agent.md` → scope `api-network` (if name contains scope name)
-2. **Location match:** agent inside `apps/api/services/network/agents/` → scope `api-network` (agent path starts with scope path)
-3. **Unmatched agents:** ask one at a time:
+1. **Location scan:** for each scope, look for agent docs inside the app folder:
+   - `{scope-path}/agents/**`
+   - `{scope-path}/AGENT.md`
+   - `{scope-path}/**/AGENT.md`
+   - `{scope-path}/**/*agent*.md`
+2. **Found?** → map the glob patterns into `kitt.json.scopes.{scope}.agents`
+3. **Not found?** → ask:
    ```
-   "Which scope for '{agent-name}.md'?
+   "No agent docs found for {scope-name} ({scope-path}).
+     A) Create one — I'll scan the app's code and generate {scope-path}/AGENT.md
+     B) Skip — no agent for this scope"
+   ```
+   If A: scan the app's source files, detect framework, patterns, domain. Generate a colocated `AGENT.md` with: tech stack, architecture patterns, domain rules, testing approach. Show draft, confirm, write.
+
+4. **Repo-wide agents:** scan for agent docs NOT inside any scope's path:
+   - Check `.claude/agents/` (legacy location), `docs/`, root-level `AGENT.md`
+   - If found → add to `scopes["*"].agents` (always loaded)
+   - If not found → no `"*"` scope (fine, not required)
+
+5. **Unmatched agents in `.claude/agents/` (legacy):** if a centralized `.claude/agents/` folder exists with files not matched to any scope:
+   ```
+   "Found agents in .claude/agents/ not matched to a scope:
+     - {agent-name}.md
+   Which scope?
      A) {scope-1}
      B) {scope-2}
      C) Repo-wide (always loaded)
      D) Skip"
    ```
 
-Store the result for kitt.json Step 5. Each selected scope produces:
+Store the result for kitt.json Step 5:
 
 ```json
 {
   "scopes": {
+    "*": {
+      "agents": ["docs/testing/integration-patterns.md"]
+    },
     "{scope-name}": {
       "path": "{detected-path}",
-      "agents": ["{matched-glob-1}", "{matched-glob-2}"]
+      "agents": ["{scope-path}/agents/**", "{scope-path}/AGENT.md"]
     }
   }
 }
@@ -762,9 +784,11 @@ Apply corrections, then write to `.claude/context/product.md`.
 
 ---
 
-**`tech-stack.md`** — from manifests + detected patterns:
+**`tech-stack.md`** (single-app projects only):
 
-Draft structure:
+**Skip for multi-app projects** — tech info lives in per-scope agents instead.
+
+For single-app projects, generate from manifests + detected patterns:
 ```markdown
 # {Project Name} — Tech Stack
 
@@ -797,6 +821,10 @@ Draft structure:
 ```markdown
 # {Project Name} — Code Standards
 
+## Tech Baseline
+{inferred shared tech: runtime versions, package manager, CI/CD, cloud, databases}
+{For multi-app: only shared infrastructure here — per-app tech lives in agents}
+
 ## Naming Conventions
 {inferred from code samples}
 
@@ -806,11 +834,12 @@ Draft structure:
 ## Formatting
 {inferred from prettier config}
 
-## Architecture
-{inferred from detected patterns (DDD, hexagonal, etc.) + interview answer 6}
+## Architecture (shared)
+{inferred from detected patterns — only patterns that apply across ALL apps}
+{For multi-app: per-app architecture lives in colocated agents}
 
-## Testing
-{inferred from test framework + sample test files}
+## Testing (shared)
+{inferred from test framework + sample test files — shared conventions only}
 ```
 
 Show draft, ask: *"Anything wrong or missing?"*
