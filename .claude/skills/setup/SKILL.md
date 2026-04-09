@@ -215,7 +215,8 @@ Present scan summary:
 After selection, **scan for colocated agents in each scope's folder:**
 
 1. **Location scan:** for each scope, look for agent docs inside the app folder:
-   - `{scope-path}/agents/**`
+   - `{scope-path}/agents/*.md` (any markdown in an agents/ folder — files may not contain "agent" in name)
+   - `{scope-path}/agents/**/*.md` (nested subfolders inside agents/)
    - `{scope-path}/AGENT.md`
    - `{scope-path}/**/AGENT.md`
    - `{scope-path}/**/*agent*.md`
