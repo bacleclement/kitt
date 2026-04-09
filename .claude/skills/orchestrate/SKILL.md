@@ -157,7 +157,7 @@ Only ask once. Never ask again mid-workflow.
    - Story points (if set): 1-2 → S, 3-5 → M, 8+ → L
 
 2. Scan the codebase for impact:
-   - Extract key entities/concepts from ticket title + description (e.g., "contract", "overlapping", "validation")
+   - Extract key entities/concepts from ticket title + description (nouns, domain terms, action verbs)
    - Search codebase: grep for these terms in source files (exclude node_modules, dist, build, test fixtures)
    - Count impacted files: how many source files contain these terms?
      → 1-3 files → S signal, 4-10 files → M signal, 10+ files → L signal
