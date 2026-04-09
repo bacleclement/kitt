@@ -44,12 +44,12 @@ After completion: `/session-review` for analytics (tokens, feedback, skill effec
 
 | Phase | Skills |
 |-------|--------|
-| **Entry** | `setup` · `onboard` · `orchestrate` |
-| **Design** | `brainstorm` · `refine` · `align` · `build-plan` |
-| **Build** | `implement` · `tdd` · `verify` · `debug` |
-| **Ship** | `code-review` · `finish-development` · `branch-creator` · `pr-creator` · `vcs/worktree` |
-| **Quality** | `qa-frontend` · `qa-backend` · `capture-rule` · `session-review` |
-| **Ops** | `manage-task` |
+| **Entry** | ⚙️ `setup` · 👋 `onboard` · 🎯 `orchestrate` |
+| **Design** | 💡 `brainstorm` · 🔍 `refine` · 🏗️ `align` · 📝 `build-plan` |
+| **Build** | 🛠️ `implement` · 🧪 `tdd` · ✅ `verify` · 🐛 `debug` |
+| **Ship** | 🔎 `code-review` · 🚀 `finish-development` · `branch-creator` · `pr-creator` · `vcs/worktree` |
+| **Quality** | 🌐 `qa-frontend` · 📡 `qa-backend` · 📏 `capture-rule` · 📊 `session-review` |
+| **Ops** | 🎫 `manage-task` |
 
 ---
 
