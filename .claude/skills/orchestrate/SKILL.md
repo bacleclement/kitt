@@ -147,7 +147,7 @@ Only ask once. Never ask again mid-workflow.
 
 ## Step 2c: Size Assessment (features and refactors only)
 
-**Suggest a size based on ticket signals, then let the user confirm or override.**
+**Suggest a size based on ticket signals + codebase scan, then let the user confirm or override.**
 
 ```
 1. Analyze ticket data for size signals:
@@ -155,11 +155,25 @@ Only ask once. Never ask again mid-workflow.
    - Description length: < 100 chars → S, 100-500 → M, 500+ → L
    - Subtask count: 0 → S, 1-3 → M, 4+ → L
    - Story points (if set): 1-2 → S, 3-5 → M, 8+ → L
-   - Cross-service indicators: mentions multiple services/apps → bump to M or L
 
-2. Aggregate signals → propose a size (use the most common signal, or the highest if mixed):
+2. Scan the codebase for impact:
+   - Extract key entities/concepts from ticket title + description (e.g., "contract", "overlapping", "validation")
+   - Search codebase: grep for these terms in source files (exclude node_modules, dist, build, test fixtures)
+   - Count impacted files: how many source files contain these terms?
+     → 1-3 files → S signal, 4-10 files → M signal, 10+ files → L signal
+   - Count impacted services/apps: do matches span multiple scope paths (from kitt.json.scopes)?
+     → 1 service → no bump, 2+ services → bump to M minimum, 3+ → bump to L
+   - Check for existing tests: grep for terms in test files
+     → Many existing tests to update → bump complexity
+   - Check for shared/cross-cutting code: matches in libs/, shared/, or common/ folders
+     → Shared code touched → bump to M minimum (ripple effect)
 
-   "Based on the ticket ({N} acceptance criteria, {description assessment}):
+3. Aggregate all signals (ticket + codebase) → propose a size:
+   Use the HIGHEST signal across all dimensions (conservative — better to over-prepare than under-prepare).
+
+   "Size assessment for {ticket-key}:
+     Ticket: {N} acceptance criteria, {story points or 'no estimate'}
+     Codebase: {M} files impacted across {K} service(s){, touches shared libs if true}
      → I'd suggest {suggested size}
 
      S — Small (< 2h, 1-3 files, obvious change)
@@ -168,9 +182,11 @@ Only ask once. Never ask again mid-workflow.
 
    Your call?"
 
-3. If no ticket data available (new work, no description):
+4. If no ticket data AND no codebase matches (new work, abstract concept):
    → Ask size without suggestion (current behavior)
 ```
+
+**Keep the scan fast:** limit grep to top-level source directories, cap at 100 results, don't read file contents — just count matches. The goal is a 5-second signal, not a full analysis.
 
 **This step applies to features AND to user stories (US under epics).** A small US doesn't need refine + align — same size routing as standalone features.
 
