@@ -1,449 +1,137 @@
-# Kitt — Kitt Intelligence and Tooling Toolkit
+# Kitt — AI Workflow Engine for Claude Code
 
 > "I don't transform into a car, but I will scan your entire codebase in seconds." — KITT
 
-Kitt is a reusable AI workflow engine for Claude Code. It provides a complete spec-driven development pipeline with pluggable integrations for any task manager, VCS, and design tool.
+Spec-driven development pipeline with pluggable task managers, VCS, and design tools. One entry point: `/orchestrate`.
+
+## Quick Start
+
+```bash
+# Install (once per machine)
+git clone https://github.com/bacleclement/kitt.git ~/.claude/kitt
+
+# In your project
+/setup        # config wizard — scans repo, writes kitt.json + context files
+/orchestrate  # start working
+```
+
+New team member? Same commands — `/setup` detects existing config and switches to join mode.
+
+Update: `git -C ~/.claude/kitt pull`
 
 ---
 
-## What Kitt Gives You
+## How It Works
 
-- **Full workflow pipeline:** brainstorm → refine → align → build-plan → implement → code-review → finish
-- **App-scoped context:** monorepo support — load only relevant agents and standards per app/service
-- **Automated code review:** diff-against-spec review with 5 quality dimensions before every PR
-- **Session analytics:** token costs, feedback tracking, skill effectiveness, spec drift scoring
-- **Systematic debugging:** reproduce → locate → root cause → fix → regress
-- **Frontend & backend QA:** browser scenarios + HTTP scenarios, live run file, multi-stakeholder review columns
-- **Developer onboarding:** role-aware guide generated from your actual codebase
-- **Pluggable adapters:** Jira, Linear, GitHub Issues, Local / GitHub, GitLab, Bitbucket / report to Local or Notion
-- **Smart setup wizard:** scans your repo, detects apps, asks one question at a time with lettered options
-- **Zero hardcoding:** all platform config lives in `kitt.json`
+`/orchestrate` detects what you're working on and routes to the right skill:
+
+```
+/orchestrate
+ ├─ Epic       → /refine → /align → /build-plan → /implement → /code-review → /finish-development
+ ├─ Feature L  → /refine → /align → /build-plan → /implement → /code-review → /finish-development
+ ├─ Feature M  → /build-plan → /implement → /code-review → /finish-development
+ ├─ Feature S  → /implement → /code-review → /finish-development
+ ├─ Bug        → /debug or /implement → /code-review → /finish-development
+ └─ QA         → /qa-frontend or /qa-backend → publish
+```
+
+Before routing: asks branch vs. worktree, detects scope (multi-app), reads ticket from task manager.
+After completion: `/session-review` for analytics (tokens, feedback, skill effectiveness).
 
 ---
 
-## Skills
+## Skills (21)
 
-| Skill | Purpose |
-|-------|---------|
-| `setup` | First-time config wizard — or join mode for new team members. Detects monorepo apps for scoped context. |
-| `onboard` | Personalized onboarding guide (role interview → scoped codebase tour) |
-| `brainstorm` | Explore raw ideas → design.md before any spec or ticket |
-| `orchestrate` | Routes work to the right next step based on current state. Detects scope per work item in multi-app projects. |
-| `refine` | Constraint discovery: functional, access, NFRs. Epic mode generates spec with US breakdown |
-| `align` | Validates spec against DDD / Clean Architecture |
-| `build-plan` | Breaks spec into implementable TDD tasks |
-| `implement` | Implements tasks with TDD — sequential or subagent mode. Session logging for analytics. |
-| `tdd` | Red-Green-Refactor cycle — called by implement on every task |
-| `verify` | Evidence before completion claims — no exceptions |
-| `code-review` | Automated 5-dimension review (spec compliance, architecture, standards, agents, quality). Runs before finish-development. |
-| `debug` | Systematic bug investigation: reproduce → root cause → fix → regress |
-| `capture-rule` | Turns corrections into permanent rules. Scope-aware: feature → app → repo → company destinations. |
-| `session-review` | Post-completion analytics: time distribution, token costs, feedback log, skill effectiveness, agent freshness. |
-| `qa-frontend` | Browser-based QA: scenario generation from spec/Jira, live `qa-run.md` with AI/Dev/PM/Design columns, publishes to Local or Notion |
-| `qa-backend` | HTTP scenario runner: API credentials, request/response assertions, live run file, same report adapter |
-| `manage-task` | Ticket CRUD (read, create, transition, comment) |
-| `branch-creator` | Git branch from ticket key |
-| `pr-creator` | PR creation with task manager linking |
-| `vcs/worktree` | Creates isolated git worktree outside the repo — called by orchestrate when user wants isolation |
-| `finish-development` | End-of-work sequence: verify → push → PR → ticket transition → worktree cleanup |
-| `vcs/worktree-finish` | Removes a worktree properly after PR is merged — called by finish-development |
-
----
-
-## Workflow
-
-All work starts with `/orchestrate`. It detects the current state and routes to the right skill.
-
-### Use Case 1 — Raw idea (no ticket, no spec)
-
-```
-raw idea
-  └─ /orchestrate
-       ├─ branch or worktree? → choose work environment
-       ├─ needs exploration? → /brainstorm → design.md → /orchestrate
-       └─ scope clear?
-            ├─ Epic  → /refine (EPIC MODE) → spec + ## User Stories
-            │            └─ for each US: /align → /build-plan → /implement → /code-review → /finish-development
-            ├─ Feature M  → /build-plan → /implement → /code-review → /finish-development
-            └─ Feature S  → /implement → /code-review → /finish-development
-```
-
-### Use Case 2 — PM creates a ticket (epic with or without US)
-
-```
-ticket key
-  └─ /orchestrate (reads ticket via adapter)
-       ├─ branch or worktree? → choose work environment
-       ├─ multi-app? → detect scope (from ticket or ask) → store in metadata.json
-       ├─ US belongs to existing epic? → nest under epic folder, update children
-       ├─ Epic, no US yet  → /refine (EPIC MODE) → extract US subfolders
-       └─ Epic, US in TM   → import US from task manager
-            └─ for each US: /align → /build-plan → /implement → /code-review → /finish-development
-```
-
-### Use Case 3 — Known feature or refactor
-
-```
-known scope
-  └─ /orchestrate (ask size)
-       ├─ branch or worktree? → choose work environment
-       ├─ S (1-3 files, obvious)  → /implement → /code-review → /finish-development
-       ├─ M (clear, < 2 days)     → /build-plan → /implement → /code-review → /finish-development
-       └─ L (unclear or risky)    → /refine → /align → /build-plan → /implement → /code-review → /finish-development
-```
-
-### Use Case 4 — Bug
-
-```
-bug reported
-  └─ /orchestrate
-       ├─ branch or worktree? → choose work environment
-       ├─ root cause unknown  → /debug → /finish-development
-       ├─ quick fix           → /implement → /code-review → /finish-development
-       └─ complex fix         → /build-plan → /implement → /code-review → /finish-development
-```
-
-### Use Case 5 — QA
-
-```
-feature ready for QA
-  └─ /orchestrate
-       ├─ frontend feature  → /qa-frontend → qa-run.md → publish (Local or Notion)
-       └─ backend feature   → /qa-backend  → qa-run.md → publish (Local or Notion)
-```
-
-### Use Case 6 — Post-Completion Review
-
-```
-epic or feature completed
-  └─ /orchestrate detects completion
-       └─ /session-review → review.md (metrics, feedback log, token costs, improvements)
-```
-
----
-
-### Workspace Structure
-
-Workspaces use **human-readable folder names**: `{ticketKey}-{slug}` (e.g., `PROJ-42-user-profile`) or just `{slug}` for work without tickets.
-
-```
-.claude/workspace/epics/PROJ-42-company-management/
-├── metadata.json              # status, scope, children list
-├── company-management-design.md
-├── company-management-spec.md # from refine — contains ## User Stories
-├── session-log.jsonl          # session events for analytics
-├── PROJ-43-company-creation/
-│   ├── company-creation-spec.md
-│   └── company-creation-plan.md
-└── PROJ-44-contact-management/
-    ├── contact-management-spec.md
-    └── contact-management-plan.md
-```
+| Phase | Skills |
+|-------|--------|
+| **Entry** | `setup` · `onboard` · `orchestrate` |
+| **Design** | `brainstorm` · `refine` · `align` · `build-plan` |
+| **Build** | `implement` · `tdd` · `verify` · `debug` |
+| **Ship** | `code-review` · `finish-development` · `branch-creator` · `pr-creator` · `vcs/worktree` |
+| **Quality** | `qa-frontend` · `qa-backend` · `capture-rule` · `session-review` |
+| **Ops** | `manage-task` |
 
 ---
 
 ## Context Architecture
 
-Kitt organizes knowledge in two dimensions:
-
-- **Domain context** (`product.md`) — business rules, users, vocabulary. Always loaded, never scoped.
-- **Tech context** — shared conventions (`code-standards.md`) + per-scope deep expertise (agents colocated in the codebase).
+Two dimensions: **domain** (what we build) and **tech** (how we build it).
 
 ```
 .claude/
 ├── CLAUDE.md                       # Entry point, hard rules
 ├── context/
-│   ├── product.md                  # Domain: business rules, users, vocabulary (always loaded)
-│   └── code-standards.md           # Shared tech: baseline stack, naming, formatting (always loaded)
-└── config/kitt.json                # scopes = the ONLY agent mapping
+│   ├── product.md                  # Domain: business rules, users, vocabulary
+│   └── code-standards.md           # Shared tech: baseline stack, naming, formatting
+└── config/kitt.json                # scopes, task manager, VCS, build commands
 
-# Agents live in the codebase, colocated with the code they describe:
-apps/api/services/network/agents/   # NestJS + hexagonal + DDD + network domain
-apps/front/admin/AGENT.md           # React + MUI + admin UI patterns
+# Agents live colocated in the codebase — kitt.json maps them:
+apps/api/services/network/AGENT.md  # NestJS + hexagonal + DDD + network domain
+apps/front/admin/AGENT.md           # React + MUI + admin patterns
 ```
 
-### App-Scoped Context (Monorepo Support)
+- `product.md` → always loaded (domain doesn't change per app)
+- `code-standards.md` → always loaded (shared conventions + tech baseline)
+- Agents → per-scope deep expertise (tech + domain), loaded via `kitt.json.scopes`
 
-For monorepos with multiple apps, kitt loads **only relevant agents** per work item.
-
-1. **Setup** detects apps (Nx, pnpm workspaces, Turbo), scans for colocated agents, auto-creates them if missing
-2. **Orchestrate** detects or asks which app a work item touches, stores scope in `metadata.json`
-3. **All skills** load: repo-wide context + repo-wide agents (`"*"` scope) + scoped agents only
-
-### Configuration in kitt.json
+### Monorepo Scoping
 
 ```json
 {
   "scopes": {
-    "*": {
-      "agents": ["docs/testing/integration-patterns.md"]
-    },
+    "*": { "agents": ["docs/testing/integration-patterns.md"] },
     "api-network": {
       "path": "apps/api/services/network",
-      "agents": ["apps/api/services/network/agents/**"]
-    },
-    "front-admin": {
-      "path": "apps/front/admin",
-      "agents": ["apps/front/admin/AGENT.md"]
+      "agents": ["apps/api/services/network/AGENT.md"]
     }
   }
 }
 ```
 
-- `"*"` scope = repo-wide agents, always loaded
-- Named scopes = loaded only when that scope is active
-- No `scopes` section = fallback to `glob **/agents/` (backward compatible, single-app projects)
-
-### Context Loading Order
-
-```
-1. Repo-wide context:  .claude/context/product.md, code-standards.md (always)
-2. Repo-wide agents:   kitt.json.scopes["*"].agents (always, if defined)
-3. Scoped agents:      kitt.json.scopes.{scope}.agents (when scope is active)
-4. Feature context:    workspace/{key}/spec ## Implementation Notes (if exists)
-```
+`"*"` = always loaded. Named scopes = loaded when active. No scopes = auto-discover `**/agents/`.
 
 ---
 
-## Code Review
+## Key Features
 
-`/code-review` runs automatically before `/finish-development`. Reviews the diff against **5 dimensions:**
+### Feedback Propagation
+Corrections mid-implementation → captured as rules (`/capture-rule`) + appended to spec + noted in plan. Specs stay in sync with decisions.
 
-1. **Spec compliance** — all acceptance criteria met?
-2. **Architecture alignment** — layer boundaries, DDD rules, patterns
-3. **Code standards** — naming, imports, formatting from `code-standards.md`
-4. **Agent doc compliance** — domain-specific rules from loaded agents
-5. **Quality & maintainability** — dead code, error handling, test coverage, performance, security
+### Code Review
+`/code-review` runs before every PR. 5 dimensions: spec compliance, architecture, standards, agent docs, quality. Outputs verdict: PASS / BLOCKED.
 
-Output: structured review with blockers (must fix), suggestions, spec compliance checklist, and verdict (PASS / PASS WITH SUGGESTIONS / BLOCKED).
+### Session Analytics
+`/session-review` after completion: time per skill, token costs, feedback log, spec accuracy score, agent freshness detection.
 
----
-
-## Session Review & Analytics
-
-`/session-review` runs after epic or feature completion. Analyzes the development session:
-
-- **Time distribution** per skill and per task
-- **Token usage & cost** (per skill, per task, with model-based pricing)
-- **Feedback log** with full user correction content and recurring pattern detection
-- **Skill effectiveness** (verify pass rate, debug triggers, TDD cycles)
-- **Spec accuracy score** (how many corrections = how good was the spec?)
-- **Agent usage per scope** with freshness detection (flags 30+ day stale agents)
-
-Skills emit lightweight events to `session-log.jsonl` during execution. Session-review aggregates them into `{key}-review.md`.
+### Implementation Modes
+Sequential (default, one task at a time) or subagent (parallel within phases, checkpoint between).
 
 ---
 
-## Feedback Propagation
+## Adapters
 
-When you correct kitt mid-implementation ("no, use X pattern instead"):
-
-1. Fix is applied immediately
-2. Rule is optionally captured via `/capture-rule` (scope-aware: feature → app → repo → company)
-3. Constraint is appended to `spec.md` under `## Implementation Notes`
-4. Inline note added to `plan.md` on the affected task: `> ⚠️ Updated: {what changed}`
-5. Event logged to `session-log.jsonl` for session-review analytics
-
-Specs and plans stay synchronized with implementation decisions.
+| Type | Supported |
+|------|-----------|
+| **Task Manager** | Jira · Linear · GitHub Issues · Local |
+| **VCS** | GitHub · GitLab · Bitbucket |
+| **Design** | Figma (MCP or REST API) |
+| **Report** | Local · Notion |
 
 ---
 
-## Implementation Modes
+## kitt.json
 
-When `/implement` starts, it asks which execution mode you want:
-
-```
-A) Subagent — parallel tasks within each phase, checkpoint between phases
-B) Sequential — one task at a time, full visibility
-```
-
-**Sequential (B):** Default. Kitt implements each task in order — TDD cycle, validation, commit, then asks for your review before moving to the next.
-
-**Subagent (A):** Kitt dispatches parallel subagents for tasks within the same phase. Between phases, it shows a summary + diff and waits for go/stop.
-
----
-
-## Project Configuration (`kitt.json`)
-
-`.claude/config/kitt.json` is the single source of truth. Every skill reads it — nothing is hardcoded.
+Single source of truth. Every skill reads it — nothing hardcoded.
 
 ```json
 {
-  "project": {
-    "name": "my-project",
-    "description": "What this project does"
-  },
-  "scopes": {
-    "api-network": {
-      "path": "apps/api/services/network",
-      "agents": [".claude/agents/network-*.md"]
-    }
-  },
-  "taskManager": {
-    "type": "jira",
-    "config": {
-      "instanceUrl": "https://my-team.atlassian.net",
-      "projectKey": "PROJ",
-      "statuses": {
-        "todo":       "To Do",
-        "inProgress": "In Progress",
-        "review":     "In Review",
-        "done":       "Done",
-        "blocked":    "Blocked"
-      }
-    }
-  },
-  "vcs": {
-    "type": "github",
-    "config": {
-      "account":    "my-github-username",
-      "org":        "my-org",
-      "repo":       "my-repo",
-      "baseBranch": "main"
-    },
-    "worktrees": {
-      "path": "~/worktrees/{{project.name}}",
-      "setup": ["pnpm install"]
-    }
-  },
-  "build": {
-    "test":      "pnpm nx run {project}:test --testPathPattern={pattern}",
-    "typecheck": "pnpm nx run {project}:typecheck",
-    "lint":      "pnpm nx run {project}:lint",
-    "build":     "pnpm nx run {project}:build"
-  },
-  "design": {
-    "type": "figma",
-    "config": { "defaultFileKey": "abc123XYZ" }
-  },
-  "commitFormat": {
-    "pattern":    "{type}({ticket}): {description}",
-    "types":      ["feat", "fix", "refactor", "test", "docs", "chore"],
-    "coAuthored": false
-  }
+  "project": { "name": "my-project" },
+  "scopes": { ... },
+  "taskManager": { "type": "jira", "config": { ... } },
+  "vcs": { "type": "github", "config": { ... } },
+  "build": { "test": "...", "typecheck": "...", "lint": "...", "build": "..." },
+  "commitFormat": { "pattern": "{type}({ticket}): {description}" }
 }
 ```
 
-### Fields
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `project.name` | Yes | Project name |
-| `scopes` | — | App-scoped context for monorepos (omit for single-app projects) |
-| `scopes.{name}.path` | — | Relative path to app folder |
-| `scopes.{name}.agents` | — | Glob patterns for scoped agent docs |
-| `taskManager.type` | Yes | `jira` · `linear` · `github-issues` · `local` · `none` |
-| `taskManager.config.statuses` | Yes | Status names as they appear in your task manager |
-| `vcs.type` | Yes | `github` · `gitlab` · `bitbucket` |
-| `vcs.config.account` | Yes | Username for PR creation |
-| `vcs.config.baseBranch` | Yes | Default: `main` |
-| `build.*` | Yes | Use `{project}` and `{pattern}` as placeholders |
-| `design.type` | — | `figma` · `none`. Requires MCP server or `FIGMA_TOKEN` env var. |
-| `commitFormat.pattern` | Yes | Use `{type}`, `{ticket}`, `{description}` |
-| `commitFormat.coAuthored` | — | Add `Co-Authored-By` to commit body. Default: `false` |
-| `vcs.worktrees.path` | — | Base path for worktrees. Default: `~/worktrees/{{project.name}}` |
-
----
-
-## Adopting Kitt (First Person on a Project)
-
-### Step 1: Install kitt on your machine (once)
-
-```bash
-git clone https://github.com/bacleclement/kitt.git ~/.claude/kitt
-```
-
-### Step 2: Configure your project
-
-Open Claude Code in your project root and run:
-
-```
-/setup
-```
-
-Kitt scans your repo and walks you through configuration one question at a time. For monorepos, it detects apps and configures scoped context. It writes:
-- `.claude/config/kitt.json` — task manager, VCS, build commands, scopes
-- `.claude/context/` — product knowledge, tech stack, code standards
-
-**Commit these files.** They're the shared foundation every skill reads.
-
-### Step 3: Work
-
-```
-/orchestrate
-```
-
----
-
-## New Team Member? (Project Already Configured)
-
-### Step 1: Install kitt on your machine (once)
-
-```bash
-git clone https://github.com/bacleclement/kitt.git ~/.claude/kitt
-```
-
-### Step 2: Open Claude Code and run
-
-```
-/setup
-```
-
-Kitt detects the existing config and switches to **join mode** — no wizard, no re-configuration. It recreates your local symlinks and hands off to `/onboard` for your personalized guide.
-
----
-
-## Updating Kitt
-
-```bash
-git -C ~/.claude/kitt pull
-```
-
-Symlinks pick up the new version instantly. Nothing to commit in your project.
-
----
-
-## Kitt Structure
-
-```
-~/.claude/kitt/              # installed globally, never in your project repo
-├── bin/install.sh           # curl-able installer
-├── version
-└── .claude/
-    ├── skills/              # 21 workflow skills
-    │   ├── setup/
-    │   ├── onboard/
-    │   ├── brainstorm/
-    │   ├── orchestrate/     # v9 — scope detection, smart routing
-    │   ├── refine/
-    │   ├── align/
-    │   ├── build-plan/
-    │   ├── implement/       # v5 — session logging, feedback propagation
-    │   ├── tdd/
-    │   ├── verify/
-    │   ├── code-review/     # NEW — automated 5-dimension review
-    │   ├── session-review/  # NEW — post-completion analytics
-    │   ├── capture-rule/    # v2 — scope-aware destinations
-    │   ├── debug/
-    │   ├── manage-task/
-    │   ├── branch-creator/
-    │   ├── pr-creator/
-    │   ├── finish-development/
-    │   ├── qa-frontend/
-    │   ├── qa-backend/
-    │   └── vcs/
-    │       ├── worktree/
-    │       └── worktree-finish/
-    ├── adapters/             # Platform adapters
-    │   ├── task-manager/    # Jira, Linear, GitHub Issues, Local
-    │   ├── vcs/             # GitHub, GitLab, Bitbucket
-    │   ├── design/          # Figma (MCP or REST API)
-    │   └── report/          # Local, Notion
-    └── templates/           # kitt.json schema, context templates
-```
-
----
-
-## Version
-
-See `version` file and `CHANGELOG.md`.
+Full schema: `~/.claude/kitt/.claude/templates/kitt.json.schema`
