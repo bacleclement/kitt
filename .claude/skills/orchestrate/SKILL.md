@@ -149,6 +149,15 @@ Only ask once. Never ask again mid-workflow.
 **If continuing:**
 - Scan workspace folders
 - Show status summary per item
+- **Plan reconciliation:** if a plan.md exists with unchecked tasks `[ ]` but git log shows implementation commits since the plan was created:
+  ```
+  "Plan shows {N} tasks [ ] but git log shows implementation commits.
+  The plan may be out of sync with actual progress.
+    A) Reconcile — I'll compare commits against plan tasks and mark matching ones [x]
+    B) Keep as-is — tasks need re-verification regardless
+    C) Start fresh — reset all tasks to [ ]"
+  ```
+  If A: read git log since plan creation, match commit messages to task descriptions, mark confirmed tasks `[x]`, leave ambiguous ones `[ ]`. Show summary of what was reconciled.
 - Ask which to continue → route (Step 2b then Step 3)
 
 ---

@@ -94,10 +94,22 @@ Which do you prefer?"
 
 ### Step 0: Detect Resume Mode
 
-**Check plan.md for in-progress tasks:**
+**Check plan.md for task state and reconcile against git history:**
 
-- If any task is marked `[~]` → **Resume mode**: skip branch creation, resume from that task
-- If all tasks are `[ ]` → **Fresh start**: proceed to Step 1
+1. If any task is marked `[~]` → **Resume mode**: skip branch creation, resume from that task
+2. If all tasks are `[ ]` → check git log for implementation commits since plan.md was last modified:
+   - **No commits found** → **Fresh start**: proceed to Step 1
+   - **Commits found** → **Plan out of sync**: tasks were implemented but never checked off.
+     ```
+     "Plan has {N} unchecked tasks but I see {M} implementation commits.
+     Reconciling plan against git history..."
+     ```
+     → Read git log (`git log --oneline --since="{plan.md last modified}"`)
+     → Match commit messages against task descriptions in plan.md
+     → Mark confirmed matches as `[x]`, leave ambiguous as `[ ]`
+     → Show: "Reconciled {K} tasks as done. {remaining} tasks still pending."
+     → If all reconciled → post-completion flow (Step 5)
+     → If some remaining → **Resume mode** from first `[ ]` task
 
 ### Step 0b: Initialize Session Log
 
