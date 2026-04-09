@@ -117,22 +117,40 @@ Only ask once. Never ask again mid-workflow.
 
 **If existing ticket:**
 1. Read ticket via task-manager adapter `read(ticketKey)`
-2. **Generate human-readable slug** from ticket title:
+2. **Extract external links** from ticket description and comments:
+   - Scan for URLs in the ticket body (regex: `https?://[^\s)]+`)
+   - Identify link types by domain:
+     - `notion.so` or `notion.site` → fetch via Notion MCP (`mcp__*__notion-fetch`)
+     - `figma.com` → fetch via Figma MCP or design adapter
+     - `github.com` → fetch via `gh` CLI
+     - `confluence`, `google.com/docs`, other → fetch via WebFetch
+   - If links found, show them:
+     ```
+     "Found external links in the ticket:
+       1. {url-1} (Notion)
+       2. {url-2} (Figma)
+     
+     Fetch them for context? (y/n)"
+     ```
+   - If yes → fetch each link using the appropriate tool, include content as context for refine/build-plan
+   - If no → proceed without external context
+   - **Keep it fast:** fetch in parallel, cap content at reasonable length, don't block on failures
+3. **Generate human-readable slug** from ticket title:
    - Take title, lowercase, replace spaces/special chars with hyphens, truncate to 50 chars
    - Folder name format: `{ticketKey}-{slug}` (e.g., `HUB-31234-user-profile-settings`)
    - If no ticket title available, ask user for a short description to use as slug
-3. Check ticket response for `parent`, `epic`, or `epicKey` field
-4. **If ticket has a parent epic:**
+4. Check ticket response for `parent`, `epic`, or `epicKey` field
+5. **If ticket has a parent epic:**
    a. Check if `.claude/workspace/epics/{epic-folder}/` already exists (match by ticket key prefix in folder name)
    b. If epic folder exists → create US subfolder there: `.claude/workspace/epics/{epic-folder}/{ticketKey}-{slug}/`
    c. If epic folder missing → ask: *"This ticket belongs to epic {epic-key} ({epic-title}). Create the epic folder? (y/n)"*
       - Yes → create epic folder as `{epicKey}-{epic-slug}/` + metadata.json (type: epic), then create US subfolder
       - No → create as standalone feature in `.claude/workspace/features/{ticketKey}-{slug}/`
    d. Update epic `metadata.json.children` array with the new US entry
-5. **If ticket has no parent:**
+6. **If ticket has no parent:**
    a. Check if workspace folder exists (match by ticket key prefix in folder name): `.claude/workspace/{epics|features|bugs|refactors}/{ticketKey}-*/`
    b. Create folder as `{ticketKey}-{slug}/` + metadata.json if missing
-6. Determine type from ticket or ask:
+7. Determine type from ticket or ask:
    - Map task manager ticket type → kitt type:
      - `Epic` → epic
      - `Story`, `Task`, `Sub-task`, `Improvement` → feature
@@ -141,7 +159,7 @@ Only ask once. Never ask again mid-workflow.
    - If type is `feature` or `refactor` → **ask size** (see Step 2c below)
    - If type is `epic` → skip size (epics always use full pipeline)
    - If type is `bug` → skip size (bugs route by root cause knowledge)
-7. Route (Step 3)
+8. Route (Step 3)
 
 ---
 
