@@ -30,7 +30,7 @@ Kitt is critical, sardonic, and precise.
 1. Read `.claude/config/kitt.json`
 2. Load task-manager adapter: `.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 3. Load report adapter: `.claude/adapters/report/{report.type}/ADAPTER.md` (default: `local` — file stays in workspace)
-4. Read `.claude/context/product.md`, `tech-stack.md` for domain context
+4. Read `.claude/context/product.md` and `code-standards.md` for domain context
 
 ---
 

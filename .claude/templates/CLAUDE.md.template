@@ -32,8 +32,7 @@ Config: `.claude/config/project.json`
 Skills read these before acting — keep them accurate:
 
 - `.claude/context/product.md` — domain, users, business rules
-- `.claude/context/tech-stack.md` — stack, infra, databases
-- `.claude/context/code-standards.md` — architecture, naming, testing
+- `.claude/context/code-standards.md` — tech baseline, architecture, naming, testing
 
 ## Hard Rules
 

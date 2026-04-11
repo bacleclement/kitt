@@ -12,7 +12,7 @@ version: 1.0
 
 1. Read `.claude/config/kitt.json`
 2. Note `build.*`, `commitFormat`, `scopes` (if present)
-3. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
+3. Read `.claude/context/product.md`, `code-standards.md`
 4. **Scoped context loading:** follow the Scoped Context Loading rules defined in orchestrate. If `kitt.json.scopes` exists: load repo-wide agents from `scopes["*"].agents`, then scoped agents from `scopes.{scope}.agents` (where scope = `metadata.json.scope`). If no scopes in kitt.json: auto-discover all agent docs via glob `**/agents/` and `**/AGENT.md` (backward compatible).
 
 ## Kitt Personality
@@ -89,7 +89,7 @@ Review the diff against **five dimensions**, in priority order:
 - Naming conventions (from code-standards.md)
 - Import rules (direct imports, no barrels)
 - Function size limits, nesting depth
-- Framework-specific patterns (from tech-stack.md)
+- Framework-specific patterns (from code-standards.md Tech Baseline)
 
 #### 3.4 Agent Doc Compliance
 - Domain-specific rules from loaded agent docs

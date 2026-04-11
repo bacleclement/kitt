@@ -44,9 +44,8 @@ Read all available context in parallel:
 ```
 1. .claude/config/kitt.json           — stack, task manager, VCS, build commands
 2. .claude/context/product.md            — what the product is, who uses it, business domain
-3. .claude/context/tech-stack.md         — frameworks, databases, infra, key libraries
-4. .claude/context/code-standards.md     — naming, imports, patterns, conventions
-5. README.md (root)                      — project overview if it exists
+3. .claude/context/code-standards.md     — tech baseline, frameworks, databases, naming, imports, patterns, conventions
+4. README.md (root)                      — project overview if it exists
 ```
 
 If context files are missing or mostly empty, note it — the guide will be incomplete and someone should fix that.
@@ -123,7 +122,7 @@ D) Not sure yet"
 
 ```
 "How familiar are you with the core stack?
-[List key technologies from tech-stack.md — e.g. NestJS, React, Svelte, Prisma, etc.]
+[List key technologies from code-standards.md Tech Baseline — e.g. NestJS, React, Svelte, Prisma, etc.]
 
 A) New to most of it — need the basics
 B) Know some, new to others — I'll flag specifics

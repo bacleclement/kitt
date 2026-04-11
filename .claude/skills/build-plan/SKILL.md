@@ -14,7 +14,7 @@ version: 2.0
 2. Note `taskManager.type`, `vcs.type`, `build.*`, `commitFormat`
 3. Load task-manager adapter: `~/.claude/kitt/.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 4. Load VCS adapter: `~/.claude/kitt/.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
-5. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
+5. Read `.claude/context/product.md`, `code-standards.md`
 6. Auto-discover agent docs: glob `**/agents/` and any `AGENTS.md` files in the repo — load relevant ones for the domain being worked on
 
 Never hardcode: status names, account names, URLs, build commands.
@@ -59,8 +59,7 @@ The skill reads (does NOT re-ask questions that refinement already answered):
 
 1. **Spec file:** `.claude/workspace/{type}s/{parent?}/{key}/{key}-spec.md` (includes `## Architecture` section)
 2. **Project context files:**
-   - `.claude/context/tech-stack.md` — approved technologies and patterns
-   - `.claude/context/code-standards.md` — naming conventions, architecture rules, testing strategy
+   - `.claude/context/code-standards.md` — tech baseline, approved technologies, naming conventions, architecture rules, testing strategy
 3. **Project agent docs** (auto-discovered): any `**/agents/` directories or `AGENTS.md` files relevant to the domain
 4. **metadata.json**: For context (type, ticket key, parent epic if any)
 

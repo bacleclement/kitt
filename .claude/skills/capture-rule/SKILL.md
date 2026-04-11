@@ -87,7 +87,7 @@ If the user hesitates on B vs C vs D:
 - **Business / domain rules** (how the product behaves, who does what, naming of domain concepts) → `product.md`
 - **App-specific patterns** (architecture, conventions, or rules that apply only to one service/module) → scope agent doc
 
-**Deprecated destinations (do not propose):** `~/.claude/context/company-standards.md` and `.claude/context/tech-stack.md` are legacy files. If a project still has them, they are read by skills for backward compatibility but new rules MUST go to one of the four destinations above. Merge content from legacy files into `code-standards.md` opportunistically when a related rule is captured.
+**Four destinations only.** Do not invent or propose alternatives. If an older project contains orphan context files under `.claude/context/` that are not `product.md` or `code-standards.md`, ignore them — merge any relevant content into `code-standards.md` opportunistically when a related rule is captured.
 
 ---
 

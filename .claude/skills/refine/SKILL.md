@@ -12,7 +12,7 @@ version: 3.0
 2. Note `taskManager.type`, `vcs.type`, `build.*`, `commitFormat`
 3. Load task-manager adapter: `~/.claude/kitt/.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 4. Load VCS adapter: `~/.claude/kitt/.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
-5. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
+5. Read `.claude/context/product.md`, `code-standards.md`
 6. **Scoped context loading:** follow the Scoped Context Loading rules defined in orchestrate. If `kitt.json.scopes` exists: load repo-wide agents from `scopes["*"].agents`, then scoped agents from `scopes.{scope}.agents` (where scope = `metadata.json.scope`). If no scopes in kitt.json: auto-discover all agent docs via glob `**/agents/` and `**/AGENT.md` (backward compatible).
 7. If a `{key}-design.md` exists in the workspace folder — read it. It is the brainstorm output and answers many questions already.
 
