@@ -1,7 +1,7 @@
 ---
 name: "📊 session-review"
-description: Post-completion review of a work item's development session — analyzes session log events, skill usage patterns, feedback frequency, spec drift, and time distribution. Outputs a review.md with metrics and improvement suggestions. Includes skill effectiveness evaluation.
-version: 2.0
+description: Post-completion review of a work item's development session — analyzes session log events, skill usage patterns, feedback frequency, spec drift, and time distribution. Outputs a review.md with metrics, actionable improvements classified into 5 typed categories (kitt-skill, context-stale, spec-quality, skill-gap, process-waste), and skill effectiveness evaluation.
+version: 2.1
 ---
 
 # Session Review
@@ -178,6 +178,29 @@ If no scope:
 - Scope creep indicators: tasks added mid-implementation not in original plan
 ```
 
+#### 2.8 Classify Findings into Actionable Improvements
+
+Beyond metrics and generic process notes, derive **typed, actionable improvements** from the data collected in 2.1–2.7. Each finding must be classified into exactly one of the five categories below, with concrete evidence and a named target (a skill, a file, or a spec).
+
+**Categories and detection heuristics:**
+
+| Category | Target | Detect when |
+|---|---|---|
+| `kitt-skill` | A specific kitt skill needs a fix or enhancement | • Recurring feedback about the same corrective pattern (≥3 times) points to a skill that should enforce it<br>• `debug` was triggered ≥3 times for similar root causes → the triggering skill (usually `implement` or `tdd`) has a gap<br>• `verify` first-pass failure rate >40% → the skill producing the code skips a check<br>• A tool invocation was repeated because of a known-bad default (e.g. wrong test command) |
+| `context-stale` | An `AGENT.md`, `code-standards.md`, or `product.md` file needs a refresh | • An agent doc was loaded but never referenced in context confirmation (flagged in 2.6)<br>• An agent doc was last modified ≥30 days ago AND at least one feedback captured a rule that contradicts it<br>• Feedback content references a pattern not present in the loaded agent docs → doc missing coverage |
+| `spec-quality` | The feature/epic spec was too weak — targets the PM/PO, the `refine` skill, or the spec template | • Spec drift score ≥ 5/10 (from 2.2)<br>• ≥50% of feedback events were about missing acceptance criteria or edge cases<br>• Scope creep indicators from 2.7 show ≥3 tasks added mid-implementation<br>• `align` produced warnings that point to architectural decisions the spec never addressed |
+| `skill-gap` | A capability is missing — no existing skill covers it, a manual step was taken every time | • A manual step appears in the timeline (user-performed action without a skill event) ≥2 times for similar purposes<br>• A feedback event says "I had to do X by hand" or equivalent<br>• `debug` was used where a dedicated diagnostic skill would have fit (e.g. perf analysis, migration verification) |
+| `process-waste` | An existing step in the workflow was unnecessary — consider auto-skipping or simplifying | • `align` passed all dimensions with zero warnings on a feature of size M or smaller → candidate for auto-skip<br>• A phase completed in <5% of the total session time with no corrections → low-value checkpoint<br>• `code-review` produced 0 blockers and 0 suggestions → the review was redundant given the prior skills<br>• Same skill was re-invoked with no feedback between runs → unnecessary iteration |
+
+**Rules for each finding:**
+
+1. **One category per finding.** If evidence fits two categories, pick the one whose target action is most actionable (skill update > doc refresh > spec coaching > new skill > process cut).
+2. **Quantified evidence is mandatory.** Never write "the spec was weak" — always "5 of 8 feedback events concerned missing edge cases (62%)".
+3. **Name the target explicitly.** For `kitt-skill`, name the skill (`implement`, `refine`, `tdd`, etc.). For `context-stale`, name the file path. For `spec-quality`, name the ticket key. For `skill-gap`, describe the missing capability. For `process-waste`, name the step being cut.
+4. **No finding without a proposed action.** Each item in the output must be a checkbox that the reader can either do or mark as wontfix — not an observation.
+5. **Cap at 10 findings total.** If more emerge, keep the highest-signal ones (most evidence, most recent occurrences, most actionable). Noise degrades the whole section.
+6. **Zero findings is a valid output.** If the session was clean, write "No actionable improvements detected — session was within expected thresholds." Do not fabricate findings.
+
 ### Step 3: Generate Review
 
 Output to `{key}-review.md` in the workspace folder:
@@ -275,9 +298,41 @@ Output to `{key}-review.md` in the workspace folder:
 
 ---
 
+## Actionable Improvements
+
+Each finding below is classified into one of five categories, with quantified evidence and a named target. Checkboxes are actionable — check them off as you address each item, or convert them into kitt tickets directly.
+
+### kitt-skill ({N} items)
+
+- [ ] **{skill-name}**: {proposed fix/enhancement}. Evidence: {metric/count that triggered this finding}
+- [ ] **{skill-name}**: {proposed fix/enhancement}. Evidence: {metric/count}
+
+### context-stale ({N} items)
+
+- [ ] **{agent-or-context-file-path}**: {what needs refresh}. Last modified: {date}. Evidence: {loaded-but-unreferenced, contradicted-by-feedback, etc.}
+
+### spec-quality ({N} items)
+
+- [ ] **{ticket-key} spec**: {what was weak}. Evidence: {feedback counts, drift score, scope creep indicators}
+
+### skill-gap ({N} items)
+
+- [ ] **Missing: {capability}**. Evidence: {how many times the user did it manually, which tasks}
+
+### process-waste ({N} items)
+
+- [ ] **{step-or-skill-to-cut}**: {why it was unnecessary}. Evidence: {pass rate, duration, corrections count}
+
+---
+
+**If no actionable improvements detected:**
+> No actionable improvements detected — session was within expected thresholds. Spec drift {score}/10, feedback count {N}, verify first-pass {rate}%, all below action triggers.
+
+---
+
 ## Process Improvements
 
-Based on this session, recommend:
+Softer recommendations that did not meet the classification thresholds above but are worth considering:
 
 1. **{improvement}** — {why, based on metrics}
 2. **{improvement}** — {why, based on metrics}
@@ -292,18 +347,19 @@ Based on this session, recommend:
 
 ---
 
-*Generated by kitt session-review v1.0*
+*Generated by kitt session-review v2.1*
 ```
 
 ### Step 4: Present to User
 
 ```
 1. Show the review summary (not the full file)
-2. Highlight:
-   - Top 3 metrics (time, feedback count, spec accuracy)
-   - Top process improvement
-   - Any recurring feedback patterns worth addressing
-3. Ask: "Want to see the full review, or act on any improvement?"
+2. Highlight in this order:
+   a. Actionable Improvements count per category (e.g. "3 kitt-skill, 1 context-stale, 2 spec-quality")
+   b. The top 3 highest-evidence actionable findings, with target + one-line rationale
+   c. Top 3 metrics (total time, feedback count, spec accuracy score)
+   d. Any recurring feedback patterns worth addressing
+3. Ask: "Want to see the full review, act on an actionable finding, or mark findings as wontfix?"
 ```
 
 ### Step 5: Optional Actions
