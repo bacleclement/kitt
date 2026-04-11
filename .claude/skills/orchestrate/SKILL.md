@@ -14,7 +14,7 @@ version: 9.0
 2. Note `taskManager.type`, `vcs.type`, `build.*`, `commitFormat`, `scopes` (if present)
 3. Load task-manager adapter: `~/.claude/kitt/.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 4. Load VCS adapter: `~/.claude/kitt/.claude/adapters/vcs/{vcs.type}/ADAPTER.md`
-5. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
+5. Read `.claude/context/product.md`, `code-standards.md`
 6. **Context loading depends on scope** (see Scoped Context Loading below)
 
 Never hardcode: status names, account names, URLs, build commands.
@@ -316,11 +316,9 @@ If scopes exist in kitt.json:
      - workspace/{key}/spec ## Implementation Notes (if exists)
 
 If NO scopes in kitt.json (single-app project, backward compatible):
-  → Load .claude/context/product.md, code-standards.md, tech-stack.md (if exists)
+  → Load .claude/context/product.md, code-standards.md
   → Auto-discover all agents via glob **/agents/ and **/AGENT.md
 ```
-
-**Note:** `tech-stack.md` is deprecated for multi-app projects. Its content is absorbed into `code-standards.md ## Tech Baseline` section + per-scope agents. Still loaded as fallback for projects without scopes.
 
 ---
 

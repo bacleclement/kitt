@@ -11,7 +11,7 @@ Turn a raw idea into a validated design. One question at a time. Nothing gets bu
 ## Before Starting
 
 1. Read `.claude/config/kitt.json`
-2. Read `.claude/context/product.md`, `tech-stack.md`, `code-standards.md`
+2. Read `.claude/context/product.md`, `code-standards.md`
 3. Auto-discover agent docs: glob `**/agents/` and any `AGENTS.md` files in the repo — load relevant ones for the domain being discussed
 4. Check recent git log: `git log --oneline -10`
 5. Scan the relevant codebase area (existing patterns, related files)

@@ -802,7 +802,7 @@ Apply corrections, then write to `.claude/context/product.md`.
 
 **`code-standards.md`** — from lint config + code samples + manifests:
 
-**Note:** `tech-stack.md` is no longer generated as a separate file. Its content (technologies, databases, infrastructure) is merged directly into `code-standards.md` under the Tech Baseline / Architecture / Infrastructure sections below. Legacy projects that still have `tech-stack.md` keep working — skills read it when present — but new projects only get `code-standards.md` + `product.md`.
+Kitt generates exactly two context files at setup time: `product.md` and `code-standards.md`. Tech stack details (technologies, databases, infrastructure) live inside `code-standards.md` under the Tech Baseline section as sub-sections — never as a separate file.
 
 Draft structure:
 ```markdown
@@ -956,8 +956,6 @@ Checking project scaffold...
 Checking .claude/context/...
   ✅/⚠️  product.md — {N} lines, {has/missing}: {required sections}
   ✅/⚠️  code-standards.md — {N} lines, {has/missing}: {required sections}
-  ℹ️   tech-stack.md — legacy file, present but no longer validated (content merged into code-standards.md for new projects)
-  ℹ️   company-standards.md — legacy file at ~/.claude/context/, read if present but no longer a capture-rule destination
 
 Checking .claude/CLAUDE.md...
   ✅/❌ present/missing

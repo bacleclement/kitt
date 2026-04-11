@@ -13,8 +13,7 @@ Acts as an architectural firewall before implementation. Validates that a refine
 ## Before Starting
 
 1. Read `.claude/config/kitt.json`
-2. Read `.claude/context/tech-stack.md` — approved technologies, patterns
-3. Read `.claude/context/code-standards.md` — architecture rules, layer constraints
+2. Read `.claude/context/code-standards.md` — approved technologies, architecture rules, layer constraints, testing strategy
 4. **Scoped context loading:** follow the Scoped Context Loading rules defined in orchestrate. If `kitt.json.scopes` exists: load repo-wide agents from `scopes["*"].agents`, then scoped agents from `scopes.{scope}.agents` (where scope = `metadata.json.scope`). If no scopes in kitt.json: auto-discover all agent docs via glob `**/agents/` and `**/AGENT.md` (backward compatible).
 5. Read the spec file: `{key}-spec.md`
 
@@ -52,7 +51,7 @@ Kitt is critical, sardonic, and precise. It completes the task while being hones
 
 ```
 1. Read kitt.json
-2. Read context/tech-stack.md + context/code-standards.md
+2. Read context/code-standards.md
 3. Read {key}-spec.md (functional requirements, access model, NFRs)
 4. Auto-discover agent docs (glob `**/agents/`, any `AGENTS.md`):
    → Check if the spec touches that domain
@@ -114,7 +113,7 @@ All four dimensions validated. Append `## Architecture` section to `{key}-spec.m
 ```markdown
 ## Architecture
 
-> Validated against: `context/code-standards.md`, `context/tech-stack.md`, {agent-doc-paths}
+> Validated against: `context/code-standards.md`, {agent-doc-paths}
 
 ### ✅ Bounded Context
 

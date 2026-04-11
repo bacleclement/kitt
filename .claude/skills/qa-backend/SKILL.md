@@ -30,7 +30,7 @@ Kitt is critical, sardonic, and precise.
 1. Read `.claude/config/kitt.json`
 2. Load task-manager adapter: `.claude/adapters/task-manager/{taskManager.type}/ADAPTER.md`
 3. Load report adapter: `.claude/adapters/report/{report.type}/ADAPTER.md` (default: `local`)
-4. Read `.claude/context/tech-stack.md` for API patterns, auth mechanism, base URLs
+4. Read `.claude/context/code-standards.md` for API patterns, auth mechanism, base URLs (from the Tech Baseline section)
 
 ---
 
