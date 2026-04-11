@@ -1,7 +1,7 @@
 ---
 name: "📏 capture-rule"
-description: "Captures a coding correction or design fix as a permanent rule in the right context file. Invokable manually (/capture-rule) or auto-invoked from implement after a mid-task correction. Four destinations: feature-level spec, app-scope agent doc, repo-wide code-standards.md, or domain-wide product.md."
-version: 3.0
+description: "Captures a coding correction or design fix as a permanent rule in the right context file. Invokable manually (/capture-rule) or auto-invoked from implement after a mid-task correction. Four user-facing destinations: feature-level spec, app-scope agent doc, repo-wide code-standards.md, or domain-wide product.md. Plus a programmatic skill-diff mode used exclusively by /revise for post-completion kitt-skill updates."
+version: 3.1
 ---
 
 # Capture Rule
@@ -144,9 +144,114 @@ Write the rule. Confirm the write:
 
 ---
 
+---
+
+## Skill-diff mode (invoked only by `revise`, not user-facing)
+
+When `revise` classifies a post-completion defect as category 6 (`bad-kitt-skill-logic`), the target is a `SKILL.md` file in `~/.claude/kitt/.claude/skills/{skill-name}/`. This is the **only** path that mutates a skill file, and it bypasses the 4 canonical destinations because the write is fundamentally different: it is an edit anywhere in the file (not an append), and the user reviews an actual diff (not a prose description).
+
+**This mode is NEVER offered when `/capture-rule` is invoked directly by the user.** It is a programmatic entry point used only by `/revise` during Step 6 of its flow.
+
+### Invocation signature
+
+```
+capture-rule --mode=skill-diff \
+             --target={skill-name} \
+             --revision-context={path-to-revision-folder}
+```
+
+- `--mode=skill-diff` — flag that distinguishes this from the user-facing flow
+- `--target` — the name of the skill to edit (e.g. `implement`, `tdd`, `refine`, `align`, `verify`)
+- `--revision-context` — path to the `revisions/{timestamp}-{slug}/` folder containing `context.md` and `classification.md`, used as grounding for the proposed diff
+
+### Flow
+
+**Step A — Resolve the target file**
+
+Look up `~/.claude/kitt/.claude/skills/{target}/SKILL.md`. If missing, abort with an explicit error and log the failure in the revision's classification.md under "Follow-up actions".
+
+**Step B — Read the current skill**
+
+Read the full `SKILL.md` file. Identify which section(s) are most likely responsible for the classified defect, using the revision context's reasoning.
+
+**Step C — Propose a unified diff**
+
+Generate a **unified diff** (not a prose description) of the proposed change. The diff must:
+
+- Target specific sections, not the whole file
+- Preserve frontmatter except when bumping the version (see Step E)
+- Add, modify, or remove lines surgically — never rewrite large blocks unless the whole section is being replaced
+- Include enough context lines (3 before, 3 after) for the user to understand the change in place
+
+Format exactly like `git diff`:
+
+```diff
+--- a/.claude/skills/{target}/SKILL.md
++++ b/.claude/skills/{target}/SKILL.md
+@@ -{old-start},{old-count} +{new-start},{new-count} @@
+ {context line}
+ {context line}
+-{removed line}
++{added line}
+ {context line}
+ {context line}
+```
+
+**Step D — Show the diff to the user**
+
+Render the diff as a code block in the chat. Do NOT paraphrase it. Accompany it with:
+
+```
+"Proposed update to {target}/SKILL.md:
+
+ Why: {one-paragraph rationale tied to the revision classification}
+
+ Accept this diff? (y/n/edit)
+   - y → apply the diff to the file
+   - n → reject, log the rejection in the revision's classification.md
+   - edit → let me refine the diff before applying"
+```
+
+**Step E — Apply the diff (only on y)**
+
+If the user accepts:
+
+1. Apply the diff to the target `SKILL.md` file
+2. Bump the version in the frontmatter: if current is `X.Y`, write `X.Y+1` (minor bump). If the change is substantial (adds a new step, changes the hard-gate semantics), bump to `X+1.0` (major). Default: minor.
+3. Confirm the write:
+   > "Applied. {target}/SKILL.md updated. Version bumped to {new-version}."
+4. Append to the revision's `classification.md` under `## Lessons approved`:
+   ```markdown
+   - `{target}` skill updated — version {old} → {new}, diff applied from revision {slug}
+   ```
+5. Log a session event in the workspace session log:
+   ```jsonl
+   {"ts":"{ISO}","skill":"capture-rule","event":"skill_updated","data":{"target":"{target}","mode":"skill-diff","revision":"{slug}","version_before":"{old}","version_after":"{new}"}}
+   ```
+
+**Step F — Reject or edit**
+
+- **n (reject):** do not apply, append to `classification.md` under `## Lessons rejected`:
+  ```markdown
+  - `{target}` skill diff rejected — {user-provided reason or "no reason given"}
+  ```
+- **edit:** show the diff again and let the user refine it line by line. Re-confirm before applying.
+
+### Guardrails
+
+1. **No silent writes.** The user MUST see and approve the diff. Never apply without explicit confirmation.
+2. **No whole-file rewrites.** If the proposed change touches more than 50% of the skill file, reject the proposal yourself and ask the user to split the change into smaller revisions.
+3. **No frontmatter rewriting except version bump.** The `name` and `description` fields stay unless the user explicitly asks to change them — which they can only do via `edit` mode, not the default flow.
+4. **No writes outside `~/.claude/kitt/.claude/skills/**`.** This mode is strictly scoped to skill files. Any attempt to target a different path aborts.
+5. **Version bump is mandatory.** A skill file cannot be edited without bumping its version. This keeps change traceable in git history.
+
+---
+
 ## What capture-rule does NOT do
 
 - Does not rewrite or restructure existing rules
 - Does not capture one-off environment issues (only repeatable patterns)
 - Does not sync to Jira or external systems
 - Does not validate whether the rule contradicts existing ones (flags obvious duplicates only)
+- Does not offer skill-diff mode to direct user invocations — only via `/revise` Step 6
+- Does not touch any file outside `.claude/context/`, `.claude/workspace/`, agent docs, or (in skill-diff mode) `~/.claude/kitt/.claude/skills/*/SKILL.md`

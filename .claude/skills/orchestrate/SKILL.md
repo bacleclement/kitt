@@ -61,7 +61,7 @@ BUG/FIX
 
 ## Entry Points
 
-Three ways work arrives in orchestrate:
+Four ways work arrives in orchestrate:
 
 ### 1. Existing ticket (from task manager)
 User provides a ticket key. Read it via the task-manager adapter.
@@ -81,6 +81,14 @@ Two sub-cases:
 ### 3. Continue in-progress work
 → Scan `.claude/workspace/` for incomplete folders → show status → ask which to continue.
 
+### 4. Revise a completed feature (post-ship feedback)
+A feature that already reached `completed` / `implemented` / `shipped` state has come back with a signal: QA defect, staging incident, reviewer reopening, customer report, or post-hoc realization.
+→ Invoke the `revise` skill with the target workspace key.
+→ Revise classifies the root cause into one of 8 categories, proposes in-place artifact updates (spec/plan/review Post-revision sections), and proposes systemic lessons via `capture-rule`. Tracks everything in `workspace/{key}/revisions/{timestamp}-{slug}/`.
+→ After revise completes, control returns to orchestrate. The user can then start new work normally.
+
+**Option 4 is only offered if at least one workspace in the repo is in a completed-like state.** If the repo has never shipped anything via kitt, hide option D from the Step 1 question entirely.
+
 ---
 
 ## Step 1: Ask What to Work On
@@ -88,10 +96,33 @@ Two sub-cases:
 ```
 "What would you like to work on?
 
-- Existing ticket (provide key — format depends on your task manager)
-- New work (describe it)
-- Continue in-progress work"
+ A) Existing ticket (provide key — format depends on your task manager)
+ B) New work (describe it)
+ C) Continue in-progress work
+ D) Revise a completed feature (QA defect, incident, review — only shown if completed work exists)"
 ```
+
+**Option D filter:** scan `.claude/workspace/**/metadata.json` once at the start of Step 1. If zero workspaces have `status ∈ {completed, implemented, shipped, merged}`, do NOT show option D. If one or more exist, show it.
+
+**If user picks D:**
+
+1. List all workspaces with completed-like status, most recent first:
+   ```
+   "Which completed feature are you revising?
+
+     1. HUB-31234 — User profile settings (completed 3 days ago, 0 prior revisions)
+     2. HUB-31100 — Payment flow refactor (shipped 2 weeks ago, 1 prior revision)
+     3. channel-adapter-v2 — Channel adapter rewrite (merged 1 month ago, 0 prior revisions)
+     ...
+
+     Type the number or the key:"
+   ```
+2. Once the user picks one, invoke the `revise` skill with `{workspace-key}` as the target
+3. **Skip Step 1b (worktree question)** — revise does not touch code, no worktree needed
+4. **Skip Step 2 (analyze the request)** — revise has its own flow
+5. When `revise` completes, orchestrate shows: *"Revision complete. What do you want to do next?"* and restarts at Step 1
+
+Do not re-enter Step 2 automatically after a revision — the user may want to end the session or start new work, not immediately continue. Respect the explicit re-prompt.
 
 ---
 
