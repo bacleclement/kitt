@@ -1,7 +1,7 @@
 ---
 name: "📏 capture-rule"
-description: "Captures a coding correction or design fix as a permanent rule in the right context file. Invokable manually (/capture-rule) or auto-invoked from implement after a mid-task correction. Flexible destination: code-standards, domain agent, or tech-stack."
-version: 2.0
+description: "Captures a coding correction or design fix as a permanent rule in the right context file. Invokable manually (/capture-rule) or auto-invoked from implement after a mid-task correction. Four destinations: feature-level spec, app-scope agent doc, repo-wide code-standards.md, or domain-wide product.md."
+version: 3.0
 ---
 
 # Capture Rule
@@ -35,46 +35,59 @@ Keep it actionable. Rules should state what to do (✅) or not do (❌), not why
 
 ### Step 2: Classify the destination
 
-Read `metadata.json.scope` for the current work item and `kitt.json.scopes` (if present).
+Read `metadata.json.scope` for the current work item and `kitt.json.scopes` (if present). Four destinations total — no more, no less.
 
 **If scopes exist and a scope is active** — show scope-aware options:
 
 ```
 Where does this rule belong?
 
-  A) This feature only → workspace/{key}/spec ## Implementation Notes
+  A) This feature only   → workspace/{key}/spec ## Implementation Notes
      (applies to this work item only — already handled by feedback propagation)
 
-  B) Scoped agent      → agent doc for {scope} (from kitt.json.scopes.{scope}.agents)  ← PRE-SELECTED DEFAULT
+  B) Scoped agent        → agent doc for {scope} (from kitt.json.scopes.{scope}.agents)  ← PRE-SELECTED DEFAULT
      (tech patterns + domain rules specific to this app/service)
 
-  C) Repo-wide standard → .claude/context/code-standards.md
-     (shared conventions, naming, formatting — applies everywhere)
+  C) Repo-wide standard  → .claude/context/code-standards.md
+     (tech baseline, naming, imports, architecture, testing, approved libraries — applies everywhere)
 
-  D) Company-wide       → ~/.claude/context/company-standards.md
-     (rules shared across all repos — naming, security, compliance)
+  D) Domain / product    → .claude/context/product.md
+     (business rules, domain vocabulary, user-facing behavior — non-tech)
 ```
 
 Default = **B (scoped agent)** when a scope is active. The agent is the single source of per-scope tech + domain context.
 
 **If scoped agent selected:** list agents matched to the active scope from `kitt.json.scopes.{scope}.agents`, let user pick which file to append to (or infer from correction context).
 
-**If no scopes or no active scope** — show flat options (current behavior):
+**If no scopes or no active scope** — show flat options:
 
 ```
 Where does this rule belong?
 
-  A) Global standard  → .claude/context/code-standards.md
-     (naming, imports, architecture, formatting — applies everywhere)
+  A) This feature only  → workspace/{key}/spec ## Implementation Notes
+     (applies to this work item only)
 
-  B) Domain agent     → relevant agent doc (e.g. code-agent.md)
+  B) Repo-wide standard → .claude/context/code-standards.md
+     (tech baseline, naming, imports, architecture, testing — applies everywhere)
+
+  C) Domain / product   → .claude/context/product.md
+     (business rules, domain vocabulary, user-facing behavior)
+
+  D) Domain agent       → a specific agent doc (e.g. code-agent.md)
      (patterns specific to one module, service, or bounded context)
-
-  C) Tech constraint  → .claude/context/tech-stack.md
-     (library-specific patterns, approved/banned packages, runtime constraints)
 ```
 
 **If domain agent / scoped agent:** discover agents using scoped context loading rules (scoped agents for active scope + repo-wide agents). List them for user selection, or infer from the correction context.
+
+### Routing heuristics — tech vs domain
+
+If the user hesitates on B vs C vs D:
+
+- **Tech / code patterns** (how we write code, which libraries, which patterns) → `code-standards.md`
+- **Business / domain rules** (how the product behaves, who does what, naming of domain concepts) → `product.md`
+- **App-specific patterns** (architecture, conventions, or rules that apply only to one service/module) → scope agent doc
+
+**Deprecated destinations (do not propose):** `~/.claude/context/company-standards.md` and `.claude/context/tech-stack.md` are legacy files. If a project still has them, they are read by skills for backward compatibility but new rules MUST go to one of the four destinations above. Merge content from legacy files into `code-standards.md` opportunistically when a related rule is captured.
 
 ---
 
@@ -82,9 +95,10 @@ Where does this rule belong?
 
 Read the destination file. Identify the most relevant existing section.
 
-- `code-standards.md`: match to Naming, Imports, Architecture, Testing, etc.
+- `code-standards.md`: match to Tech Baseline, Naming, Imports, Architecture, Testing, Formatting, etc.
+- `product.md`: match to Users, Core Domains, Business Rules, Vocabulary
 - Agent docs: match to the section covering the affected layer or pattern
-- `tech-stack.md`: match to the relevant library or runtime section
+- Feature spec: always append under `## Implementation Notes`
 
 If no section fits, propose creating one.
 
@@ -104,6 +118,12 @@ Format to match the destination file's existing style.
 ✅ {what to do instead — concrete example}
 ```
 
+**For `product.md` (prose + optional list):**
+```markdown
+- **{Domain concept}:** {rule in one sentence, no code}
+```
+Business rules are appended under `## Business Rules`. Vocabulary entries go under `## Vocabulary`. Never put code examples in `product.md`.
+
 **For agent docs (prose + example style):**
 ```markdown
 **Rule: {short title}**
@@ -112,10 +132,11 @@ Format to match the destination file's existing style.
 ✅ Good: `{correct pattern}`
 ```
 
-**For `tech-stack.md`:**
+**For feature spec (`workspace/{key}/{key}-spec.md`):**
 ```markdown
-- **{Library/constraint}:** {rule in one sentence}
+- {one-liner rule, applies only to this feature}
 ```
+Always appended under `## Implementation Notes`.
 
 Write the rule. Confirm the write:
 
