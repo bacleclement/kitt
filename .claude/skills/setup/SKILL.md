@@ -1,7 +1,7 @@
 ---
 name: "⚙️ setup"
-description: Interactive kitt configuration wizard. Scans the project repo, asks targeted questions, writes kitt.json, generates context file drafts, and validates completeness.
-version: 1.0
+description: Interactive kitt configuration wizard. Scans the project repo, asks targeted questions, writes kitt.json, generates context file drafts (product.md + code-standards.md), and validates completeness.
+version: 1.1
 ---
 
 # Kitt Setup Wizard
@@ -800,38 +800,9 @@ Apply corrections, then write to `.claude/context/product.md`.
 
 ---
 
-**`tech-stack.md`** (single-app projects only):
+**`code-standards.md`** — from lint config + code samples + manifests:
 
-**Skip for multi-app projects** — tech info lives in per-scope agents instead.
-
-For single-app projects, generate from manifests + detected patterns:
-```markdown
-# {Project Name} — Tech Stack
-
-## Architecture
-{inferred: monorepo / microservices / monolith}
-
-## Backend
-| Layer | Technology |
-{inferred from manifests}
-
-## Frontend
-| Layer | Technology |
-{inferred from manifests}
-
-## Databases
-{inferred from ORM/driver dependencies}
-
-## Infrastructure & CI/CD
-{inferred from CI config + cloud SDKs}
-```
-
-Show draft, ask: *"Anything wrong or missing?"*
-Apply corrections, then write to `.claude/context/tech-stack.md`.
-
----
-
-**`code-standards.md`** — from lint config + code samples:
+**Note:** `tech-stack.md` is no longer generated as a separate file. Its content (technologies, databases, infrastructure) is merged directly into `code-standards.md` under the Tech Baseline / Architecture / Infrastructure sections below. Legacy projects that still have `tech-stack.md` keep working — skills read it when present — but new projects only get `code-standards.md` + `product.md`.
 
 Draft structure:
 ```markdown
@@ -840,6 +811,20 @@ Draft structure:
 ## Tech Baseline
 {inferred shared tech: runtime versions, package manager, CI/CD, cloud, databases}
 {For multi-app: only shared infrastructure here — per-app tech lives in agents}
+
+### Backend
+| Layer | Technology |
+{inferred from manifests}
+
+### Frontend
+| Layer | Technology |
+{inferred from manifests}
+
+### Databases
+{inferred from ORM/driver dependencies}
+
+### Infrastructure & CI/CD
+{inferred from CI config + cloud SDKs}
 
 ## Naming Conventions
 {inferred from code samples}
@@ -905,7 +890,7 @@ Replace `{build.*}` placeholders with the actual commands from kitt.json.
 > "✅ Kitt configured.
 >
 > Three things to review before you start:
-> - `.claude/context/` — product.md was built from your answers + the scan. tech-stack.md and code-standards.md are inferred from the codebase. Edit where I got it wrong.
+> - `.claude/context/` — product.md was built from your answers + the scan. code-standards.md is inferred from the codebase (tech baseline, naming, architecture, testing — all in one file). Edit where I got it wrong.
 > - `.claude/CLAUDE.md` — minimal project guide, add your own hard rules if needed.
 > - `.claude/project-skills/` — drop project-specific skills here as you build them.
 >
@@ -970,8 +955,9 @@ Checking project scaffold...
 
 Checking .claude/context/...
   ✅/⚠️  product.md — {N} lines, {has/missing}: {required sections}
-  ✅/⚠️  tech-stack.md — {N} lines, {has/missing}: {required sections}
   ✅/⚠️  code-standards.md — {N} lines, {has/missing}: {required sections}
+  ℹ️   tech-stack.md — legacy file, present but no longer validated (content merged into code-standards.md for new projects)
+  ℹ️   company-standards.md — legacy file at ~/.claude/context/, read if present but no longer a capture-rule destination
 
 Checking .claude/CLAUDE.md...
   ✅/❌ present/missing
@@ -984,8 +970,7 @@ Overall: {COMPLETE ✅ / INCOMPLETE ⚠️}
 
 Required sections per context file:
 - `product.md`: `## What Is`, `## Users`, `## Business Rules`
-- `tech-stack.md`: `## Architecture`, one technology section
-- `code-standards.md`: `## Architecture`, `## Testing`
+- `code-standards.md`: `## Tech Baseline`, `## Architecture`, `## Testing`
 
 On COMPLETE:
 > "All systems nominal. You're cleared for takeoff. Run `/orchestrate` to begin."
