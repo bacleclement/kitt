@@ -1,7 +1,7 @@
 ---
 name: "🚀 finish-development"
 description: Finalizes development work — verifies build, pushes branch, creates PR, transitions ticket to review, and optionally cleans up worktree. Called by orchestrate when the user signals work is done.
-version: 1.0
+version: 2.0
 ---
 
 # Finish Development Skill
@@ -67,7 +67,30 @@ Invoke `pr-creator` skill. It handles:
 
 ---
 
-## Step 5: Worktree cleanup
+## Step 5: Update metadata to completed ⛔ HARD GATE
+
+**This step is MANDATORY. Do not skip it.**
+
+Update the workspace metadata.json:
+
+```json
+{ "status": "completed", "updated_at": "{current ISO timestamp}" }
+```
+
+Also update the sprint plan file if one exists in `.claude/workspace/` (e.g. `sprint-week-*.md`) — mark the ticket as DONE.
+
+Append a session-log event:
+```jsonl
+{"ts":"...","skill":"finish-development","event":"completed","data":{"key":"{key}","pr":"{pr_url}"}}
+```
+
+**Status lifecycle:**
+- `implemented` = all tasks done, code ready (set by implement)
+- `completed` = PR created, Jira transitioned, work delivered (set here)
+
+---
+
+## Step 6: Worktree cleanup
 
 Ask:
 ```

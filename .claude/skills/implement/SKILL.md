@@ -1,7 +1,7 @@
 ---
 name: "🛠️ implement"
 description: Implements tasks from plan.md with TDD, task manager integration, and PR creation. Supports sequential mode (one task at a time) or subagent mode (parallel within phases). Reads commit format and platform config from kitt.json.
-version: 5.1
+version: 6.0
 ---
 
 # Implement
@@ -260,7 +260,7 @@ If yes, use task-manager adapter → `comment(ticketKey, progressBody)`.
 
 ### Step 5: Post-Completion ⛔ HARD GATE
 
-**This step is MANDATORY. Do not skip any sub-step. Do not proceed to commit/push/PR without completing 5.1 and 5.2 first.**
+**This step is MANDATORY. Do not skip any sub-step. Do not proceed to finish-development without completing 5.1–5.3 first.**
 
 After ALL tasks are complete:
 
@@ -283,14 +283,18 @@ If any events are missing, append them now before proceeding.
 
 If a sprint plan file exists in `.claude/workspace/` (e.g. `sprint-week-*.md`), mark the completed ticket as DONE.
 
-**5.4. Create PR (REQUIRED):**
+**5.4. Hand off to finish-development (REQUIRED):**
 
 ```
-Ask: "All tasks complete. Create PR for {key}?"
-When user confirms → Invoke: Skill tool with skill="pr-creator"
+Ask: "All tasks done. Ready to finish development for {key}?"
+When user confirms → Invoke: Skill tool with skill="finish-development"
 ```
 
-The pr-creator skill handles everything: push, account switch, PR creation, task manager linking, status transition.
+**Do NOT create commits, push branches, or create PRs inline.** The `finish-development` skill owns the entire delivery pipeline: commit, push, PR creation, task manager linking, status transition, worktree cleanup. It also transitions metadata to `"status": "completed"`.
+
+**Status lifecycle:**
+- `implemented` = all tasks done, code ready (set by implement Step 5.1)
+- `completed` = PR created, Jira transitioned (set by finish-development)
 
 ---
 
@@ -314,7 +318,7 @@ Edit plan.md directly. Do NOT create Task tool items.
 | Each task | `tdd` | TDD workflow |
 | Test failure | `debug` | Debug unexpected failures |
 | Each task | `verify` | Validate before marking complete |
-| Completion | `pr-creator` | Create PR with task manager linking |
+| Completion | `finish-development` | Commit, push, PR, Jira transition, set `completed` |
 
 ---
 
@@ -337,7 +341,7 @@ Edit plan.md directly. Do NOT create Task tool items.
 - [ ] All tests passing (verified)
 - [ ] No TypeScript errors (verified)
 - [ ] No lint errors (verified)
-- [ ] metadata.json updated to "implemented"
-- [ ] Task manager updated (if requested)
-- [ ] PR created and linked to task manager
-- [ ] Branch pushed to remote
+- [ ] metadata.json updated to `"implemented"` with refreshed `updated_at`
+- [ ] session-log.jsonl complete (all events logged)
+- [ ] Sprint plan updated (if exists)
+- [ ] `finish-development` invoked → metadata set to `"completed"`, PR created, Jira transitioned
