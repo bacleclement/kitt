@@ -1,7 +1,7 @@
 ---
 name: "🛠️ implement"
 description: Implements tasks from plan.md with TDD, task manager integration, and PR creation. Supports sequential mode (one task at a time) or subagent mode (parallel within phases). Reads commit format and platform config from kitt.json.
-version: 5.0
+version: 5.1
 ---
 
 # Implement
@@ -111,9 +111,11 @@ Which do you prefer?"
      → If all reconciled → post-completion flow (Step 5)
      → If some remaining → **Resume mode** from first `[ ]` task
 
-### Step 0b: Initialize Session Log
+### Step 0b: Initialize Session Log ⛔ HARD GATE
 
-**Resolve the session log path and append the start event:**
+**This step is MANDATORY. Do not proceed to Step 1 without completing it.**
+
+Resolve the session log path and create/append the start event:
 
 ```
 Session log: .claude/workspace/{type}s/{path}/{key}/session-log.jsonl
@@ -122,6 +124,16 @@ Append: {"ts":"...","skill":"implement","event":"started","data":{"key":"{key}",
 ```
 
 Append events to this file at each significant step below. One JSON line per event. Do not log file reads, bash commands, or LLM reasoning — only significant actions.
+
+**Required events (non-negotiable):**
+- `started` — once, at the beginning (this step)
+- `task_started` — once per task, when marking `[~]`
+- `task_completed` — once per task, when marking `[x]`
+- `commit` — once per commit, with short hash
+- `feedback` — when user corrects behavior mid-task
+- `debug_triggered` — when invoking debug skill
+
+Skipping session log events is a skill violation. If the file was not created at this step, create it immediately before any further work.
 
 ### Step 1: Branch Creation (Fresh Start Only)
 
@@ -246,17 +258,32 @@ After completing all tasks in a phase, ask:
 
 If yes, use task-manager adapter → `comment(ticketKey, progressBody)`.
 
-### Step 5: Post-Completion
+### Step 5: Post-Completion ⛔ HARD GATE
+
+**This step is MANDATORY. Do not skip any sub-step. Do not proceed to commit/push/PR without completing 5.1 and 5.2 first.**
 
 After ALL tasks are complete:
 
-**1. Update metadata.json:**
+**5.1. Update metadata.json (REQUIRED — do this FIRST):**
 
 ```json
-{ "status": "implemented", "updated_at": "..." }
+{ "status": "implemented", "updated_at": "{current ISO timestamp}" }
 ```
 
-**2. Create PR (REQUIRED):**
+**5.2. Verify session-log.jsonl is complete (REQUIRED):**
+
+Check that session-log.jsonl contains all required events:
+- `started` event exists
+- One `task_started` + `task_completed` pair per task
+- One `commit` event per commit
+
+If any events are missing, append them now before proceeding.
+
+**5.3. Update sprint plan (REQUIRED if exists):**
+
+If a sprint plan file exists in `.claude/workspace/` (e.g. `sprint-week-*.md`), mark the completed ticket as DONE.
+
+**5.4. Create PR (REQUIRED):**
 
 ```
 Ask: "All tasks complete. Create PR for {key}?"
