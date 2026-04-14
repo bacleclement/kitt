@@ -197,6 +197,50 @@ Create `{key}-plan.md` in the work folder.
 
 Build commands come from `kitt.json build.*` — never hardcode `pnpm nx run ...`.
 
+### Step 3b: Write Plan JSON
+
+After writing `{key}-plan.md`, also write `{key}-plan.json` in the same folder. This provides machine-readable plan data for Studio's task pipeline viewer.
+
+```json
+{
+  "key": "{key}",
+  "spec": "{key}-spec.md",
+  "ticket": "{ticketKey or null}",
+  "created_at": "{ISO timestamp}",
+  "validation": {
+    "test": "{build.test from kitt.json}",
+    "typecheck": "{build.typecheck from kitt.json}",
+    "lint": "{build.lint from kitt.json}"
+  },
+  "phases": [
+    {
+      "id": 1,
+      "name": "{Phase name from plan.md}",
+      "tasks": [
+        {
+          "ref": "{Task ref e.g. T1.1}",
+          "title": "{Short task title from plan.md}",
+          "status": "pending",
+          "what": "{Full description from the What field in plan.md}",
+          "files": ["{exact file paths from the Files field in plan.md}"],
+          "tests": ["{test descriptions from the Tests field in plan.md}"],
+          "dependsOn": ["{task refs from the Depends on field, empty array if none}"],
+          "dod": "{Definition of Done from plan.md}",
+          "validation": "{task-specific validation command from plan.md}"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Rules:**
+- plan.json MUST mirror plan.md — same phases, same tasks, same order
+- All tasks start with `"status": "pending"`
+- File paths must be exact, not abbreviated
+- `dependsOn` references must be valid task refs
+- Write plan.json AFTER plan.md in the same step
+
 ### Step 4: Review with User
 
 Present the plan summary and wait for approval before proceeding.

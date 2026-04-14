@@ -157,6 +157,7 @@ For each task in plan.md:
 ```
 1. Mark in-progress:
    Edit plan.md: Change `- [ ]` to `- [~]` for current task
+   Sync plan.json: If {key}-plan.json exists, update the matching task's status to "in_progress"
    Log: {"ts":"...","skill":"implement","event":"task_started","data":{"task":"{ref}","title":"{title}"}}
 
 1b. Context confirmation (REQUIRED before writing any code):
@@ -186,6 +187,7 @@ For each task in plan.md:
 
 5. Mark complete:
    Edit plan.md: Change `- [~]` to `- [x]` for current task
+   Sync plan.json: If {key}-plan.json exists, update the matching task's status to "completed"
    Log: {"ts":"...","skill":"implement","event":"task_completed","data":{"task":"{ref}","title":"{title}"}}
 
 6. ⛔ STOP — Ask user to review before committing:
