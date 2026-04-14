@@ -89,6 +89,12 @@ A feature that already reached `completed` / `implemented` / `shipped` state has
 
 **Option 4 is only offered if at least one workspace in the repo is in a completed-like state.** If the repo has never shipped anything via kitt, hide option D from the Step 1 question entirely.
 
+### 5. Refactor scan (architectural drift detection)
+User wants to scan the codebase for refactoring opportunities — layer violations, missed abstractions, contract gaps, duplicate code, authorization leaks.
+→ Invoke the `refactor` skill. It handles scope selection, scanning, and report generation.
+→ After refactor completes, the user can create tickets, fix findings, or export the report.
+→ Control returns to orchestrate. The user can start new work normally.
+
 ---
 
 ## Step 1: Ask What to Work On
@@ -99,7 +105,8 @@ A feature that already reached `completed` / `implemented` / `shipped` state has
  A) Existing ticket (provide key — format depends on your task manager)
  B) New work (describe it)
  C) Continue in-progress work
- D) Revise a completed feature (QA defect, incident, review — only shown if completed work exists)"
+ D) Revise a completed feature (QA defect, incident, review — only shown if completed work exists)
+ E) Refactor scan (find architectural drift, duplication, contract gaps)"
 ```
 
 **Option D filter:** scan `.claude/workspace/**/metadata.json` once at the start of Step 1. If zero workspaces have `status ∈ {completed, implemented, shipped, merged}`, do NOT show option D. If one or more exist, show it.
@@ -123,6 +130,13 @@ A feature that already reached `completed` / `implemented` / `shipped` state has
 5. When `revise` completes, orchestrate shows: *"Revision complete. What do you want to do next?"* and restarts at Step 1
 
 Do not re-enter Step 2 automatically after a revision — the user may want to end the session or start new work, not immediately continue. Respect the explicit re-prompt.
+
+**If user picks E:**
+
+1. Invoke the `refactor` skill
+2. **Skip Step 1b (worktree question)** — refactor is a read-only scan, no worktree needed
+3. **Skip Step 2 (analyze the request)** — refactor has its own scope selection
+4. When `refactor` completes, orchestrate shows: *"Refactor scan complete. What do you want to do next?"* and restarts at Step 1
 
 ---
 
@@ -576,6 +590,7 @@ Only emit if the workspace folder and session-log.jsonl path are resolvable. If 
 | `implement` | Plan exists, ready to implement | `Skill tool with skill="implement"` |
 | `debug` | Bug, unknown root cause | `Skill tool with skill="debug"` |
 | `code-review` | All tasks `[x]`, before finish-development | `Skill tool with skill="code-review"` |
+| `refactor` | User picks option E, or after epic completion | `Skill tool with skill="refactor"` |
 | `finish-development` | User signals work is done ("I'm done", "ship it", "ready for review") | `Skill tool with skill="finish-development"` |
 | `session-review` | Epic/feature completed, or manual `/session-review` | `Skill tool with skill="session-review"` |
 
@@ -612,10 +627,19 @@ User can skip code-review explicitly: "skip review and ship it".
 
 When an epic or feature reaches `status: "completed"` (all tasks done, PR merged or created):
 
-Ask: *"Work complete. Run a session review to analyze the development process? (y/n)"*
+```
+"Work complete. What next?
 
-- Yes → invoke `session-review`
-- No → done
+ 1) Session review — analyze the development process
+ 2) Refactor scan — check touched files for architectural drift
+ 3) Both — session review first, then refactor scan on touched files
+ 4) Done — nothing else needed"
+```
+
+- 1 → invoke `session-review`
+- 2 → invoke `refactor` with scope = files touched in current branch
+- 3 → invoke `session-review`, then `refactor`
+- 4 → done
 
 ---
 
