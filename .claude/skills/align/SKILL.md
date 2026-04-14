@@ -163,6 +163,18 @@ Minor issues that don't block implementation. Append Architecture section with c
 
 ---
 
+### Session Log
+
+Append to the workspace `session-log.jsonl` after each dimension validation in Phase 2:
+
+```jsonl
+{"ts":"{ISO-8601}","skill":"align","event":"validation","data":{"dimension":"{bounded_context|aggregate|layer|pattern}","result":"{pass|fail|warning}","detail":"{one-line summary}"}}
+```
+
+Emit one event per dimension (4 events total for a full validation). The `detail` field is a brief explanation (e.g. "No cross-boundary imports detected" or "Business logic in infrastructure layer: OrderService.ts").
+
+---
+
 ### Phase 4: Business Rules Harvest (on APPROVED or APPROVED WITH CONCERNS only)
 
 After writing the `## Architecture` section, ask:

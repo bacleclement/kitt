@@ -546,6 +546,24 @@ Should I invoke refine?"
 
 ---
 
+## Session Log
+
+After routing (Step 3) or resuming work, append to the workspace `session-log.jsonl`:
+
+**On fresh routing:**
+```jsonl
+{"ts":"{ISO-8601}","skill":"orchestrate","event":"routed","data":{"type":"{epic|feature|bug|refactor}","size":"{S|M|L}","target":"{next-skill}"}}
+```
+
+**On continuing in-progress work:**
+```jsonl
+{"ts":"{ISO-8601}","skill":"orchestrate","event":"resumed","data":{"from_status":"{current metadata status}","target":"{next-skill}"}}
+```
+
+Only emit if the workspace folder and session-log.jsonl path are resolvable. If the workspace folder doesn't exist yet (e.g. Step 2 hasn't created it), skip — implement's Step 0b will create the log.
+
+---
+
 ## Skills Integration
 
 | Skill | When Called | How to Invoke |

@@ -160,6 +160,18 @@ If PASS:
 
 ---
 
+## Session Log
+
+After producing the review verdict (Step 4), append to the workspace `session-log.jsonl`:
+
+```jsonl
+{"ts":"{ISO-8601}","skill":"code-review","event":"review_completed","data":{"verdict":"{pass|pass_with_suggestions|blocked}","blockers":{N},"suggestions":{N}}}
+```
+
+`blockers` and `suggestions` are integer counts from the review output.
+
+---
+
 ## Integration with Orchestrate
 
 When `orchestrate` detects all tasks complete and user signals "done" / "ship it":

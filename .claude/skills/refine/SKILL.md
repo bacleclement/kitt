@@ -280,6 +280,26 @@ As a {role}, I want to {action} so that {benefit}.
 
 ---
 
+## Session Log
+
+Append to the workspace `session-log.jsonl` at these moments:
+
+**After completing each refinement phase:**
+```jsonl
+{"ts":"{ISO-8601}","skill":"refine","event":"phase_completed","data":{"phase":"{functional|access|nfr}","duration_min":{N}}}
+```
+
+`duration_min` is the approximate wall-clock time spent in that phase (round to nearest minute).
+
+**After writing the spec file:**
+```jsonl
+{"ts":"{ISO-8601}","skill":"refine","event":"spec_created","data":{"us_count":{N or null},"word_count":{N}}}
+```
+
+`us_count` is the number of user stories extracted (EPIC mode only, null for US/FEATURE mode). `word_count` is the approximate word count of the spec.
+
+---
+
 ## Task Manager Sync (Optional)
 
 After generating spec.md:

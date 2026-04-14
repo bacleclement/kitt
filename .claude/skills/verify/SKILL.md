@@ -143,3 +143,17 @@ Before:
 - Claiming a bug is fixed
 
 The rule applies to exact phrases, paraphrases, implications, and tone. Any communication suggesting completion or correctness requires prior verification.
+
+---
+
+## Session Log
+
+If a workspace `session-log.jsonl` exists (i.e. verify is running within an implement/orchestrate context), append after each verification run:
+
+```jsonl
+{"ts":"{ISO-8601}","skill":"verify","event":"result","data":{"passed":{true|false},"command":"{the command that was run}","error":"{error summary or null}"}}
+```
+
+`passed` is `true` only when the command exits 0 and output confirms the claim. `error` is a brief summary of the failure (first line of error output), or `null` on success.
+
+Verify is called from many contexts (implement, finish-development, code-review, standalone). Only emit the event if a workspace session-log.jsonl is reachable — do not fail or warn if it isn't.

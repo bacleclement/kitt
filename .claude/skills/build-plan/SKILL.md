@@ -277,6 +277,18 @@ If yes, use task-manager adapter → `create(project, "Sub-task", summary, descr
 
 ---
 
+## Session Log
+
+After writing `{key}-plan.md` and `{key}-plan.json` (Step 3b), append to the workspace `session-log.jsonl`:
+
+```jsonl
+{"ts":"{ISO-8601}","skill":"build-plan","event":"plan_created","data":{"phases":{N},"tasks":{N}}}
+```
+
+`phases` is the number of implementation phases. `tasks` is the total task count across all phases.
+
+---
+
 ## Task Sizing Guidelines
 
 - **Too small:** "Add import statement" — combine with the code that uses it

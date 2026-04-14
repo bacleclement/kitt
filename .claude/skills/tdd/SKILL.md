@@ -193,3 +193,17 @@ Before marking any task complete:
 - [ ] Edge cases covered
 
 Can't check all boxes? You skipped TDD. Start over.
+
+---
+
+## Session Log
+
+If a workspace `session-log.jsonl` exists (i.e. tdd is running within an implement context), append after each TDD phase completion:
+
+```jsonl
+{"ts":"{ISO-8601}","skill":"tdd","event":"cycle","data":{"phase":"{red|green|refactor}","passed":{true|false}}}
+```
+
+`phase` indicates which TDD step just completed. `passed` indicates whether the expected outcome occurred (test fails in RED, test passes in GREEN, tests still pass after REFACTOR).
+
+TDD is typically called from implement. Only emit the event if a workspace session-log.jsonl is reachable — do not fail or warn if it isn't.
