@@ -140,6 +140,52 @@ Do not re-enter Step 2 automatically after a revision — the user may want to e
 
 ---
 
+## Workspace Path Resolution ⛔ CRITICAL
+
+**Workspaces always live in the MAIN repo, never inside a worktree.**
+
+Why: a worktree is throw-away by design. If `.claude/workspace/{key}/spec.md`, `plan.md`, `metadata.json` and `session-log.jsonl` live inside the worktree, killing the worktree erases the entire feature record — spec, plan, session log, everything. Studio also won't find the workspace because it scans the main repo's `.claude/workspace/`.
+
+**Rule:** every read or write under `.claude/workspace/...` resolves against the **main repo root**, regardless of cwd.
+
+### How to resolve the main repo root
+
+```bash
+# Works from main repo OR any worktree:
+MAIN_REPO=$(realpath "$(git rev-parse --git-common-dir)/..")
+WORKSPACE_DIR="$MAIN_REPO/.claude/workspace"
+```
+
+- `git rev-parse --git-common-dir` → returns the *shared* `.git` directory (always points to the main repo's `.git`, even from inside a worktree).
+- `..` + `realpath` → climbs to the main repo's working tree root.
+- From the main repo this is a no-op (returns the same path as `git rev-parse --show-toplevel`).
+
+**Always use `$MAIN_REPO/.claude/workspace/...`** when:
+- Creating workspace folders (Step 2 #5, #6)
+- Writing `metadata.json`, `spec.md`, `plan.md`, `*-design.md`, `session-log.jsonl`
+- Globbing for existing workspaces
+- Scanning for in-progress / completed work (Step 1 option C/D)
+
+Never use bare relative paths like `.claude/workspace/...` from a worktree — they resolve against the worktree's working tree, not the main repo.
+
+### worktreePath in metadata.json
+
+When work is happening *inside a worktree*, capture the worktree path in `metadata.json.worktreePath` so Studio (and any reader) can link the workspace back to the worktree where the code lives.
+
+```bash
+# Detect: is current cwd a worktree?
+CURRENT_TOPLEVEL=$(git rev-parse --show-toplevel)
+if [ "$CURRENT_TOPLEVEL" != "$MAIN_REPO" ]; then
+  WORKTREE_PATH="$CURRENT_TOPLEVEL"
+else
+  WORKTREE_PATH=null  # working in main repo, no worktree
+fi
+```
+
+Set `metadata.worktreePath` on workspace creation. If a workspace is later picked up from the main repo branch (no worktree), leave it `null` or omit.
+
+---
+
 ## Step 1b: Ask About Work Environment
 
 After the user describes the work — before any routing — ask once:
@@ -152,7 +198,7 @@ After the user describes the work — before any routing — ask once:
 ```
 
 - **Option 1 (branch)** → continue routing from Step 2 in the current directory. Branch creation happens later via `branch-creator` skill in implement Step 1.
-- **Option 2 (worktree)** → invoke `worktree` skill. It creates the worktree and hands back here. Continue routing from Step 2 inside the worktree.
+- **Option 2 (worktree)** → invoke `worktree` skill. It creates the worktree and hands back here. Continue routing from Step 2 inside the worktree, **but workspace artifacts still write to the MAIN repo** (see [Workspace Path Resolution](#workspace-path-resolution--critical) above) — only code edits happen inside the worktree.
 
 Only ask once. Never ask again mid-workflow.
 
@@ -185,16 +231,16 @@ Only ask once. Never ask again mid-workflow.
    - Folder name format: `{ticketKey}-{slug}` (e.g., `HUB-31234-user-profile-settings`)
    - If no ticket title available, ask user for a short description to use as slug
 4. Check ticket response for `parent`, `epic`, or `epicKey` field
-5. **If ticket has a parent epic:**
-   a. Check if `.claude/workspace/epics/{epic-folder}/` already exists (match by ticket key prefix in folder name)
-   b. If epic folder exists → create US subfolder there: `.claude/workspace/epics/{epic-folder}/{ticketKey}-{slug}/`
+5. **If ticket has a parent epic:** *(all paths resolve against `$MAIN_REPO` — see [Workspace Path Resolution](#workspace-path-resolution--critical))*
+   a. Check if `$MAIN_REPO/.claude/workspace/epics/{epic-folder}/` already exists — glob for `$MAIN_REPO/.claude/workspace/epics/{epicKey}-*/metadata.json`
+   b. If epic folder exists → create US subfolder there: `$MAIN_REPO/.claude/workspace/epics/{epic-folder}/{ticketKey}-{slug}/`
    c. If epic folder missing → ask: *"This ticket belongs to epic {epic-key} ({epic-title}). Create the epic folder? (y/n)"*
-      - Yes → create epic folder as `{epicKey}-{epic-slug}/` + metadata.json (type: epic), then create US subfolder
-      - No → create as standalone feature in `.claude/workspace/features/{ticketKey}-{slug}/`
+      - Yes → create epic folder as `{epicKey}-{epic-slug}/` + metadata.json (type: epic, set `worktreePath`), then create US subfolder
+      - No → create as standalone feature in `$MAIN_REPO/.claude/workspace/features/{ticketKey}-{slug}/`
    d. Update epic `metadata.json.children` array with the new US entry
-6. **If ticket has no parent:**
-   a. Check if workspace folder exists (match by ticket key prefix in folder name): `.claude/workspace/{epics|features|bugs|refactors}/{ticketKey}-*/`
-   b. Create folder as `{ticketKey}-{slug}/` + metadata.json if missing
+6. **If ticket has no parent:** *(paths resolve against `$MAIN_REPO`)*
+   a. Check if workspace folder exists — glob for `$MAIN_REPO/.claude/workspace/{epics,features,bugs,refactors}/{ticketKey}-*/metadata.json`
+   b. Create folder as `{ticketKey}-{slug}/` + metadata.json (set `worktreePath` if cwd is a worktree) if missing
 7. Determine type from ticket or ask:
    - Map task manager ticket type → kitt type:
      - `Epic` → epic
@@ -434,6 +480,12 @@ C) Complex, multi-file → refine → align → build-plan → implement
 
 **When scanning workspace:** match folders by ticket key prefix (e.g., `HUB-31234-*`), not exact folder name.
 
+**⚠️ How to search for workspace folders:** The `Glob` tool matches **file names**, not directory names. To find a workspace folder by ticket key, always glob for `metadata.json` inside the target directory:
+```
+.claude/workspace/{epics,features,bugs,refactors}/{ticketKey}-*/metadata.json
+```
+Never use `**/*{ticketKey}*` — that only matches files whose name contains the key, and files inside use the slug (not the ticket key).
+
 ### Epic (two-level)
 
 ```
@@ -504,6 +556,7 @@ Update `metadata.json.updated_at` on any change. If all US are completed → set
   "title": "Company Management",
   "status": "in_progress",
   "taskManager": { "synced": true, "url": "https://..." },
+  "worktreePath": "/Users/me/Code/myrepo/.claude/worktrees/PROJ-42",
   "children": [
     { "key": "PROJ-43", "slug": "company-creation", "title": "Company Creation", "status": "completed" },
     { "key": "PROJ-44", "slug": "contact-management", "title": "Contact Management", "status": "in_progress" }
@@ -516,6 +569,7 @@ Update `metadata.json.updated_at` on any change. If all US are completed → set
 - `key`: ticket key from task manager (or slug if no ticket)
 - `slug`: human-readable name derived from title (kebab-case, max 50 chars)
 - `folder`: actual folder name = `{key}-{slug}` (or just `{slug}` if no ticket)
+- `worktreePath`: absolute path to the worktree where code edits happen, OR `null` / omitted if work is on main repo branch. See [Workspace Path Resolution](#workspace-path-resolution--critical) for how to detect.
 - When a task manager ticket exists, set `taskManager.synced: true` with the ticket URL.
 
 ### Feature / Bug / Refactor
@@ -527,10 +581,13 @@ Update `metadata.json.updated_at` on any change. If all US are completed → set
   "title": "Email Notifications",
   "status": "in_progress",
   "taskManager": { "synced": false },
+  "worktreePath": "/Users/me/Code/myrepo/.claude/worktrees/email-notifications",
   "created_at": "2026-02-14T10:00:00Z",
   "updated_at": "2026-02-16T14:30:00Z"
 }
 ```
+
+`worktreePath` is optional — set it on workspace creation when cwd is a worktree (detected via `git rev-parse --show-toplevel != $MAIN_REPO`); leave `null` or omit when working directly on the main repo branch.
 
 ---
 
