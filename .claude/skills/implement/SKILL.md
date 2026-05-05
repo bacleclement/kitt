@@ -181,6 +181,13 @@ For each task in plan.md:
    {build.test} with test pattern
    {build.typecheck}
    {build.lint}
+   For each entry in {build.extraChecks}: run {entry.command}.
+   `extraChecks` is an optional array of `{ name, command }` for project-
+   specific gates that don't fit the standard test/typecheck/lint trio
+   (e.g. API contract regeneration, schema validators, dependency
+   audits). When the project doesn't define any, the array is absent
+   and this step is a no-op. Never hardcode the list in this skill —
+   read it from kitt.json.
 
 4. Verify (REQUIRED):
    Invoke Skill tool with skill="verify"

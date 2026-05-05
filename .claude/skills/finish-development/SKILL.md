@@ -18,6 +18,7 @@ Invoked by `orchestrate` when the user says work is complete (e.g. "I'm done", "
 
 ```
 build.*                              → verification commands
+build.extraChecks                    → optional [{ name, command }] gates
 vcs.config.baseBranch                → base branch for PR
 taskManager.config.statuses.review   → review status name
 vcs.worktrees.path                   → to detect worktree cleanup needed
@@ -29,6 +30,13 @@ commitFormat.*                       → commit message format
 ## Step 2: Verify current state
 
 Run `verify` skill — check tests, typecheck, lint pass.
+
+Then, for each entry in `build.extraChecks` (when defined): run
+`entry.command`. These are project-specific gates beyond the standard
+trio (API contract regeneration, schema validators, dependency audits,
+etc.). The user configures them per-project via Studio's config popup
+or by editing kitt.json directly. When the array is absent or empty,
+this step is a no-op.
 
 If any check fails: stop. Report what's failing. Do not proceed until the user fixes it or explicitly overrides.
 
