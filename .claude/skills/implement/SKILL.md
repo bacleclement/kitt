@@ -181,13 +181,22 @@ For each task in plan.md:
    {build.test} with test pattern
    {build.typecheck}
    {build.lint}
-   For each entry in {build.extraChecks}: run {entry.command}.
-   `extraChecks` is an optional array of `{ name, command }` for project-
-   specific gates that don't fit the standard test/typecheck/lint trio
-   (e.g. API contract regeneration, schema validators, dependency
-   audits). When the project doesn't define any, the array is absent
-   and this step is a no-op. Never hardcode the list in this skill —
-   read it from kitt.json.
+
+   Then run extraChecks. There are TWO sources, both optional :
+     a) Global : `build.extraChecks` — runs for every workspace
+     b) Scoped : `scopes[metadata.scope].build.extraChecks` — runs only
+        when the workspace's `metadata.scope` matches that scope name
+   Read `metadata.scope` from `{key}/metadata.json`. If set and the
+   scope exists in `kitt.json.scopes`, merge global + scoped (global
+   first, scoped appended). If `metadata.scope` is unset or doesn't
+   match, run only globals.
+
+   For each merged entry: run {entry.command}. `extraChecks` is an
+   array of `{ name, command }` for project-specific gates that don't
+   fit the standard test/typecheck/lint trio (e.g. API contract
+   regeneration, schema validators, dependency audits). When neither
+   global nor scoped checks are defined, this step is a no-op.
+   Never hardcode the list in this skill — read it from kitt.json.
 
 4. Verify (REQUIRED):
    Invoke Skill tool with skill="verify"

@@ -18,12 +18,16 @@ Invoked by `orchestrate` when the user says work is complete (e.g. "I'm done", "
 
 ```
 build.*                              → verification commands
-build.extraChecks                    → optional [{ name, command }] gates
+build.extraChecks                    → optional global [{ name, command }] gates
+scopes[scope].build.extraChecks      → optional scoped gates (merged)
 vcs.config.baseBranch                → base branch for PR
 taskManager.config.statuses.review   → review status name
 vcs.worktrees.path                   → to detect worktree cleanup needed
 commitFormat.*                       → commit message format
 ```
+
+Also read `metadata.scope` from the workspace's `metadata.json` to
+resolve the relevant scope.
 
 ---
 
@@ -31,12 +35,18 @@ commitFormat.*                       → commit message format
 
 Run `verify` skill — check tests, typecheck, lint pass.
 
-Then, for each entry in `build.extraChecks` (when defined): run
-`entry.command`. These are project-specific gates beyond the standard
-trio (API contract regeneration, schema validators, dependency audits,
-etc.). The user configures them per-project via Studio's config popup
-or by editing kitt.json directly. When the array is absent or empty,
-this step is a no-op.
+Then run `extraChecks` from two sources, merged in order :
+
+1. Global : `build.extraChecks` — runs for every workspace
+2. Scoped : `scopes[metadata.scope].build.extraChecks` — appended
+   when the workspace's `metadata.scope` matches a defined scope
+
+For each entry in the merged list: run `entry.command`. These are
+project-specific gates beyond the standard trio (API contract
+regeneration, schema validators, dependency audits, etc.). The user
+configures them per-project via Studio's config popup or by editing
+kitt.json directly. When neither source defines any, this step is a
+no-op.
 
 If any check fails: stop. Report what's failing. Do not proceed until the user fixes it or explicitly overrides.
 
