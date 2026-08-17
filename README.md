@@ -16,7 +16,7 @@ So the loop puts the expensive gates where they are cheap:
 
 | Skill | What it guarantees |
 |---|---|
-| **prepare** | The plan is grounded in the sibling code that already exists, written into the ticket, and approved by a human before any code. |
+| **prepare** | The ticket is checked against the repo's own issue templates and completed if it falls short; the plan is grounded in the sibling code that already exists, written into the ticket, and approved by a human before any code. |
 | **implement** | One step, one commit, one proof. A plan that turns out wrong stops the work instead of being silently renegotiated. |
 | **verify** | The ticket's acceptance command is replayed **in this session**, and a failure blocks. A failure also has to teach something — a test or a rule — or it is wasted. |
 | **finish** | The PR is only opened on green, linked to the ticket, written for the reviewer. |
@@ -50,6 +50,8 @@ Install it at **project scope** to share it with a team: the skills land in the 
 - **Avoid** — the prohibitions specific to this work.
 
 The [`contracts/`](contracts/) directory holds this shape and the generator that installs it into a repo as GitHub issue templates plus a check workflow — run `/sync-ticket-templates`.
+
+A ticket is checked twice: by that workflow when it is created, and again by `prepare` when someone picks it up. The second check is the one that matters for an existing backlog — the workflow only ever sees tickets opened after it was installed, so everything already filed escapes it. `prepare` proposes the missing fields and writes them back, which lets a backlog converge as it is worked through rather than through a migration campaign.
 
 ## What this is not
 

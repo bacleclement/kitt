@@ -8,6 +8,7 @@
 - Four skills, no dependency on any app, server, env var or workspace layout: `prepare`, `implement`, `verify`, `finish`.
 - The plan-execute-verify loop is closed: `verify` replays the ticket's runnable acceptance command and blocks on failure; `finish` refuses to open a PR on red.
 - The harness loop: a failing check must produce a lesson — a regression test or a rule where the project already keeps its rules — under a strict no-regression requirement (a change that breaks a previously passing check is rejected).
+- `prepare` validates the ticket against the repo's **own** `.github/ISSUE_TEMPLATE/` before planning, and offers to complete the missing required fields in place. The generated workflow only sees tickets opened or edited after it was installed, so this second gate is what makes an existing backlog converge as it is worked through.
 - Grounding is an executed step, not a reading suggestion: `prepare` opens the sibling files, quotes the pattern, and stops when the ticket's approach disagrees with the code.
 - The plan is written into the GitHub ticket, dated and tied to a commit SHA, and gated on human approval before any code.
 - Ticket-shape contract in `contracts/`, with `/sync-ticket-templates` to generate GitHub issue templates and a check workflow into a repo.

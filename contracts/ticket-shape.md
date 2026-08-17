@@ -87,7 +87,13 @@ Bugs and refactors carry one `cause:` label — `regression`, `spec-gap`, `impl-
 
 Templates guide; they do not constrain. `gh issue create --body "…"` bypasses them entirely, which is how an agent creates a ticket.
 
-The gate is the generated workflow: on `issues: opened` and `issues: edited`, it checks the required sections for the ticket's type and applies `needs-detail` when they are missing, with a comment naming what is absent. It never closes or edits the ticket — a check that destroys work would be worse than the problem.
+Two gates, at the two moments a ticket can be wrong.
+
+**At creation** — the generated workflow. On `issues: opened` and `issues: edited`, it checks the required sections for the ticket's type and applies `needs-detail` when they are missing, with a comment naming what is absent. It never closes or edits the ticket — a check that destroys work would be worse than the problem.
+
+**At implementation** — `prepare`. Before planning anything, it reads the repo's own `.github/ISSUE_TEMPLATE/` (the local truth, not this contract), checks the ticket against it, and offers to complete what is missing before continuing.
+
+The second gate is not redundant. **The workflow only ever sees tickets opened or edited after it was installed** — every ticket already in the backlog escapes it entirely. Repairing at implementation time means a backlog converges as it is worked through, with no migration campaign: the tickets that matter are exactly the ones that get fixed, and the ones nobody ever picks up cost nothing.
 
 ## Language
 
