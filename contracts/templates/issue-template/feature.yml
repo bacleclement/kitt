@@ -1,0 +1,32 @@
+name: Feature / User story
+description: One coherent capability
+labels: ["type:feature"]
+body:
+  - type: input
+    id: provenance
+    attributes:
+      label: Where this comes from
+    validations: { required: true }
+  - type: textarea
+    id: context
+    attributes:
+      label: Today / After
+      description: What happens today, and what should happen instead.
+    validations: { required: true }
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: Numbered, yes-or-no, checkable by a human without reading the code.
+      placeholder: "AC-01 — …\nAC-02 — …"
+    validations: { required: true }
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+    validations: { required: true }
+  - type: input
+    id: depends-on
+    attributes:
+      label: Depends on
+      placeholder: "#412, #415 — or leave empty"

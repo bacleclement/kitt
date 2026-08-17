@@ -1,0 +1,28 @@
+name: Epic
+description: Work spanning several stories, typically more than two weeks
+labels: ["type:epic"]
+body:
+  - type: input
+    id: provenance
+    attributes:
+      label: Where this comes from
+      placeholder: client call 12/03 · retro · incident #412
+    validations: { required: true }
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The outcome we are after — not the solution.
+    validations: { required: true }
+  - type: textarea
+    id: stories
+    attributes:
+      label: Stories
+      description: The breakdown. Links are enough; they can be added as they are created.
+      placeholder: "- [ ] #123 …"
+    validations: { required: true }
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+    validations: { required: true }
