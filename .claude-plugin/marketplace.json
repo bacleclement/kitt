@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "kitt",
+  "description": "Kitt — a small, standalone ticket-driven development loop for Claude Code",
+  "owner": {
+    "name": "Clément Bâcle"
+  },
+  "plugins": [
+    {
+      "name": "kitt",
+      "description": "prepare / implement / verify / finish — a grounded, ticket-driven loop with a closed plan-execute-verify cycle",
+      "category": "workflow",
+      "source": "./plugins/kitt"
+    }
+  ]
+}
