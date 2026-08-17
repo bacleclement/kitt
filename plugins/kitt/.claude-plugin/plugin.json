@@ -1,0 +1,8 @@
+{
+  "name": "kitt",
+  "description": "Ticket-driven development loop for Claude Code: prepare (ground + plan into the ticket), implement (one step, one commit), verify (replay the acceptance command, block on failure), finish (PR). No app, no server, no setup.",
+  "version": "2.0.0",
+  "author": {
+    "name": "Clément Bâcle"
+  }
+}

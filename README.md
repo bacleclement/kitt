@@ -1,152 +1,68 @@
-# Kitt — AI Workflow Engine for Claude Code
+# Kitt
 
-> "I don't transform into a car, but I will scan your entire codebase in seconds." — KITT
+A small, standalone development loop for Claude Code. Four skills, driven by a GitHub ticket, with the plan-execute-verify cycle actually closed.
 
-Spec-driven development pipeline with pluggable task managers, VCS, and design tools. One entry point: `/orchestrate`.
-
-## Quick Start
-
-```bash
-# Install (once per machine)
-git clone https://github.com/bacleclement/kitt.git ~/.claude/kitt
-
-# In your project
-/setup        # config wizard — scans repo, writes kitt.json + context files
-/orchestrate  # start working
+```
+ticket → /prepare → (human approves) → /implement → /verify → /finish → PR
 ```
 
-New team member? Same commands — `/setup` detects existing config and switches to join mode.
+No app to run, no server, no configuration. A developer with a bare `claude` CLI and this plugin has the full loop.
 
-Update: `git -C ~/.claude/kitt pull`
+## Why
+
+A plan written from a ticket alone is a guess. An agent that writes code without reading the code next to it reproduces whatever it imagined the conventions were, and review pays for it — one recorded drift survived **14 commits with tests and verification both green** before a human caught it. Tests do not catch a design error; grounding at plan time prevents it.
+
+So the loop puts the expensive gates where they are cheap:
+
+| Skill | What it guarantees |
+|---|---|
+| **prepare** | The ticket is checked against the repo's own issue templates and completed if it falls short; the plan is grounded in the sibling code that already exists, written into the ticket, and approved by a human before any code. |
+| **implement** | One step, one commit, one proof. A plan that turns out wrong stops the work instead of being silently renegotiated. |
+| **verify** | The ticket's acceptance command is replayed **in this session**, and a failure blocks. A failure also has to teach something — a test or a rule — or it is wasted. |
+| **finish** | The PR is only opened on green, linked to the ticket, written for the reviewer. |
+
+## Install
+
+```
+/plugin marketplace add bacleclement/kitt
+/plugin install kitt@kitt
+```
+
+Install it at **project scope** to share it with a team: the skills land in the repo's `.claude/`, get committed, and every developer has them after a `git pull` — no per-machine setup.
+
+## Use
+
+```
+/prepare 412      # read the ticket, ground on the code, post the plan, stop
+                  # → you read the plan and approve it
+/implement        # execute it, one commit per step, ticking the ticket
+/verify           # replay every acceptance command; blocks on failure
+/finish           # push, open the PR linked to the ticket
+```
+
+## What the ticket must carry
+
+`prepare` and `verify` read the ticket, so the ticket has to hold more than a title:
+
+- **Acceptance criteria** — a yes/no list. Without it, nobody can say when the work is done.
+- **A runnable acceptance command** — `pnpm test x.test.ts`, not "it works". This is what turns verification from a good intention into a gate.
+- **Depends on** — what must land first.
+- **Avoid** — the prohibitions specific to this work.
+
+The [`contracts/`](contracts/) directory holds this shape and the generator that installs it into a repo as GitHub issue templates plus a check workflow — run `/sync-ticket-templates`.
+
+A ticket is checked twice: by that workflow when it is created, and again by `prepare` when someone picks it up. The second check is the one that matters for an existing backlog — the workflow only ever sees tickets opened after it was installed, so everything already filed escapes it. `prepare` proposes the missing fields and writes them back, which lets a backlog converge as it is worked through rather than through a migration campaign.
+
+## What this is not
+
+This is not the full Kitt Studio. The Studio has its own richer skills, bound to its cockpit, its session journal and its workspace layout. **A skill that needs the Studio stays in the Studio; a skill that works without it lives here.** One implementation each — two copies of the same skill in two repos is the drift this repo exists to avoid.
+
+## Design constraints
+
+- No dependency on any app, MCP server, environment variable or workspace layout. `git`, `gh`, and the project's own commands.
+- Each skill is a few hundred words. Context spent on the skill is context not spent on the work.
+- Rules live where the project already keeps them — this plugin reads `AGENTS.md` / `CLAUDE.md` and whatever they point at, and never imposes its own file.
 
 ---
 
-## How It Works
-
-`/orchestrate` detects what you're working on and routes to the right skill:
-
-```
-/orchestrate
- ├─ A) Existing ticket
- │    ├─ Epic       → /refine → /align → /build-plan → /implement → /code-review → /finish-development
- │    ├─ Feature L  → /refine → /align → /build-plan → /implement → /code-review → /finish-development
- │    ├─ Feature M  → /build-plan → /implement → /code-review → /finish-development
- │    ├─ Feature S  → /implement → /code-review → /finish-development
- │    ├─ Bug        → /debug or /implement → /code-review → /finish-development
- │    └─ QA         → /qa-frontend or /qa-backend → publish
- ├─ B) New work (describe it or /brainstorm first)
- ├─ C) Continue in-progress work
- └─ D) Revise a completed feature (QA defect, incident, review)
-      → /revise → classify root cause → update artifacts → /capture-rule lessons
-```
-
-Before routing: asks branch vs. worktree, detects scope (multi-app), reads ticket from task manager.
-After completion: `/session-review` for analytics (tokens, feedback, skill effectiveness, actionable findings).
-
----
-
-## Skills (23)
-
-| Phase | Skills |
-|-------|--------|
-| **Entry** | ⚙️ `setup` · 👋 `onboard` · 🎯 `orchestrate` |
-| **Design** | 💡 `brainstorm` · 🔍 `refine` · 🏗️ `align` · 📝 `build-plan` |
-| **Build** | 🛠️ `implement` · 🧪 `tdd` · ✅ `verify` · 🐛 `debug` |
-| **Ship** | 🔎 `code-review` · 🚀 `finish-development` · `branch-creator` · `pr-creator` · `vcs/worktree` |
-| **Quality** | 🌐 `qa-frontend` · 📡 `qa-backend` · 📏 `capture-rule` · 📊 `session-review` · 📝 `session-summarize` |
-| **Feedback** | ♻️ `revise` |
-| **Ops** | 🎫 `manage-task` |
-
----
-
-## Context Architecture
-
-Two context files per project + per-scope agent docs:
-
-```
-.claude/
-├── CLAUDE.md                       # Entry point, hard rules
-├── context/
-│   ├── product.md                  # Domain: business rules, users, vocabulary
-│   └── code-standards.md           # Tech: baseline stack, naming, architecture, testing
-└── config/kitt.json                # scopes, task manager, VCS, build commands
-
-# Agents live colocated in the codebase — kitt.json maps them:
-apps/api/services/network/AGENT.md  # NestJS + hexagonal + DDD + network domain
-apps/front/admin/AGENT.md           # React + MUI + admin patterns
-```
-
-- `product.md` → domain knowledge (always loaded)
-- `code-standards.md` → tech baseline + conventions (always loaded, includes what was formerly `tech-stack.md`)
-- Agents → per-scope deep expertise (tech + domain), loaded via `kitt.json.scopes`
-
-### Monorepo Scoping
-
-```json
-{
-  "scopes": {
-    "*": { "agents": ["docs/testing/integration-patterns.md"] },
-    "api-network": {
-      "path": "apps/api/services/network",
-      "agents": ["apps/api/services/network/AGENT.md"]
-    }
-  }
-}
-```
-
-`"*"` = always loaded. Named scopes = loaded when active. No scopes = auto-discover `**/agents/`.
-
----
-
-## Key Features
-
-### Feedback Loop (end-to-end)
-
-Two feedback paths, both funneling into `/capture-rule`:
-
-- **Mid-implementation:** corrections during `/implement` → captured as rules + appended to spec + noted in plan. Specs stay in sync with decisions.
-- **Post-completion:** QA defects, incidents, reviewer comments → `/orchestrate` option D → `/revise` → classifies root cause (8 categories), updates artifacts in place (append-only), captures systemic lessons. Tracked in `workspace/{key}/revisions/`.
-
-Four capture-rule destinations: feature-level spec, scope `AGENT.md`, `code-standards.md`, `product.md`. Plus a skill-diff mode for updating kitt skills themselves when they're the root cause.
-
-### Session Analytics
-
-`/session-summarize` produces a cached narrative `{key}-summary.md` (timeline, feedback log, friction/smooth points).
-
-`/session-review` reads the summary + raw session log to compute precise metrics (time, tokens, costs) and classify findings into 5 actionable categories: `kitt-skill`, `context-stale`, `spec-quality`, `skill-gap`, `process-waste`.
-
-### Code Review
-`/code-review` runs before every PR. 5 dimensions: spec compliance, architecture, standards, agent docs, quality. Outputs verdict: PASS / BLOCKED.
-
-### Implementation Modes
-Sequential (default, one task at a time) or subagent (parallel within phases, checkpoint between).
-
----
-
-## Adapters
-
-| Type | Supported |
-|------|-----------|
-| **Task Manager** | Jira · Linear · GitHub Issues · Local |
-| **VCS** | GitHub · GitLab · Bitbucket |
-| **Design** | Figma (MCP or REST API) |
-| **Report** | Local · Notion |
-
----
-
-## kitt.json
-
-Single source of truth. Every skill reads it — nothing hardcoded.
-
-```json
-{
-  "project": { "name": "my-project" },
-  "scopes": { ... },
-  "taskManager": { "type": "jira", "config": { ... } },
-  "vcs": { "type": "github", "config": { ... } },
-  "build": { "test": "...", "typecheck": "...", "lint": "...", "build": "..." },
-  "commitFormat": { "pattern": "{type}({ticket}): {description}" }
-}
-```
-
-Full schema: `~/.claude/kitt/.claude/templates/kitt.json.schema`
+**v1 (the `/orchestrate` engine, 24 skills, `kitt.json`, adapters)** was removed in the V2 rewrite; it lives on in [kitt-studio](https://github.com/bacleclement/kitt-studio) and in this repo's history.

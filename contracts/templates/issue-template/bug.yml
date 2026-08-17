@@ -1,0 +1,44 @@
+name: Bug
+description: Something behaves wrongly
+labels: ["kind:bug"]
+body:
+  - type: input
+    id: provenance
+    attributes:
+      label: Where this comes from
+      placeholder: pilot tester report · staging session 12/03
+    validations: { required: true }
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Symptom
+      description: What was actually seen. Quote the reporter verbatim when there is one.
+    validations: { required: true }
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Trace link, error id, log excerpt, screenshot.
+    validations: { required: true }
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: The steps — or "not reproduced". An honest gap beats an invented recipe.
+    validations: { required: true }
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Suspected cause (HYPOTHESIS — verify before building on it)
+      description: A reading of the code at a point in time. It may already be out of date.
+  - type: dropdown
+    id: cause
+    attributes:
+      label: Cause category
+      options: [regression, spec-gap, impl-defect, discovery-gap, unknown]
+    validations: { required: true }
+  - type: input
+    id: acceptance-command
+    attributes:
+      label: Acceptance command (runnable)
+      description: The regression test, once known.

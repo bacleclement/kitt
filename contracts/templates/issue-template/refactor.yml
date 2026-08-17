@@ -1,0 +1,37 @@
+name: Refactor
+description: Changing structure without changing behaviour
+labels: ["kind:refactor"]
+body:
+  - type: input
+    id: provenance
+    attributes:
+      label: Where this comes from
+    validations: { required: true }
+  - type: textarea
+    id: today
+    attributes:
+      label: Today
+      description: The current shape AND the cost it causes — a bug it produced, a measure. A refactor without a cost is a preference.
+    validations: { required: true }
+  - type: textarea
+    id: after
+    attributes:
+      label: After
+    validations: { required: true }
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Boundaries
+      description: What this refactor does NOT touch.
+    validations: { required: true }
+  - type: input
+    id: acceptance-command
+    attributes:
+      label: Acceptance command (runnable)
+      description: Proves behaviour is unchanged.
+    validations: { required: true }
+  - type: textarea
+    id: non-goals
+    attributes:
+      label: Non-goals
+    validations: { required: true }
